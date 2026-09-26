@@ -35,6 +35,11 @@ public class AppDbContext : DbContext
     public DbSet<ChiTietChungTuThuChi> ChiTietChungTuThuChis => Set<ChiTietChungTuThuChi>();
     public DbSet<TaiSanCoDinh> TaiSanCoDinhs => Set<TaiSanCoDinh>();
     public DbSet<BangTinhKhauHao> BangTinhKhauHaos => Set<BangTinhKhauHao>();
+    public DbSet<NhanVien> NhanViens => Set<NhanVien>();
+    public DbSet<BangChamCongThang> BangChamCongThangs => Set<BangChamCongThang>();
+    public DbSet<ChiTietChamCong> ChiTietChamCongs => Set<ChiTietChamCong>();
+    public DbSet<BangLuongThang> BangLuongThangs => Set<BangLuongThang>();
+    public DbSet<ChiTietLuongNhanVien> ChiTietLuongNhanViens => Set<ChiTietLuongNhanVien>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -675,6 +680,231 @@ public class AppDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.ButToanId)
                 .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // ========================================================
+        // 16. Cấu hình Nhân sự & Tiền lương (NhanVien)
+        // ========================================================
+        modelBuilder.Entity<NhanVien>(entity =>
+        {
+            entity.ToTable("NhanVien");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+
+            entity.Property(e => e.MaNhanVien)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.HasIndex(e => e.MaNhanVien)
+                .IsUnique();
+
+            entity.Property(e => e.HoTen)
+                .IsRequired()
+                .HasMaxLength(255);
+
+            entity.Property(e => e.LuongCoBan).HasPrecision(19, 4);
+            entity.Property(e => e.LuongDongBaoHiem).HasPrecision(19, 4);
+            entity.Property(e => e.PhuCapAnTrua).HasPrecision(19, 4);
+            entity.Property(e => e.PhuCapTrachNhiem).HasPrecision(19, 4);
+            entity.Property(e => e.PhuCapDienThoai).HasPrecision(19, 4);
+            entity.Property(e => e.PhuCapTrangPhuc).HasPrecision(19, 4);
+
+            if (Database.IsSqlite())
+            {
+                entity.Property(e => e.LuongCoBan).HasColumnType("TEXT");
+                entity.Property(e => e.LuongDongBaoHiem).HasColumnType("TEXT");
+                entity.Property(e => e.PhuCapAnTrua).HasColumnType("TEXT");
+                entity.Property(e => e.PhuCapTrachNhiem).HasColumnType("TEXT");
+                entity.Property(e => e.PhuCapDienThoai).HasColumnType("TEXT");
+                entity.Property(e => e.PhuCapTrangPhuc).HasColumnType("TEXT");
+            }
+        });
+
+        // ========================================================
+        // 17. Cấu hình Bảng Chấm Công (BangChamCongThang & ChiTietChamCong)
+        // ========================================================
+        modelBuilder.Entity<BangChamCongThang>(entity =>
+        {
+            entity.ToTable("BangChamCongThang");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+
+            entity.Property(e => e.KyKeToan)
+                .IsRequired()
+                .HasMaxLength(10);
+
+            entity.HasIndex(e => e.KyKeToan)
+                .IsUnique();
+
+            entity.HasMany(e => e.ChiTiets)
+                .WithOne(d => d.BangChamCongThang)
+                .HasForeignKey(d => d.BangChamCongThangId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ChiTietChamCong>(entity =>
+        {
+            entity.ToTable("ChiTietChamCong");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+
+            entity.HasIndex(e => new { e.BangChamCongThangId, e.NhanVienId })
+                .IsUnique();
+
+            entity.Property(e => e.SoNgayDiLam).HasPrecision(19, 4);
+            entity.Property(e => e.SoNgayNghiPhep).HasPrecision(19, 4);
+            entity.Property(e => e.SoNgayNghiLe).HasPrecision(19, 4);
+            entity.Property(e => e.SoNgayNghiKhongLuong).HasPrecision(19, 4);
+            entity.Property(e => e.SoNgayNghiOmBhxh).HasPrecision(19, 4);
+            entity.Property(e => e.SoNgayNghiThaiSan).HasPrecision(19, 4);
+            entity.Property(e => e.GioLamThemNgayThuong).HasPrecision(19, 4);
+            entity.Property(e => e.GioLamThemNgayNghi).HasPrecision(19, 4);
+            entity.Property(e => e.GioLamThemNgayLe).HasPrecision(19, 4);
+            entity.Property(e => e.TongCongTinhLuong).HasPrecision(19, 4);
+
+            if (Database.IsSqlite())
+            {
+                entity.Property(e => e.SoNgayDiLam).HasColumnType("TEXT");
+                entity.Property(e => e.SoNgayNghiPhep).HasColumnType("TEXT");
+                entity.Property(e => e.SoNgayNghiLe).HasColumnType("TEXT");
+                entity.Property(e => e.SoNgayNghiKhongLuong).HasColumnType("TEXT");
+                entity.Property(e => e.SoNgayNghiOmBhxh).HasColumnType("TEXT");
+                entity.Property(e => e.SoNgayNghiThaiSan).HasColumnType("TEXT");
+                entity.Property(e => e.GioLamThemNgayThuong).HasColumnType("TEXT");
+                entity.Property(e => e.GioLamThemNgayNghi).HasColumnType("TEXT");
+                entity.Property(e => e.GioLamThemNgayLe).HasColumnType("TEXT");
+                entity.Property(e => e.TongCongTinhLuong).HasColumnType("TEXT");
+            }
+
+            entity.HasOne(e => e.NhanVien)
+                .WithMany()
+                .HasForeignKey(e => e.NhanVienId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // ========================================================
+        // 18. Cấu hình Bảng Lương (BangLuongThang & ChiTietLuongNhanVien)
+        // ========================================================
+        modelBuilder.Entity<BangLuongThang>(entity =>
+        {
+            entity.ToTable("BangLuongThang");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+
+            entity.Property(e => e.SoChungTu)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.HasIndex(e => e.SoChungTu)
+                .IsUnique();
+
+            entity.Property(e => e.KyKeToan)
+                .IsRequired()
+                .HasMaxLength(10);
+
+            entity.HasIndex(e => e.KyKeToan)
+                .IsUnique();
+
+            entity.Property(e => e.TongQuyLuong).HasPrecision(19, 4);
+            entity.Property(e => e.TongBaoHiemDnGanh).HasPrecision(19, 4);
+            entity.Property(e => e.TongBaoHiemNldGanh).HasPrecision(19, 4);
+            entity.Property(e => e.TongThueTncn).HasPrecision(19, 4);
+            entity.Property(e => e.TongThucLinh).HasPrecision(19, 4);
+
+            if (Database.IsSqlite())
+            {
+                entity.Property(e => e.TongQuyLuong).HasColumnType("TEXT");
+                entity.Property(e => e.TongBaoHiemDnGanh).HasColumnType("TEXT");
+                entity.Property(e => e.TongBaoHiemNldGanh).HasColumnType("TEXT");
+                entity.Property(e => e.TongThueTncn).HasColumnType("TEXT");
+                entity.Property(e => e.TongThucLinh).HasColumnType("TEXT");
+            }
+
+            entity.HasOne(e => e.ButToanChiPhiLuong)
+                .WithMany()
+                .HasForeignKey(e => e.ButToanChiPhiLuongId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.ButToanBaoHiemDn)
+                .WithMany()
+                .HasForeignKey(e => e.ButToanBaoHiemDnId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.ButToanKhauTruLuong)
+                .WithMany()
+                .HasForeignKey(e => e.ButToanKhauTruLuongId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasMany(e => e.ChiTiets)
+                .WithOne(d => d.BangLuongThang)
+                .HasForeignKey(d => d.BangLuongThangId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ChiTietLuongNhanVien>(entity =>
+        {
+            entity.ToTable("ChiTietLuongNhanVien");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+
+            entity.HasIndex(e => new { e.BangLuongThangId, e.NhanVienId })
+                .IsUnique();
+
+            entity.Property(e => e.LuongThoiGian).HasPrecision(19, 4);
+            entity.Property(e => e.LuongLamThemGio).HasPrecision(19, 4);
+            entity.Property(e => e.LuongOtMienThue).HasPrecision(19, 4);
+            entity.Property(e => e.PhuCapChiuThue).HasPrecision(19, 4);
+            entity.Property(e => e.PhuCapMienThue).HasPrecision(19, 4);
+            entity.Property(e => e.TienThuong).HasPrecision(19, 4);
+            entity.Property(e => e.TongThuNhap).HasPrecision(19, 4);
+            entity.Property(e => e.LuongDongBaoHiem).HasPrecision(19, 4);
+            entity.Property(e => e.BhxhNld).HasPrecision(19, 4);
+            entity.Property(e => e.BhytNld).HasPrecision(19, 4);
+            entity.Property(e => e.BhtnNld).HasPrecision(19, 4);
+            entity.Property(e => e.TongBaoHiemNld).HasPrecision(19, 4);
+            entity.Property(e => e.BhxhDn).HasPrecision(19, 4);
+            entity.Property(e => e.BhytDn).HasPrecision(19, 4);
+            entity.Property(e => e.BhtnDn).HasPrecision(19, 4);
+            entity.Property(e => e.KpcdDn).HasPrecision(19, 4);
+            entity.Property(e => e.TongBaoHiemDn).HasPrecision(19, 4);
+            entity.Property(e => e.GiamTruBanThan).HasPrecision(19, 4);
+            entity.Property(e => e.GiamTruNguoiPhuThuoc).HasPrecision(19, 4);
+            entity.Property(e => e.ThuNhapTinhThue).HasPrecision(19, 4);
+            entity.Property(e => e.ThueTncnKhauTru).HasPrecision(19, 4);
+            entity.Property(e => e.TamUng).HasPrecision(19, 4);
+            entity.Property(e => e.ThucLinh).HasPrecision(19, 4);
+
+            if (Database.IsSqlite())
+            {
+                entity.Property(e => e.LuongThoiGian).HasColumnType("TEXT");
+                entity.Property(e => e.LuongLamThemGio).HasColumnType("TEXT");
+                entity.Property(e => e.LuongOtMienThue).HasColumnType("TEXT");
+                entity.Property(e => e.PhuCapChiuThue).HasColumnType("TEXT");
+                entity.Property(e => e.PhuCapMienThue).HasColumnType("TEXT");
+                entity.Property(e => e.TienThuong).HasColumnType("TEXT");
+                entity.Property(e => e.TongThuNhap).HasColumnType("TEXT");
+                entity.Property(e => e.LuongDongBaoHiem).HasColumnType("TEXT");
+                entity.Property(e => e.BhxhNld).HasColumnType("TEXT");
+                entity.Property(e => e.BhytNld).HasColumnType("TEXT");
+                entity.Property(e => e.BhtnNld).HasColumnType("TEXT");
+                entity.Property(e => e.TongBaoHiemNld).HasColumnType("TEXT");
+                entity.Property(e => e.BhxhDn).HasColumnType("TEXT");
+                entity.Property(e => e.BhytDn).HasColumnType("TEXT");
+                entity.Property(e => e.BhtnDn).HasColumnType("TEXT");
+                entity.Property(e => e.KpcdDn).HasColumnType("TEXT");
+                entity.Property(e => e.TongBaoHiemDn).HasColumnType("TEXT");
+                entity.Property(e => e.GiamTruBanThan).HasColumnType("TEXT");
+                entity.Property(e => e.GiamTruNguoiPhuThuoc).HasColumnType("TEXT");
+                entity.Property(e => e.ThuNhapTinhThue).HasColumnType("TEXT");
+                entity.Property(e => e.ThueTncnKhauTru).HasColumnType("TEXT");
+                entity.Property(e => e.TamUng).HasColumnType("TEXT");
+                entity.Property(e => e.ThucLinh).HasColumnType("TEXT");
+            }
+
+            entity.HasOne(e => e.NhanVien)
+                .WithMany()
+                .HasForeignKey(e => e.NhanVienId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

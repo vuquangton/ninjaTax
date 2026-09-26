@@ -1,0 +1,119 @@
+@model ninjaTax.Models.ViewModels.BangLuongIndexViewModel
+@using ninjaTax.Models.Entities
+@{
+    ViewData["Title"] = "Quản lý Bảng Tính Lương & Bảo Hiểm (TT99 & TT111)";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0 text-success"><i class="bi bi-cash-stack me-2"></i>Bảng Tính Lương & Trích Nộp Bảo Hiểm</h3>
+            <small class="text-muted">Tính Gross-to-Net, bảo hiểm bắt buộc trần 46.8M, thuế TNCN 7 bậc lũy tiến & hạch toán 3 bút toán Sổ Cái TT99</small>
+        </div>
+        <div class="btn-group">
+            <a asp-action="BangLuong" asp-route-kyKeToan="@DateTime.Today.ToString("yyyy-MM")" class="btn btn-success">
+                <i class="bi bi-calculator me-1"></i>Bảng Lương Tháng Hiện Tại
+            </a>
+            <a asp-controller="ChamCong" asp-action="Index" class="btn btn-outline-info">
+                <i class="bi bi-calendar-check me-1"></i>Bảng Chấm Công
+            </a>
+            <a asp-controller="NhanVien" asp-action="Index" class="btn btn-outline-primary">
+                <i class="bi bi-people me-1"></i>Hồ Sơ Nhân Sự
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Quick launcher -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <form asp-action="BangLuong" method="get" class="row g-3 align-items-center">
+                <div class="col-auto">
+                    <label class="col-form-label fw-bold">Xem / Lập Bảng Lương Kỳ:</label>
+                </div>
+                <div class="col-auto">
+                    <input type="month" name="kyKeToan" value="@Model.KyKeToan" class="form-control" />
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-box-arrow-in-right me-1"></i>Mở Bảng Lương</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Payroll headers table -->
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Số Chứng Từ</th>
+                        <th>Kỳ Kế Toán</th>
+                        <th class="text-center">Số Nhân Viên</th>
+                        <th class="text-end">Tổng Quỹ Lương (Nợ 642)</th>
+                        <th class="text-end">BH Doanh Nghiệp (23.5%)</th>
+                        <th class="text-end">BH Người LĐ (10.5%)</th>
+                        <th class="text-end">Thuế TNCN (3335)</th>
+                        <th class="text-end">Tổng Thực Lĩnh (334)</th>
+                        <th class="text-center">Trạng Thái</th>
+                        <th class="text-center">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.DanhSachBangLuong.Any())
+                    {
+                        <tr>
+                            <td colspan="10" class="text-center py-4 text-muted">Chưa có bảng tính lương nào được lập. Hãy chọn kỳ và mở bảng lương.</td>
+                        </tr>
+                    }
+                    @foreach (var bl in Model.DanhSachBangLuong)
+                    {
+                        <tr>
+                            <td class="fw-bold">@bl.SoChungTu</td>
+                            <td><span class="badge bg-secondary">@bl.KyKeToan</span></td>
+                            <td class="text-center">@bl.SoNhanVien người</td>
+                            <td class="text-end fw-bold text-dark">@bl.TongQuyLuong.ToString("N0") đ</td>
+                            <td class="text-end text-warning">@bl.TongBaoHiemDnGanh.ToString("N0") đ</td>
+                            <td class="text-end text-muted">@bl.TongBaoHiemNldGanh.ToString("N0") đ</td>
+                            <td class="text-end text-danger">@bl.TongThueTncn.ToString("N0") đ</td>
+                            <td class="text-end fw-bold text-success">@bl.TongThucLinh.ToString("N0") đ</td>
+                            <td class="text-center">
+                                @if (bl.TrangThai == TrangThaiBangLuong.DaGhiSo)
+                                {
+                                    <span class="badge bg-success"><i class="bi bi-journal-check me-1"></i>Đã ghi sổ Sổ Cái</span>
+                                }
+                                else if (bl.TrangThai == TrangThaiBangLuong.DaDuyet)
+                                {
+                                    <span class="badge bg-info">Đã duyệt</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">Chờ duyệt</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <a asp-action="BangLuong" asp-route-kyKeToan="@bl.KyKeToan" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> Chi tiết
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

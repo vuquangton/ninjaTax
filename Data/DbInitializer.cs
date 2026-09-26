@@ -63,7 +63,13 @@ public static class DbInitializer
             new() { MaTaiKhoan = "333", TenTaiKhoan = "Thuế và các khoản phải nộp Nhà nước", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.NoPhaiTra, TinhChat = TinhChatTaiKhoan.LuongTinh, LaTaiKhoanSoCai = true },
             new() { MaTaiKhoan = "3331", TenTaiKhoan = "Thuế giá trị gia tăng phải nộp", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.NoPhaiTra, TinhChat = TinhChatTaiKhoan.DuCo, LaTaiKhoanSoCai = true },
             new() { MaTaiKhoan = "33311", TenTaiKhoan = "Thuế giá trị gia tăng đầu ra", BacTaiKhoan = 3, LoaiTaiKhoan = LoaiTaiKhoan.NoPhaiTra, TinhChat = TinhChatTaiKhoan.DuCo, LaTaiKhoanSoCai = false },
+            new() { MaTaiKhoan = "3335", TenTaiKhoan = "Thuế thu nhập cá nhân", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.NoPhaiTra, TinhChat = TinhChatTaiKhoan.DuCo, LaTaiKhoanSoCai = false },
             new() { MaTaiKhoan = "334", TenTaiKhoan = "Phải trả người lao động", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.NoPhaiTra, TinhChat = TinhChatTaiKhoan.DuCo, LaTaiKhoanSoCai = false },
+            new() { MaTaiKhoan = "338", TenTaiKhoan = "Phải trả, phải nộp khác", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.NoPhaiTra, TinhChat = TinhChatTaiKhoan.DuCo, LaTaiKhoanSoCai = true },
+            new() { MaTaiKhoan = "3382", TenTaiKhoan = "Kinh phí công đoàn", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.NoPhaiTra, TinhChat = TinhChatTaiKhoan.DuCo, LaTaiKhoanSoCai = false },
+            new() { MaTaiKhoan = "3383", TenTaiKhoan = "Bảo hiểm xã hội", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.NoPhaiTra, TinhChat = TinhChatTaiKhoan.DuCo, LaTaiKhoanSoCai = false },
+            new() { MaTaiKhoan = "3384", TenTaiKhoan = "Bảo hiểm y tế", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.NoPhaiTra, TinhChat = TinhChatTaiKhoan.DuCo, LaTaiKhoanSoCai = false },
+            new() { MaTaiKhoan = "3386", TenTaiKhoan = "Bảo hiểm thất nghiệp", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.NoPhaiTra, TinhChat = TinhChatTaiKhoan.DuCo, LaTaiKhoanSoCai = false },
 
             // Nhóm 4: Vốn chủ sở hữu (Đặc thù TT99: 421 nhận kết chuyển doanh thu, chi phí trực tiếp)
             new() { MaTaiKhoan = "411", TenTaiKhoan = "Vốn đầu tư của chủ sở hữu", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.VonChuSoHuu, TinhChat = TinhChatTaiKhoan.DuCo, LaTaiKhoanSoCai = false },

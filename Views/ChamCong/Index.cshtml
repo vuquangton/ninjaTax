@@ -1,0 +1,180 @@
+@model ninjaTax.Models.ViewModels.BangChamCongViewModel
+@using ninjaTax.Models.Entities
+@{
+    ViewData["Title"] = $"Bảng Chấm Công Tháng {Model.KyKeToan}";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0 text-info"><i class="bi bi-calendar-check me-2"></i>Bảng Chấm Công Kỳ: @Model.KyKeToan</h3>
+            <small class="text-muted">Ghi nhận công thực tế, phép năm (100% lương), nghỉ lễ (100% lương) và phân loại OT (150%, 200%, 300%) theo BLLĐ 2019</small>
+        </div>
+        <div class="btn-group">
+            <a asp-controller="TienLuong" asp-action="BangLuong" asp-route-kyKeToan="@Model.KyKeToan" class="btn btn-success">
+                <i class="bi bi-calculator me-1"></i>Chuyển Sang Tính Lương
+            </a>
+            <a asp-controller="NhanVien" asp-action="Index" class="btn btn-outline-primary">
+                <i class="bi bi-people me-1"></i>Hồ Sơ Nhân Sự
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Selector & Status Bar -->
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-center">
+                <div class="col-auto">
+                    <label class="col-form-label fw-bold">Chọn Kỳ Kế Toán:</label>
+                </div>
+                <div class="col-auto">
+                    <input type="month" name="kyKeToan" value="@Model.KyKeToan" class="form-control" />
+                </div>
+                <div class="col-auto">
+                    <label class="col-form-label fw-bold">Ngày công chuẩn:</label>
+                </div>
+                <div class="col-auto">
+                    <input type="number" name="soNgayCongChuan" value="@Model.SoNgayCongChuan" class="form-control" style="width: 80px;" />
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-arrow-clockwise me-1"></i>Tải Bảng Công</button>
+                </div>
+                <div class="col-auto ms-auto">
+                    <span class="fw-bold me-2">Trạng thái:</span>
+                    @if (Model.TrangThai == TrangThaiChamCong.DaChot)
+                    {
+                        <span class="badge bg-danger fs-6"><i class="bi bi-lock-fill me-1"></i>Đã chốt công</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark fs-6"><i class="bi bi-pencil-fill me-1"></i>Đang mở (Cho phép nhập)</span>
+                    }
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Timesheet Grid Form -->
+    <form asp-action="Luu" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="KyKeToan" />
+        <input type="hidden" asp-for="Nam" />
+        <input type="hidden" asp-for="Thang" />
+        <input type="hidden" asp-for="SoNgayCongChuan" />
+
+        <div class="card shadow-sm border-0 mb-3">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle mb-0 text-center">
+                    <thead class="table-light">
+                        <tr>
+                            <th rowspan="2" class="align-middle">STT</th>
+                            <th rowspan="2" class="align-middle text-start">Mã NV</th>
+                            <th rowspan="2" class="align-middle text-start">Họ và Tên</th>
+                            <th rowspan="2" class="align-middle text-start">Phòng ban</th>
+                            <th colspan="3" class="bg-light">Ngày Công Hưởng Lương (Ngày)</th>
+                            <th colspan="3" class="bg-light">Làm Thêm Giờ - OT (Giờ)</th>
+                            <th rowspan="2" class="align-middle text-end">Tổng công</th>
+                        </tr>
+                        <tr>
+                            <th style="min-width: 90px;">Đi làm</th>
+                            <th style="min-width: 90px;">Phép năm</th>
+                            <th style="min-width: 90px;">Nghỉ lễ</th>
+                            <th style="min-width: 90px;">Ngày thường (150%)</th>
+                            <th style="min-width: 90px;">Ngày nghỉ (200%)</th>
+                            <th style="min-width: 90px;">Ngày lễ (300%)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.DongChamCongs.Any())
+                        {
+                            <tr>
+                                <td colspan="11" class="py-4 text-muted">Chưa có nhân viên nào trong danh sách. Vui lòng thêm nhân viên trước.</td>
+                            </tr>
+                        }
+                        @for (int i = 0; i < Model.DongChamCongs.Count; i++)
+                        {
+                            var dong = Model.DongChamCongs[i];
+                            var disabled = Model.TrangThai == TrangThaiChamCong.DaChot ? "disabled" : null;
+                            <tr>
+                                <td>@(i + 1)</td>
+                                <td class="text-start fw-bold">
+                                    <input type="hidden" name="DongChamCongs[@i].NhanVienId" value="@dong.NhanVienId" />
+                                    <input type="hidden" name="DongChamCongs[@i].MaNhanVien" value="@dong.MaNhanVien" />
+                                    <input type="hidden" name="DongChamCongs[@i].HoTen" value="@dong.HoTen" />
+                                    <input type="hidden" name="DongChamCongs[@i].PhongBan" value="@dong.PhongBan" />
+                                    @dong.MaNhanVien
+                                </td>
+                                <td class="text-start">@dong.HoTen</td>
+                                <td class="text-start text-muted"><small>@dong.PhongBan</small></td>
+
+                                <td>
+                                    <input type="number" step="0.5" min="0" max="31" class="form-control form-control-sm text-center" 
+                                           name="DongChamCongs[@i].SoNgayDiLam" value="@dong.SoNgayDiLam" disabled="@disabled" />
+                                </td>
+                                <td>
+                                    <input type="number" step="0.5" min="0" max="31" class="form-control form-control-sm text-center" 
+                                           name="DongChamCongs[@i].SoNgayNghiPhep" value="@dong.SoNgayNghiPhep" disabled="@disabled" />
+                                </td>
+                                <td>
+                                    <input type="number" step="0.5" min="0" max="31" class="form-control form-control-sm text-center" 
+                                           name="DongChamCongs[@i].SoNgayNghiLe" value="@dong.SoNgayNghiLe" disabled="@disabled" />
+                                </td>
+
+                                <td>
+                                    <input type="number" step="0.5" min="0" max="100" class="form-control form-control-sm text-center" 
+                                           name="DongChamCongs[@i].GioLamThemNgayThuong" value="@dong.GioLamThemNgayThuong" disabled="@disabled" />
+                                </td>
+                                <td>
+                                    <input type="number" step="0.5" min="0" max="100" class="form-control form-control-sm text-center" 
+                                           name="DongChamCongs[@i].GioLamThemNgayNghi" value="@dong.GioLamThemNgayNghi" disabled="@disabled" />
+                                </td>
+                                <td>
+                                    <input type="number" step="0.5" min="0" max="100" class="form-control form-control-sm text-center" 
+                                           name="DongChamCongs[@i].GioLamThemNgayLe" value="@dong.GioLamThemNgayLe" disabled="@disabled" />
+                                </td>
+
+                                <td class="text-end fw-bold text-primary">
+                                    @dong.TongCongTinhLuong
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <div>
+                @if (Model.TrangThai != TrangThaiChamCong.DaChot && Model.DongChamCongs.Any())
+                {
+                    <button type="submit" class="btn btn-primary px-4"><i class="bi bi-save me-1"></i>Lưu Dữ Liệu Chấm Công</button>
+                }
+            </div>
+            <div>
+                @if (Model.TrangThai != TrangThaiChamCong.DaChot && Model.DongChamCongs.Any())
+                {
+                    <button type="submit" formaction="@Url.Action("Chot", "ChamCong", new { id = Model.Id, kyKeToan = Model.KyKeToan })" 
+                            class="btn btn-danger" onclick="return confirm('Bạn có chắc chắn muốn chốt bảng chấm công này không? Sau khi chốt sẽ không thể chỉnh sửa.');">
+                        <i class="bi bi-lock-fill me-1"></i>Chốt Bảng Chấm Công
+                    </button>
+                }
+            </div>
+        </div>
+    </form>
+</div>

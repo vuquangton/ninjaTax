@@ -1,0 +1,154 @@
+@model ninjaTax.Models.ViewModels.NhanVienCreateEditViewModel
+@using ninjaTax.Models.Entities
+@{
+    ViewData["Title"] = "Thêm Mới Nhân Viên";
+}
+
+<div class="container py-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white py-3">
+            <h4 class="mb-0"><i class="bi bi-person-plus-fill me-2"></i>Khai Báo Hồ Sơ Nhân Sự & Hợp Đồng Lao Động</h4>
+        </div>
+        <div class="card-body p-4">
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3"></div>
+
+                <h5 class="text-primary border-bottom pb-2 mb-3">1. Thông tin định danh & Hành chính</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <label asp-for="MaNhanVien" class="form-label fw-bold">Mã nhân viên <span class="text-danger">*</span></label>
+                        <input asp-for="MaNhanVien" class="form-control" placeholder="NV001..." />
+                        <span asp-validation-for="MaNhanVien" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-5">
+                        <label asp-for="HoTen" class="form-label fw-bold">Họ và Tên <span class="text-danger">*</span></label>
+                        <input asp-for="HoTen" class="form-control" placeholder="Nguyễn Văn A..." />
+                        <span asp-validation-for="HoTen" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="SoCccd" class="form-label">Số CCCD / CMND</label>
+                        <input asp-for="SoCccd" class="form-control" placeholder="12 chữ số..." />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="MaSoThue" class="form-label">Mã số thuế cá nhân (MST)</label>
+                        <input asp-for="MaSoThue" class="form-control" placeholder="10 chữ số..." />
+                        <small class="text-muted">Bắt buộc để áp dụng cam kết 08 hoặc giảm trừ gia cảnh</small>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="SoSoBhxh" class="form-label">Mã số sổ BHXH</label>
+                        <input asp-for="SoSoBhxh" class="form-control" placeholder="10 chữ số..." />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="LoaiHopDong" class="form-label fw-bold">Loại hợp đồng <span class="text-danger">*</span></label>
+                        <select asp-for="LoaiHopDong" class="form-select">
+                            <option value="@LoaiHopDongLaoDong.HopDongDaiHan">Hợp đồng dài hạn (>= 3 tháng) - Thuế lũy tiến</option>
+                            <option value="@LoaiHopDongLaoDong.ThuViecThoiVu">Thử việc / Thời vụ (&lt; 3 tháng) - Thuế 10% tại nguồn</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="PhongBan" class="form-label">Phòng ban bộ phận</label>
+                        <input asp-for="PhongBan" class="form-control" placeholder="Ban Giám Đốc, Kế toán, Kinh doanh..." />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="ChucVu" class="form-label">Chức vụ</label>
+                        <input asp-for="ChucVu" class="form-control" placeholder="Giám đốc, Kế toán trưởng, Nhân viên..." />
+                    </div>
+                </div>
+
+                <h5 class="text-primary border-bottom pb-2 mb-3">2. Lương, Phụ cấp & Mức đóng Bảo hiểm bắt buộc</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label asp-for="LuongCoBan" class="form-label fw-bold">Lương cơ bản / Lương thỏa thuận <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input asp-for="LuongCoBan" type="number" step="1000" class="form-control" />
+                            <span class="input-group-text">VNĐ</span>
+                        </div>
+                        <span asp-validation-for="LuongCoBan" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="LuongDongBaoHiem" class="form-label fw-bold">Lương đóng BHXH/BHYT/BHTN</label>
+                        <div class="input-group">
+                            <input asp-for="LuongDongBaoHiem" type="number" step="1000" class="form-control" />
+                            <span class="input-group-text">VNĐ</span>
+                        </div>
+                        <small class="text-muted">Áp dụng trần 46.800.000 VNĐ (NĐ 73/2024) và sàn vùng (NĐ 74/2024)</small>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="PhuCapAnTrua" class="form-label">Phụ cấp ăn trưa</label>
+                        <div class="input-group">
+                            <input asp-for="PhuCapAnTrua" type="number" step="1000" class="form-control" />
+                            <span class="input-group-text">VNĐ</span>
+                        </div>
+                        <small class="text-muted">Miễn thuế tối đa 730k (TT 26/2016)</small>
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="PhuCapTrachNhiem" class="form-label">Phụ cấp trách nhiệm</label>
+                        <div class="input-group">
+                            <input asp-for="PhuCapTrachNhiem" type="number" step="1000" class="form-control" />
+                            <span class="input-group-text">VNĐ</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="PhuCapDienThoai" class="form-label">Phụ cấp điện thoại</label>
+                        <div class="input-group">
+                            <input asp-for="PhuCapDienThoai" type="number" step="1000" class="form-control" />
+                            <span class="input-group-text">VNĐ</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="PhuCapTrangPhuc" class="form-label">Phụ cấp trang phục</label>
+                        <div class="input-group">
+                            <input asp-for="PhuCapTrangPhuc" type="number" step="1000" class="form-control" />
+                            <span class="input-group-text">VNĐ</span>
+                        </div>
+                        <small class="text-muted">Miễn thuế tối đa 5tr/năm (TT 111)</small>
+                    </div>
+                </div>
+
+                <h5 class="text-primary border-bottom pb-2 mb-3">3. Chế độ Giảm trừ gia cảnh & Thanh toán lương</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <label asp-for="SoNguoiPhuThuoc" class="form-label fw-bold">Số người phụ thuộc (4.4M/người)</label>
+                        <input asp-for="SoNguoiPhuThuoc" type="number" min="0" max="20" class="form-control" />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="SoTaiKhoanNganHang" class="form-label">Số tài khoản ngân hàng</label>
+                        <input asp-for="SoTaiKhoanNganHang" class="form-control" placeholder="Số tài khoản..." />
+                    </div>
+                    <div class="col-md-5">
+                        <label asp-for="TenNganHang" class="form-label">Tên ngân hàng chi nhánh</label>
+                        <input asp-for="TenNganHang" class="form-control" placeholder="Vietcombank, Techcombank, BIDV..." />
+                    </div>
+
+                    <div class="col-md-12">
+                        <div class="form-check form-check-inline">
+                            <input asp-for="DongBaoHiem" class="form-check-input" type="checkbox" />
+                            <label asp-for="DongBaoHiem" class="form-check-label fw-semibold">Tham gia BHXH, BHYT, BHTN bắt buộc</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input asp-for="LaDoanVienCongDoan" class="form-check-input" type="checkbox" />
+                            <label asp-for="LaDoanVienCongDoan" class="form-check-label fw-semibold">Đoàn viên công đoàn</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input asp-for="CoCamKet08" class="form-check-input" type="checkbox" />
+                            <label asp-for="CoCamKet08" class="form-check-label fw-semibold text-danger">Có Cam kết Mẫu 08/CK-TNCN (LĐ thời vụ không khấu trừ 10%)</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input asp-for="DangLamViec" class="form-check-input" type="checkbox" />
+                            <label asp-for="DangLamViec" class="form-check-label fw-semibold">Đang làm việc</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-secondary">Quay lại danh sách</a>
+                    <button type="submit" class="btn btn-primary px-4"><i class="bi bi-save me-1"></i>Lưu Nhân Viên</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

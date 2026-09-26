@@ -21,6 +21,8 @@ builder.Services.AddScoped<IHachToanBanHangService, HachToanBanHangService>();
 builder.Services.AddScoped<ICongNoService, CongNoService>();
 builder.Services.AddScoped<IThuChiService, ThuChiService>();
 builder.Services.AddScoped<ITaiSanService, TaiSanService>();
+builder.Services.AddScoped<ITimesheetService, TimesheetService>();
+builder.Services.AddScoped<IPayrollService, PayrollService>();
 
 var app = builder.Build();
 

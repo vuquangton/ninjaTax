@@ -44,6 +44,17 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-controller="TaiSan" asp-action="Index"><i class="bi bi-box me-1"></i>TSCĐ & CCDC</a>
                         </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="payrollDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-people me-1"></i>Tiền Lương & Thuế
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="payrollDropdown">
+                                <li><a class="dropdown-item" asp-controller="NhanVien" asp-action="Index"><i class="bi bi-person-lines-fill me-2"></i>Hồ sơ nhân sự</a></li>
+                                <li><a class="dropdown-item" asp-controller="ChamCong" asp-action="Index"><i class="bi bi-calendar-check me-2"></i>Bảng chấm công</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" asp-controller="TienLuong" asp-action="Index"><i class="bi bi-cash-coin me-2"></i>Bảng tính lương</a></li>
+                            </ul>
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-controller="ThuTien" asp-action="SoQuy"><i class="bi bi-book me-1"></i>Sổ Quỹ</a>
                         </li>

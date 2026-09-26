@@ -1,0 +1,169 @@
+@model ninjaTax.Models.ViewModels.PayslipViewModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Phiếu Lương Kỳ @Model.KyKeToan - @Model.HoTen</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+    <style>
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        .payslip-container {
+            max-width: 800px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .table-custom th {
+            background-color: #f1f3f5;
+        }
+        @@media print {
+            body { background: #fff; }
+            .payslip-container { box-shadow: none; margin: 0; padding: 0; max-width: 100%; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="payslip-container">
+        <div class="text-end mb-3 no-print">
+            <button onclick="window.print()" class="btn btn-primary"><i class="bi bi-printer"></i> In Phiếu Lương</button>
+            <button onclick="window.close()" class="btn btn-secondary">Đóng</button>
+        </div>
+
+        <div class="border-bottom pb-3 mb-3 text-center">
+            <h5 class="text-uppercase fw-bold text-secondary mb-1">CÔNG TY TNHH NINJATAX VIỆT NAM</h5>
+            <h3 class="fw-bold text-primary mb-1">PHIẾU THANH TOÁN TIỀN LƯƠNG</h3>
+            <p class="text-muted mb-0">Kỳ trả lương: <strong>@Model.KyKeToan</strong> (Ngày công chuẩn: @Model.SoNgayCongChuan ngày)</p>
+        </div>
+
+        <div class="row g-2 mb-3">
+            <div class="col-6"><strong>Mã nhân viên:</strong> @Model.MaNhanVien</div>
+            <div class="col-6"><strong>Họ và Tên:</strong> @Model.HoTen</div>
+            <div class="col-6"><strong>Phòng ban:</strong> @Model.PhongBan</div>
+            <div class="col-6"><strong>Chức vụ:</strong> @Model.ChucVu</div>
+            <div class="col-6"><strong>Số ngày công thực tế:</strong> @Model.SoNgayCongThucTe ngày</div>
+            <div class="col-6"><strong>Người phụ thuộc:</strong> @Model.SoNguoiPhuThuoc người</div>
+        </div>
+
+        <table class="table table-bordered table-custom mb-3">
+            <thead>
+                <tr>
+                    <th colspan="2" class="text-center text-uppercase fw-bold">Khoản Mục Chi Tiết Thu Nhập & Khấu Trừ</th>
+                    <th class="text-end text-uppercase fw-bold" style="width: 180px;">Số Tiền (VNĐ)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="fw-semibold text-primary table-light">
+                    <td colspan="2">I. CÁC KHOẢN THU NHẬP (GROSS)</td>
+                    <td class="text-end">@Model.TongThuNhap.ToString("N0")</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>Lương thời gian (theo công đi làm, lễ, phép)</td>
+                    <td class="text-end">@Model.LuongThoiGian.ToString("N0")</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Tiền lương làm thêm giờ (OT)</td>
+                    <td class="text-end">@Model.LuongLamThemGio.ToString("N0")</td>
+                </tr>
+                @if (Model.LuongOtMienThue > 0)
+                {
+                    <tr class="text-success small">
+                        <td></td>
+                        <td><em>* Trong đó phần làm thêm giờ được miễn thuế TNCN:</em></td>
+                        <td class="text-end"><em>@Model.LuongOtMienThue.ToString("N0")</em></td>
+                    </tr>
+                }
+                <tr>
+                    <td>3</td>
+                    <td>Phụ cấp ăn trưa giữa ca (tối đa miễn thuế 730.000 VNĐ)</td>
+                    <td class="text-end">@Model.PhuCapAnTrua.ToString("N0")</td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>Phụ cấp khác (Điện thoại, trách nhiệm, trang phục)</td>
+                    <td class="text-end">@Model.PhuCapKhac.ToString("N0")</td>
+                </tr>
+                @if (Model.TienThuong > 0)
+                {
+                    <tr>
+                        <td>5</td>
+                        <td>Tiền thưởng hiệu quả công việc</td>
+                        <td class="text-end">@Model.TienThuong.ToString("N0")</td>
+                    </tr>
+                }
+
+                <tr class="fw-semibold text-danger table-light">
+                    <td colspan="2">II. CÁC KHOẢN TRÍCH TRỪ VÀO LƯƠNG</td>
+                    <td class="text-end">@((Model.TongBaoHiemNld + Model.ThueTncnKhauTru + Model.TamUng).ToString("N0"))</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>Bảo hiểm xã hội (BHXH - 8.0%)</td>
+                    <td class="text-end">@Model.BhxhNld.ToString("N0")</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Bảo hiểm y tế (BHYT - 1.5%)</td>
+                    <td class="text-end">@Model.BhytNld.ToString("N0")</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>Bảo hiểm thất nghiệp (BHTN - 1.0%)</td>
+                    <td class="text-end">@Model.BhtnNld.ToString("N0")</td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>Thuế thu nhập cá nhân (TNCN) khấu trừ tại nguồn</td>
+                    <td class="text-end text-danger fw-semibold">@Model.ThueTncnKhauTru.ToString("N0")</td>
+                </tr>
+                @if (Model.TamUng > 0)
+                {
+                    <tr>
+                        <td>5</td>
+                        <td>Tạm ứng trong kỳ</td>
+                        <td class="text-end">@Model.TamUng.ToString("N0")</td>
+                    </tr>
+                }
+
+                <tr class="fw-bold fs-5 table-success">
+                    <td colspan="2" class="text-uppercase text-success">III. THỰC LĨNH NHẬN (NET)</td>
+                    <td class="text-end text-success">@Model.ThucLinh.ToString("N0")</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="p-3 bg-light rounded mb-4">
+            <p class="mb-1"><strong>Hình thức thanh toán:</strong> Chuyển khoản ngân hàng</p>
+            <p class="mb-0"><strong>Tài khoản nhận:</strong> @(Model.SoTaiKhoanNganHang ?? "---") - @(Model.TenNganHang ?? "---")</p>
+        </div>
+
+        <div class="row text-center mt-5">
+            <div class="col-4">
+                <p class="fw-bold mb-5">Người Lập Phiếu</p>
+                <p class="text-muted">(Ký, họ tên)</p>
+            </div>
+            <div class="col-4">
+                <p class="fw-bold mb-5">Kế Toán Trưởng</p>
+                <p class="text-muted">(Ký, họ tên)</p>
+            </div>
+            <div class="col-4">
+                <p class="fw-bold mb-5">Người Nhận Lương</p>
+                <p class="text-muted">(Ký, họ tên)</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

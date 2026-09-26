@@ -1,0 +1,239 @@
+@model ninjaTax.Models.ViewModels.BangLuongChiTietViewModel
+@using ninjaTax.Models.Entities
+@{
+    ViewData["Title"] = $"Bảng Tính Lương Tháng {Model.KyKeToan}";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0 text-success"><i class="bi bi-file-earmark-spreadsheet me-2"></i>Bảng Tính Lương & Bảo Hiểm Kỳ: @Model.KyKeToan</h3>
+            <small class="text-muted">Số chứng từ: <strong>@Model.SoChungTu</strong> | Ngày công chuẩn: <strong>@Model.SoNgayCongChuan</strong> ngày | Tuân thủ TT99/2025, TT111/2013, NĐ 73/2024, NĐ 74/2024</small>
+        </div>
+        <div class="btn-group">
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Danh Sách Bảng Lương
+            </a>
+            <a asp-controller="ChamCong" asp-action="Index" asp-route-kyKeToan="@Model.KyKeToan" class="btn btn-outline-info">
+                <i class="bi bi-calendar-check me-1"></i>Xem Chấm Công Kỳ Này
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Financial summary cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-2">
+            <div class="card shadow-sm border-0 border-start border-primary border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-bold">Tổng quỹ lương (Nợ 642)</div>
+                    <div class="fs-5 fw-bold text-primary">@Model.TongQuyLuong.ToString("N0") đ</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card shadow-sm border-0 border-start border-warning border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-bold">BH DN gánh (23.5%)</div>
+                    <div class="fs-5 fw-bold text-warning">@Model.TongBaoHiemDnGanh.ToString("N0") đ</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card shadow-sm border-0 border-start border-info border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-bold">BH NLĐ gánh (10.5%)</div>
+                    <div class="fs-5 fw-bold text-info">@Model.TongBaoHiemNldGanh.ToString("N0") đ</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card shadow-sm border-0 border-start border-danger border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-bold">Thuế TNCN (TK 3335)</div>
+                    <div class="fs-5 fw-bold text-danger">@Model.TongThueTncn.ToString("N0") đ</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 border-start border-success border-4 bg-light">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-bold">Tổng thực lĩnh chuyển khoản / chi trả</div>
+                    <div class="fs-4 fw-bold text-success">@Model.TongThucLinh.ToString("N0") đ</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions & Posting Status Bar -->
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <div>
+                <span class="fw-bold me-2">Trạng thái ghi sổ TT99:</span>
+                @if (Model.TrangThai == TrangThaiBangLuong.DaGhiSo)
+                {
+                    <span class="badge bg-success fs-6"><i class="bi bi-check-all me-1"></i>Đã ghi sổ Sổ Cái TT99</span>
+                    @if (!string.IsNullOrEmpty(Model.SoButToanLuong))
+                    {
+                        <span class="ms-2 badge bg-light text-dark border">BT Chi phí: <strong>@Model.SoButToanLuong</strong></span>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.SoButToanBhDn))
+                    {
+                        <span class="ms-1 badge bg-light text-dark border">BT BH DN: <strong>@Model.SoButToanBhDn</strong></span>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.SoButToanKhauTru))
+                    {
+                        <span class="ms-1 badge bg-light text-dark border">BT Khấu trừ: <strong>@Model.SoButToanKhauTru</strong></span>
+                    }
+                }
+                else
+                {
+                    <span class="badge bg-warning text-dark fs-6"><i class="bi bi-clock-history me-1"></i>Chưa ghi sổ</span>
+                }
+            </div>
+            <div class="btn-group">
+                @if (Model.TrangThai != TrangThaiBangLuong.DaGhiSo)
+                {
+                    <form asp-action="TinhLuong" method="post" class="d-inline me-2">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="kyKeToan" value="@Model.KyKeToan" />
+                        <button type="submit" class="btn btn-outline-primary">
+                            <i class="bi bi-arrow-repeat me-1"></i>Tính Lại Bảng Lương
+                        </button>
+                    </form>
+                    <form asp-action="GhiSo" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="bangLuongId" value="@Model.BangLuongId" />
+                        <input type="hidden" name="kyKeToan" value="@Model.KyKeToan" />
+                        <button type="submit" class="btn btn-success px-4" onclick="return confirm('Xác nhận ghi sổ bảng lương vào Sổ Cái TT99? Hệ thống sẽ sinh 3 bút toán cân đối Nợ/Có tuyệt đối không dùng TK 911.');">
+                            <i class="bi bi-journal-arrow-down me-1"></i>Ghi Sổ Vào Sổ Cái TT99
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <a asp-controller="ButToan" asp-action="Index" class="btn btn-primary">
+                        <i class="bi bi-journal-text me-1"></i>Xem Sổ Nhật Ký Chung
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Payroll Detail Grid -->
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle mb-0 text-center" style="font-size: 0.88rem;">
+                <thead class="table-light">
+                    <tr>
+                        <th rowspan="2" class="align-middle">STT</th>
+                        <th rowspan="2" class="align-middle text-start">Mã NV</th>
+                        <th rowspan="2" class="align-middle text-start">Họ và Tên</th>
+                        <th rowspan="2" class="align-middle">Loại HĐ</th>
+                        <th colspan="4" class="bg-light">Thu Nhập Tính Lương (VNĐ)</th>
+                        <th rowspan="2" class="align-middle text-end">Tổng Thu Nhập</th>
+                        <th colspan="3" class="bg-light">Bảo Hiểm NLĐ Gánh 10.5% (VNĐ)</th>
+                        <th colspan="3" class="bg-light">Thuế TNCN Khấu Trừ (VNĐ)</th>
+                        <th rowspan="2" class="align-middle text-end bg-success text-white">Thực Lĩnh (VNĐ)</th>
+                        <th rowspan="2" class="align-middle">Phiếu</th>
+                    </tr>
+                    <tr>
+                        <th>Lương T.Gian</th>
+                        <th>Làm Thêm OT</th>
+                        <th>OT Miễn Thuế</th>
+                        <th>Phụ Cấp</th>
+                        <th>BHXH (8%)</th>
+                        <th>BHYT (1.5%)</th>
+                        <th>BHTN (1%)</th>
+                        <th>Giảm Trừ</th>
+                        <th>TNTT</th>
+                        <th>Thuế TNCN</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.ChiTiets.Any())
+                    {
+                        <tr>
+                            <td colspan="17" class="py-4 text-muted">Chưa có chi tiết lương. Nhấn "Tính Lại Bảng Lương" để tạo.</td>
+                        </tr>
+                    }
+                    @for (int i = 0; i < Model.ChiTiets.Count; i++)
+                    {
+                        var ct = Model.ChiTiets[i];
+                        <tr>
+                            <td>@(i + 1)</td>
+                            <td class="text-start fw-bold">@ct.MaNhanVien</td>
+                            <td class="text-start">
+                                <div>@ct.HoTen</div>
+                                <small class="text-muted">@ct.PhongBan</small>
+                            </td>
+                            <td>
+                                @if (ct.LoaiHopDong == LoaiHopDongLaoDong.HopDongDaiHan)
+                                {
+                                    <span class="badge bg-primary">Dài hạn</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">Thời vụ</span>
+                                }
+                            </td>
+                            <td class="text-end">@ct.LuongThoiGian.ToString("N0")</td>
+                            <td class="text-end">@ct.LuongLamThemGio.ToString("N0")</td>
+                            <td class="text-end text-success">@ct.LuongOtMienThue.ToString("N0")</td>
+                            <td class="text-end">@((ct.PhuCapChiuThue + ct.PhuCapMienThue).ToString("N0"))</td>
+                            <td class="text-end fw-bold">@ct.TongThuNhap.ToString("N0")</td>
+
+                            <td class="text-end text-muted">@ct.BhxhNld.ToString("N0")</td>
+                            <td class="text-end text-muted">@ct.BhytNld.ToString("N0")</td>
+                            <td class="text-end text-muted">@ct.BhtnNld.ToString("N0")</td>
+
+                            <td class="text-end text-muted">@((ct.GiamTruBanThan + ct.GiamTruNguoiPhuThuoc).ToString("N0"))</td>
+                            <td class="text-end">@ct.ThuNhapTinhThue.ToString("N0")</td>
+                            <td class="text-end text-danger fw-semibold">@ct.ThueTncnKhauTru.ToString("N0")</td>
+
+                            <td class="text-end fw-bold text-success bg-light">@ct.ThucLinh.ToString("N0")</td>
+                            <td>
+                                <a asp-action="PhieuLuong" asp-route-bangLuongId="@Model.BangLuongId" asp-route-nhanVienId="@ct.NhanVienId" 
+                                   target="_blank" class="btn btn-sm btn-outline-info" title="Xem & In Phiếu lương">
+                                    <i class="bi bi-printer"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot class="table-light fw-bold">
+                    <tr>
+                        <td colspan="4" class="text-center">TỔNG CỘNG:</td>
+                        <td class="text-end">@Model.ChiTiets.Sum(c => c.LuongThoiGian).ToString("N0")</td>
+                        <td class="text-end">@Model.ChiTiets.Sum(c => c.LuongLamThemGio).ToString("N0")</td>
+                        <td class="text-end text-success">@Model.ChiTiets.Sum(c => c.LuongOtMienThue).ToString("N0")</td>
+                        <td class="text-end">@Model.ChiTiets.Sum(c => c.PhuCapChiuThue + c.PhuCapMienThue).ToString("N0")</td>
+                        <td class="text-end text-primary">@Model.TongQuyLuong.ToString("N0")</td>
+                        <td class="text-end">@Model.ChiTiets.Sum(c => c.BhxhNld).ToString("N0")</td>
+                        <td class="text-end">@Model.ChiTiets.Sum(c => c.BhytNld).ToString("N0")</td>
+                        <td class="text-end">@Model.ChiTiets.Sum(c => c.BhtnNld).ToString("N0")</td>
+                        <td class="text-end">-</td>
+                        <td class="text-end">@Model.ChiTiets.Sum(c => c.ThuNhapTinhThue).ToString("N0")</td>
+                        <td class="text-end text-danger">@Model.TongThueTncn.ToString("N0")</td>
+                        <td class="text-end text-success fs-6">@Model.TongThucLinh.ToString("N0")</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
