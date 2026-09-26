@@ -254,4 +254,29 @@ public class MultiDatabaseTests : IDisposable
         Assert.False(thanhCong);
         Assert.Contains("911", thongBao);
     }
+
+    [Fact]
+    public async Task Check_MariaDb_Connection()
+    {
+        var connStr = "Server=localhost;Port=3306;User ID=dev;Password=123456;";
+        await using var connection = new MySqlConnector.MySqlConnection(connStr);
+        await connection.OpenAsync();
+        await using var cmd = connection.CreateCommand();
+        cmd.CommandText = "SELECT VERSION();";
+        var version = await cmd.ExecuteScalarAsync();
+
+        cmd.CommandText = "CREATE DATABASE IF NOT EXISTS ninjataxdb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;";
+        await cmd.ExecuteNonQueryAsync();
+
+        cmd.CommandText = "SHOW DATABASES;";
+        await using var reader = await cmd.ExecuteReaderAsync();
+        var dbs = new List<string>();
+        while (await reader.ReadAsync())
+        {
+            dbs.Add(reader.GetString(0));
+        }
+
+        Assert.NotNull(version);
+        Assert.Contains("ninjataxdb", dbs);
+    }
 }
