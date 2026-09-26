@@ -1,4 +1,4 @@
-@model ninjaTax.Models.ViewModels.VatTuHangHoaIndexViewModel
+@model List<ninjaTax.Models.Entities.VatTuHangHoa>
 @{
     ViewData["Title"] = "Danh mục Vật tư & Hàng hóa";
 }
@@ -38,7 +38,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @if (!Model.DanhSachVatTu.Any())
+                    @if (!Model.Any())
                     {
                         <tr>
                             <td colspan="8" class="text-center py-4 text-muted">
@@ -48,7 +48,7 @@
                     }
                     else
                     {
-                        @foreach (var item in Model.DanhSachVatTu)
+                        @foreach (var item in Model)
                         {
                             <tr>
                                 <td class="ps-3 font-monospace fw-bold">@item.MaVatTu</td>
