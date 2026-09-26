@@ -21,6 +21,16 @@ public static class DbInitializer
             await context.Database.EnsureCreatedAsync();
         }
 
+        await SeedDataAsync(context);
+    }
+
+    public static void Initialize(AppDbContext context)
+    {
+        SeedDataAsync(context).GetAwaiter().GetResult();
+    }
+
+    public static async Task SeedDataAsync(AppDbContext context)
+    {
         if (await context.TaiKhoans.AnyAsync())
         {
             return; // Đã có dữ liệu, không nạp lại
@@ -35,10 +45,12 @@ public static class DbInitializer
             new() { MaTaiKhoan = "112", TenTaiKhoan = "Tiền gửi ngân hàng", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuNo, LaTaiKhoanSoCai = true },
             new() { MaTaiKhoan = "1121", TenTaiKhoan = "Tiền Việt Nam gửi ngân hàng", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuNo, LaTaiKhoanSoCai = false },
             new() { MaTaiKhoan = "131", TenTaiKhoan = "Phải thu của khách hàng", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.LuongTinh, LaTaiKhoanSoCai = false },
-            new() { MaTaiKhoan = "133", TenTaiKhoan = "Thuế GTGT được khấu trừ", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuNo, LaTaiKhoanSoCai = false },
+            new() { MaTaiKhoan = "133", TenTaiKhoan = "Thuế GTGT được khấu trừ", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuNo, LaTaiKhoanSoCai = true },
+            new() { MaTaiKhoan = "1331", TenTaiKhoan = "Thuế GTGT được khấu trừ của hàng hóa, dịch vụ", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuNo, LaTaiKhoanSoCai = false },
             new() { MaTaiKhoan = "141", TenTaiKhoan = "Tạm ứng", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuNo, LaTaiKhoanSoCai = false },
             new() { MaTaiKhoan = "152", TenTaiKhoan = "Nguyên liệu, vật liệu", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuNo, LaTaiKhoanSoCai = false },
-            new() { MaTaiKhoan = "156", TenTaiKhoan = "Hàng hóa", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuNo, LaTaiKhoanSoCai = false },
+            new() { MaTaiKhoan = "156", TenTaiKhoan = "Hàng hóa", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuNo, LaTaiKhoanSoCai = true },
+            new() { MaTaiKhoan = "1561", TenTaiKhoan = "Giá mua hàng hóa", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuNo, LaTaiKhoanSoCai = false },
 
             // Nhóm 2: Tài sản dài hạn
             new() { MaTaiKhoan = "211", TenTaiKhoan = "Tài sản cố định hữu hình", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuNo, LaTaiKhoanSoCai = false },
@@ -48,7 +60,8 @@ public static class DbInitializer
             // Nhóm 3: Nợ phải trả
             new() { MaTaiKhoan = "331", TenTaiKhoan = "Phải trả cho người bán", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.NoPhaiTra, TinhChat = TinhChatTaiKhoan.LuongTinh, LaTaiKhoanSoCai = false },
             new() { MaTaiKhoan = "333", TenTaiKhoan = "Thuế và các khoản phải nộp Nhà nước", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.NoPhaiTra, TinhChat = TinhChatTaiKhoan.LuongTinh, LaTaiKhoanSoCai = true },
-            new() { MaTaiKhoan = "3331", TenTaiKhoan = "Thuế giá trị gia tăng phải nộp", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.NoPhaiTra, TinhChat = TinhChatTaiKhoan.DuCo, LaTaiKhoanSoCai = false },
+            new() { MaTaiKhoan = "3331", TenTaiKhoan = "Thuế giá trị gia tăng phải nộp", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.NoPhaiTra, TinhChat = TinhChatTaiKhoan.DuCo, LaTaiKhoanSoCai = true },
+            new() { MaTaiKhoan = "33311", TenTaiKhoan = "Thuế giá trị gia tăng đầu ra", BacTaiKhoan = 3, LoaiTaiKhoan = LoaiTaiKhoan.NoPhaiTra, TinhChat = TinhChatTaiKhoan.DuCo, LaTaiKhoanSoCai = false },
             new() { MaTaiKhoan = "334", TenTaiKhoan = "Phải trả người lao động", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.NoPhaiTra, TinhChat = TinhChatTaiKhoan.DuCo, LaTaiKhoanSoCai = false },
 
             // Nhóm 4: Vốn chủ sở hữu (Đặc thù TT99: 421 nhận kết chuyển doanh thu, chi phí trực tiếp)
@@ -58,7 +71,10 @@ public static class DbInitializer
             new() { MaTaiKhoan = "4212", TenTaiKhoan = "Lợi nhuận sau thuế chưa phân phối năm nay", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.VonChuSoHuu, TinhChat = TinhChatTaiKhoan.LuongTinh, LaTaiKhoanSoCai = false },
 
             // Nhóm 5: Doanh thu
-            new() { MaTaiKhoan = "511", TenTaiKhoan = "Doanh thu bán hàng và cung cấp dịch vụ", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.DoanhThu, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = false },
+            new() { MaTaiKhoan = "511", TenTaiKhoan = "Doanh thu bán hàng và cung cấp dịch vụ", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.DoanhThu, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = true },
+            new() { MaTaiKhoan = "5111", TenTaiKhoan = "Doanh thu bán hàng hóa", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.DoanhThu, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = false },
+            new() { MaTaiKhoan = "5112", TenTaiKhoan = "Doanh thu bán các thành phẩm", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.DoanhThu, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = false },
+            new() { MaTaiKhoan = "5113", TenTaiKhoan = "Doanh thu cung cấp dịch vụ", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.DoanhThu, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = false },
             new() { MaTaiKhoan = "515", TenTaiKhoan = "Doanh thu hoạt động tài chính", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.DoanhThu, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = false },
 
             // Nhóm 6: Chi phí sản xuất, kinh doanh
@@ -102,5 +118,66 @@ public static class DbInitializer
 
         await context.DoiTuongs.AddRangeAsync(doiTuongs);
         await context.SaveChangesAsync();
+
+        // Nạp danh mục Vật tư hàng hóa mẫu nếu chưa có
+        if (!await context.VatTuHangHoas.AnyAsync())
+        {
+            var tk156 = await context.TaiKhoans.FirstOrDefaultAsync(t => t.MaTaiKhoan == "156");
+            var tk152 = await context.TaiKhoans.FirstOrDefaultAsync(t => t.MaTaiKhoan == "152");
+            var tk511 = await context.TaiKhoans.FirstOrDefaultAsync(t => t.MaTaiKhoan == "511");
+            var tk632 = await context.TaiKhoans.FirstOrDefaultAsync(t => t.MaTaiKhoan == "632");
+
+            var items = new List<VatTuHangHoa>
+            {
+                new()
+                {
+                    MaVatTu = "HH001",
+                    TenVatTu = "Máy chủ Dell PowerEdge R750xs",
+                    DonViTinh = "Bộ",
+                    LoaiVatTu = LoaiVatTuHangHoa.HangHoa,
+                    TaiKhoanKhoId = tk156?.Id,
+                    TaiKhoanDoanhThuId = tk511?.Id,
+                    TaiKhoanGiaVonId = tk632?.Id,
+                    ThueSuatVatMacDinh = 10m,
+                    DonGiaMuaGanNhat = 65000000m,
+                    DonGiaBanTieuChuan = 78000000m,
+                    DangTheoDoiTonKho = true,
+                    DangHoatDong = true
+                },
+                new()
+                {
+                    MaVatTu = "HH002",
+                    TenVatTu = "Thiết bị định tuyến Router Cisco Catalyst C9200",
+                    DonViTinh = "Chiếc",
+                    LoaiVatTu = LoaiVatTuHangHoa.HangHoa,
+                    TaiKhoanKhoId = tk156?.Id,
+                    TaiKhoanDoanhThuId = tk511?.Id,
+                    TaiKhoanGiaVonId = tk632?.Id,
+                    ThueSuatVatMacDinh = 10m,
+                    DonGiaMuaGanNhat = 21000000m,
+                    DonGiaBanTieuChuan = 26500000m,
+                    DangTheoDoiTonKho = true,
+                    DangHoatDong = true
+                },
+                new()
+                {
+                    MaVatTu = "DV001",
+                    TenVatTu = "Dịch vụ triển khai bảo trì hạ tầng mạng (Gói 12 tháng)",
+                    DonViTinh = "Gói",
+                    LoaiVatTu = LoaiVatTuHangHoa.DichVu,
+                    TaiKhoanKhoId = null,
+                    TaiKhoanDoanhThuId = tk511?.Id,
+                    TaiKhoanGiaVonId = tk632?.Id,
+                    ThueSuatVatMacDinh = 8m,
+                    DonGiaMuaGanNhat = 0m,
+                    DonGiaBanTieuChuan = 15000000m,
+                    DangTheoDoiTonKho = false,
+                    DangHoatDong = true
+                }
+            };
+
+            await context.VatTuHangHoas.AddRangeAsync(items);
+            await context.SaveChangesAsync();
+        }
     }
 }

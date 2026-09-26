@@ -1,0 +1,102 @@
+@model List<ninjaTax.Models.Entities.VatTuHangHoa>
+@{
+    ViewData["Title"] = "Danh mục Vật tư & Hàng hóa";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0 text-primary"><i class="bi bi-box-seam me-2"></i>Danh mục Vật tư & Hàng hóa</h3>
+            <small class="text-muted">Quản lý mã hàng, đơn giá, định danh tài khoản ngầm định theo Thông tư 99/2025/TT-BTC</small>
+        </div>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>Thêm Mặt Hàng Mới
+        </a>
+    </div>
+
+    @if (TempData["ThongBaoThanhCong"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["ThongBaoThanhCong"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Mã hàng</th>
+                        <th>Tên hàng hóa / dịch vụ</th>
+                        <th>Loại</th>
+                        <th>ĐVT</th>
+                        <th class="text-end">Thuế VAT</th>
+                        <th class="text-end">Giá mua ngầm định</th>
+                        <th class="text-end">Giá bán ngầm định</th>
+                        <th class="text-center">Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-4 text-muted">
+                                <i class="bi bi-inbox fs-3 d-block mb-2"></i>Chưa có vật tư hàng hóa nào. Nhấn "Thêm Mặt Hàng Mới" để tạo.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-3 font-monospace fw-bold">@item.MaVatTu</td>
+                                <td>
+                                    <div class="fw-semibold">@item.TenVatTu</div>
+                                </td>
+                                <td>
+                                    @switch (item.LoaiVatTu)
+                                    {
+                                        case ninjaTax.Models.Entities.LoaiVatTuHangHoa.HangHoa:
+                                            <span class="badge bg-primary">Hàng hóa (156)</span>
+                                            break;
+                                        case ninjaTax.Models.Entities.LoaiVatTuHangHoa.VatTu:
+                                            <span class="badge bg-secondary">Nguyên vật liệu (152)</span>
+                                            break;
+                                        case ninjaTax.Models.Entities.LoaiVatTuHangHoa.DichVu:
+                                            <span class="badge bg-info text-dark">Dịch vụ (642)</span>
+                                            break;
+                                        case ninjaTax.Models.Entities.LoaiVatTuHangHoa.CongCuDungCu:
+                                            <span class="badge bg-warning text-dark">CCDC (153)</span>
+                                            break;
+                                        case ninjaTax.Models.Entities.LoaiVatTuHangHoa.ThanhPham:
+                                            <span class="badge bg-success">Thành phẩm (155)</span>
+                                            break;
+                                        default:
+                                            <span class="badge bg-light text-dark">Khác</span>
+                                            break;
+                                    }
+                                </td>
+                                <td>@item.DonViTinh</td>
+                                <td class="text-end">@(item.ThueSuatVatMacDinh)%</td>
+                                <td class="text-end font-monospace">@item.DonGiaMuaGanNhat.ToString("N0") đ</td>
+                                <td class="text-end font-monospace text-success fw-bold">@item.DonGiaBanTieuChuan.ToString("N0") đ</td>
+                                <td class="text-center">
+                                    @if (item.DangHoatDong)
+                                    {
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle">Đang dùng</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Ngừng</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

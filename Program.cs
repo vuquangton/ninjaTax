@@ -16,6 +16,9 @@ var activeProvider = builder.Services.AddMultiDatabaseContext(builder.Configurat
 
 // Đăng ký dịch vụ Nghiệp vụ Bút toán kế toán (Core General Ledger)
 builder.Services.AddScoped<IButToanService, ButToanService>();
+builder.Services.AddScoped<IHachToanMuaHangService, HachToanMuaHangService>();
+builder.Services.AddScoped<IHachToanBanHangService, HachToanBanHangService>();
+builder.Services.AddScoped<ICongNoService, CongNoService>();
 
 var app = builder.Build();
 

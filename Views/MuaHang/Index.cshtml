@@ -1,0 +1,159 @@
+@model ninjaTax.Models.ViewModels.HoaDonMuaIndexViewModel
+@{
+    ViewData["Title"] = "Phân Hệ Mua Hàng & Quản Lý Hóa Đơn Đầu Vào";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0 text-primary"><i class="bi bi-cart-check me-2"></i>Quản Lý Hóa Đơn Mua Hàng & HĐĐT Đầu Vào</h3>
+            <small class="text-muted">Tiếp nhận HĐĐT Nghị định 123/2020/NĐ-CP, kiểm tra tính hợp lệ và tự động sinh bút toán TT99</small>
+        </div>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>Lập Hóa Đơn Mua Hàng Mới
+        </a>
+    </div>
+
+    <!-- Summary cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-sm border-0 border-start border-primary border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-bold">Tổng giá trị mua</div>
+                    <div class="fs-4 fw-bold text-primary">@Model.TongGiaTriMua.ToString("N0") đ</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-sm border-0 border-start border-danger border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-bold">Tổng nợ phải trả NCC (331)</div>
+                    <div class="fs-4 fw-bold text-danger">@Model.TongConPhaiTra.ToString("N0") đ</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-sm border-0 border-start border-success border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-bold">Số lượng chứng từ</div>
+                    <div class="fs-4 fw-bold text-success">@Model.DanhSachHoaDon.Count</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-sm border-0 border-start border-info border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-bold">Đã ghi sổ kế toán</div>
+                    <div class="fs-4 fw-bold text-info">@Model.DanhSachHoaDon.Count(h => h.DaGhiSo) / @Model.DanhSachHoaDon.Count</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["ThongBaoThanhCong"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["ThongBaoThanhCong"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ThongBaoLoi"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ThongBaoLoi"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Số CT</th>
+                        <th>Ngày HT</th>
+                        <th>Số HĐĐT</th>
+                        <th>Nhà cung cấp</th>
+                        <th>Diễn giải</th>
+                        <th class="text-end">Tiền hàng</th>
+                        <th class="text-end">Tiền VAT</th>
+                        <th class="text-end">Tổng TT</th>
+                        <th class="text-end">Còn phải trả</th>
+                        <th class="text-center">Sổ Cái</th>
+                        <th class="text-end pe-3">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.DanhSachHoaDon.Any())
+                    {
+                        <tr>
+                            <td colspan="11" class="text-center py-4 text-muted">
+                                <i class="bi bi-receipt fs-3 d-block mb-2"></i>Chưa có hóa đơn mua hàng nào. Nhấn "Lập Hóa Đơn Mua Hàng Mới" để tạo.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var h in Model.DanhSachHoaDon)
+                        {
+                            <tr>
+                                <td class="ps-3 font-monospace fw-bold">
+                                    <a asp-action="Details" asp-route-id="@h.Id" class="text-decoration-none">@h.SoChungTu</a>
+                                </td>
+                                <td>@h.NgayHachToan.ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    <span class="font-monospace">@h.KHMauSoHoaDon@h.KyHieuHoaDon</span>
+                                    <div class="fw-bold font-monospace text-primary">@h.SoHoaDon</div>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold">@h.NhaCungCap?.TenDoiTuong</div>
+                                    <small class="text-muted">MST: @h.NhaCungCap?.MaSoThue</small>
+                                </td>
+                                <td><span class="text-truncate d-inline-block" style="max-width: 200px;">@h.DienGiai</span></td>
+                                <td class="text-end font-monospace">@h.TongTienHang.ToString("N0") đ</td>
+                                <td class="text-end font-monospace">@h.TongTienThue.ToString("N0") đ</td>
+                                <td class="text-end font-monospace fw-bold">@h.TongThanhToan.ToString("N0") đ</td>
+                                <td class="text-end font-monospace @(h.ConPhaiTra > 0 ? "text-danger fw-bold" : "text-muted")">
+                                    @h.ConPhaiTra.ToString("N0") đ
+                                </td>
+                                <td class="text-center">
+                                    @if (h.DaGhiSo)
+                                    {
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-check me-1"></i>Đã ghi sổ</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning-subtle text-dark border border-warning-subtle">Chưa ghi sổ</span>
+                                    }
+                                </td>
+                                <td class="text-end pe-3">
+                                    <div class="btn-group btn-group-sm">
+                                        <a asp-action="Details" asp-route-id="@h.Id" class="btn btn-outline-secondary" title="Xem chi tiết">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        @if (!h.DaGhiSo)
+                                        {
+                                            <form asp-action="GhiSo" asp-route-id="@h.Id" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-outline-success" title="Ghi sổ tự động TT99">
+                                                    <i class="bi bi-journal-check"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <form asp-action="BoGhiSo" asp-route-id="@h.Id" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-outline-warning" title="Bỏ ghi sổ">
+                                                    <i class="bi bi-journal-x"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

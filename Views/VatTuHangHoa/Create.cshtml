@@ -1,0 +1,118 @@
+@model ninjaTax.Models.ViewModels.VatTuHangHoaCreateViewModel
+@{
+    ViewData["Title"] = "Thêm Mặt Hàng Mới";
+}
+
+<div class="container py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0 text-primary"><i class="bi bi-box-seam me-2"></i>Thêm Vật Tư / Hàng Hóa Mới</h3>
+            <small class="text-muted">Định danh thông tin danh mục và tài khoản ngầm định theo TT99</small>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Quay lại danh sách
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label asp-for="MaVatTu" class="form-label fw-semibold"></label>
+                        <input asp-for="MaVatTu" class="form-control" placeholder="VD: HH001, NVL001" autofocus />
+                        <span asp-validation-for="MaVatTu" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-8">
+                        <label asp-for="TenVatTu" class="form-label fw-semibold"></label>
+                        <input asp-for="TenVatTu" class="form-control" placeholder="VD: Máy chủ Dell PowerEdge R750" />
+                        <span asp-validation-for="TenVatTu" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="LoaiVatTu" class="form-label fw-semibold"></label>
+                        <select asp-for="LoaiVatTu" class="form-select" asp-items="Html.GetEnumSelectList<ninjaTax.Models.Entities.LoaiVatTuHangHoa>()"></select>
+                        <span asp-validation-for="LoaiVatTu" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="DonViTinh" class="form-label fw-semibold"></label>
+                        <input asp-for="DonViTinh" class="form-control" placeholder="Cái, Chiếc, Kg, Tháng..." />
+                        <span asp-validation-for="DonViTinh" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="ThueSuatVatMacDinh" class="form-label fw-semibold"></label>
+                        <div class="input-group">
+                            <input asp-for="ThueSuatVatMacDinh" class="form-control text-end" type="number" step="1" />
+                            <span class="input-group-text">%</span>
+                        </div>
+                        <span asp-validation-for="ThueSuatVatMacDinh" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="DonGiaMuaGanNhat" class="form-label fw-semibold"></label>
+                        <div class="input-group">
+                            <input asp-for="DonGiaMuaGanNhat" class="form-control text-end" type="number" step="1000" />
+                            <span class="input-group-text">VNĐ</span>
+                        </div>
+                        <span asp-validation-for="DonGiaMuaGanNhat" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="DonGiaBanTieuChuan" class="form-label fw-semibold"></label>
+                        <div class="input-group">
+                            <input asp-for="DonGiaBanTieuChuan" class="form-control text-end" type="number" step="1000" />
+                            <span class="input-group-text">VNĐ</span>
+                        </div>
+                        <span asp-validation-for="DonGiaBanTieuChuan" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12 mt-4">
+                        <h5 class="text-secondary border-bottom pb-2"><i class="bi bi-diagram-3 me-2"></i>Tài khoản ngầm định theo TT99</h5>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="TaiKhoanKhoId" class="form-label fw-semibold"></label>
+                        <select asp-for="TaiKhoanKhoId" class="form-select" asp-items="Model.DanhSachTaiKhoanKho">
+                            <option value="">-- Chọn TK Kho (152, 156...) --</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="TaiKhoanDoanhThuId" class="form-label fw-semibold"></label>
+                        <select asp-for="TaiKhoanDoanhThuId" class="form-select" asp-items="Model.DanhSachTaiKhoanDoanhThu">
+                            <option value="">-- Chọn TK Doanh thu (511...) --</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="TaiKhoanGiaVonId" class="form-label fw-semibold"></label>
+                        <select asp-for="TaiKhoanGiaVonId" class="form-select" asp-items="Model.DanhSachTaiKhoanGiaVon">
+                            <option value="">-- Chọn TK Giá vốn (632...) --</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 mt-3">
+                        <div class="form-check form-switch">
+                            <input asp-for="DangTheoDoiTonKho" class="form-check-input" type="checkbox" role="switch" id="theodoiSwitch">
+                            <label class="form-check-label fw-semibold" for="theodoiSwitch">Bắt buộc theo dõi số lượng tồn kho</label>
+                        </div>
+                    </div>
+
+                    <div class="col-12 mt-4 text-end">
+                        <a asp-action="Index" class="btn btn-outline-secondary me-2">Hủy bỏ</a>
+                        <button type="submit" class="btn btn-primary px-4"><i class="bi bi-save me-1"></i>Lưu Danh Mục</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

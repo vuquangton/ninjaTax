@@ -1,0 +1,159 @@
+@model ninjaTax.Models.ViewModels.HoaDonBanCreateViewModel
+@{
+    ViewData["Title"] = "Lập Hóa Đơn Bán Hàng (HĐĐT NĐ 123)";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0 text-primary"><i class="bi bi-cart-plus me-2"></i>Lập Hóa Đơn Bán Hàng & HĐĐT Đầu Ra</h3>
+            <small class="text-muted">Tạo hóa đơn điện tử theo NĐ 123/2020/NĐ-CP và hạch toán doanh thu, giá vốn theo TT99</small>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Quay lại danh sách
+        </a>
+    </div>
+
+    <form asp-action="Create" method="post" id="banHangForm">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+        <!-- Master Information -->
+        <div class="card shadow-sm border-0 mb-3">
+            <div class="card-header bg-light fw-bold text-dark">
+                <i class="bi bi-info-circle me-1"></i>Thông tin chứng từ & Khách hàng
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label asp-for="SoChungTu" class="form-label fw-semibold"></label>
+                        <input asp-for="SoChungTu" class="form-control" placeholder="Tự sinh nếu để trống (VD: BH2026-0001)" />
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="NgayHachToan" class="form-label fw-semibold"></label>
+                        <input asp-for="NgayHachToan" class="form-control" type="date" />
+                        <span asp-validation-for="NgayHachToan" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="NgayChungTu" class="form-label fw-semibold"></label>
+                        <input asp-for="NgayChungTu" class="form-control" type="date" />
+                        <span asp-validation-for="NgayChungTu" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="HanThanhToan" class="form-label fw-semibold"></label>
+                        <input asp-for="HanThanhToan" class="form-control" type="date" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="KhachHangId" class="form-label fw-semibold"></label>
+                        <select asp-for="KhachHangId" class="form-select" asp-items="Model.DanhSachKhachHang">
+                            <option value="">-- Chọn Khách hàng --</option>
+                        </select>
+                        <span asp-validation-for="KhachHangId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label asp-for="KHMauSo" class="form-label fw-semibold"></label>
+                        <input asp-for="KHMauSo" class="form-control font-monospace" placeholder="1C26TBB" />
+                    </div>
+                    <div class="col-md-2">
+                        <label asp-for="KyHieu" class="form-label fw-semibold"></label>
+                        <input asp-for="KyHieu" class="form-control font-monospace" placeholder="C26T" />
+                    </div>
+                    <div class="col-md-2">
+                        <label asp-for="NgayHoaDon" class="form-label fw-semibold"></label>
+                        <input asp-for="NgayHoaDon" class="form-control" type="date" />
+                    </div>
+
+                    <div class="col-md-9">
+                        <label asp-for="DienGiai" class="form-label fw-semibold"></label>
+                        <input asp-for="DienGiai" class="form-control" placeholder="VD: Bán máy chủ mạng và bảo trì cho khách hàng" />
+                        <span asp-validation-for="DienGiai" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-center mt-4">
+                        <div class="form-check form-switch">
+                            <input asp-for="BanHangKiemXuatKho" class="form-check-input" type="checkbox" role="switch" id="kiemXuatKhoSwitch">
+                            <label class="form-check-label fw-semibold" for="kiemXuatKhoSwitch">Kiêm xuất kho (sinh giá vốn 632)</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detail lines -->
+        <div class="card shadow-sm border-0 mb-3">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <span class="fw-bold text-dark"><i class="bi bi-list-task me-1"></i>Chi tiết hàng hóa bán & Giá vốn xuất kho</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle mb-0" id="bangChiTietBan">
+                    <thead class="table-secondary small text-center">
+                        <tr>
+                            <th style="width: 40px;">#</th>
+                            <th style="min-width: 220px;">Mặt hàng</th>
+                            <th style="width: 90px;">Số lượng</th>
+                            <th style="width: 130px;">Đơn giá bán</th>
+                            <th style="width: 70px;">CK (%)</th>
+                            <th style="width: 70px;">VAT (%)</th>
+                            <th style="width: 130px;">Đơn giá vốn</th>
+                            <th style="width: 120px;">TK Nợ (131)</th>
+                            <th style="width: 120px;">TK Doanh thu</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.ChiTiets.Count; i++)
+                        {
+                            <tr>
+                                <td class="text-center fw-bold">@(i + 1)</td>
+                                <td>
+                                    <select asp-for="ChiTiets[i].VatTuHangHoaId" class="form-select form-select-sm" asp-items="Model.DanhSachVatTu">
+                                        <option value="">-- Chọn mặt hàng --</option>
+                                    </select>
+                                    <span asp-validation-for="ChiTiets[i].VatTuHangHoaId" class="text-danger small"></span>
+                                </td>
+                                <td>
+                                    <input asp-for="ChiTiets[i].SoLuong" class="form-control form-control-sm text-end" type="number" step="1" />
+                                </td>
+                                <td>
+                                    <input asp-for="ChiTiets[i].DonGia" class="form-control form-control-sm text-end" type="number" step="1000" />
+                                </td>
+                                <td>
+                                    <input asp-for="ChiTiets[i].TiLeChietKhau" class="form-control form-control-sm text-end" type="number" step="1" />
+                                </td>
+                                <td>
+                                    <input asp-for="ChiTiets[i].ThueSuatVat" class="form-control form-control-sm text-end" type="number" step="1" />
+                                </td>
+                                <td>
+                                    <input asp-for="ChiTiets[i].DonGiaVon" class="form-control form-control-sm text-end" type="number" step="1000" placeholder="0 nếu Dịch vụ" />
+                                </td>
+                                <td>
+                                    <select asp-for="ChiTiets[i].TaiKhoanNoId" class="form-select form-select-sm" asp-items="Model.DanhSachTaiKhoanNo">
+                                        <option value="">-- TK Nợ --</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <select asp-for="ChiTiets[i].TaiKhoanDoanhThuId" class="form-select form-select-sm" asp-items="Model.DanhSachTaiKhoanDoanhThu">
+                                        <option value="">-- TK DT --</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer bg-light text-end">
+                <small class="text-muted fst-italic">Hệ thống sẽ tự động hạch toán Thuế GTGT đầu ra Có TK 33311 và tự động sinh bút toán Giá vốn Nợ 632 / Có 1561 khi ghi sổ.</small>
+            </div>
+        </div>
+
+        <div class="text-end mb-4">
+            <a asp-action="Index" class="btn btn-outline-secondary me-2">Hủy bỏ</a>
+            <button type="submit" class="btn btn-primary px-4">
+                <i class="bi bi-save me-1"></i>Lưu Hóa Đơn Bán
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,177 @@
+@model ninjaTax.Models.ViewModels.HoaDonBanIndexViewModel
+@{
+    ViewData["Title"] = "Phân Hệ Bán Hàng & Hóa Đơn Điện Tử (NĐ 123)";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0 text-primary"><i class="bi bi-receipt-cutoff me-2"></i>Quản Lý Hóa Đơn Bán Hàng & HĐĐT Đầu Ra</h3>
+            <small class="text-muted">Phát hành HĐĐT theo NĐ 123/2020/NĐ-CP, cấp mã CQT và tự động hạch toán kép (Doanh thu & Giá vốn) TT99</small>
+        </div>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>Lập Hóa Đơn Bán Hàng Mới
+        </a>
+    </div>
+
+    <!-- Summary cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-sm border-0 border-start border-success border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-bold">Tổng doanh thu bán</div>
+                    <div class="fs-4 fw-bold text-success">@Model.TongDoanhThuBan.ToString("N0") đ</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-sm border-0 border-start border-warning border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-bold">Tổng nợ phải thu (131)</div>
+                    <div class="fs-4 fw-bold text-warning">@Model.TongConPhaiThu.ToString("N0") đ</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-sm border-0 border-start border-primary border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-bold">Tổng số hóa đơn</div>
+                    <div class="fs-4 fw-bold text-primary">@Model.DanhSachHoaDon.Count</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-sm border-0 border-start border-info border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-bold">Đã cấp mã CQT</div>
+                    <div class="fs-4 fw-bold text-info">
+                        @Model.DanhSachHoaDon.Count(h => h.TrangThai == ninjaTax.Models.Entities.TrangThaiHddt.CoQuanThueCapMa) / @Model.DanhSachHoaDon.Count
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["ThongBaoThanhCong"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["ThongBaoThanhCong"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ThongBaoLoi"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ThongBaoLoi"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Số CT</th>
+                        <th>Ngày HT</th>
+                        <th>Số HĐĐT</th>
+                        <th>Khách hàng</th>
+                        <th>Trạng thái HĐ</th>
+                        <th class="text-end">Tiền hàng</th>
+                        <th class="text-end">Tiền VAT</th>
+                        <th class="text-end">Tổng thanh toán</th>
+                        <th class="text-end">Còn phải thu</th>
+                        <th class="text-center">Sổ Cái</th>
+                        <th class="text-end pe-3">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.DanhSachHoaDon.Any())
+                    {
+                        <tr>
+                            <td colspan="11" class="text-center py-4 text-muted">
+                                <i class="bi bi-receipt-cutoff fs-3 d-block mb-2"></i>Chưa có hóa đơn bán hàng nào. Nhấn "Lập Hóa Đơn Bán Hàng Mới" để tạo.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var h in Model.DanhSachHoaDon)
+                        {
+                            <tr>
+                                <td class="ps-3 font-monospace fw-bold">
+                                    <a asp-action="Details" asp-route-id="@h.Id" class="text-decoration-none">@h.SoChungTu</a>
+                                </td>
+                                <td>@h.NgayHachToan.ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    <span class="font-monospace text-muted small">@h.KHMauSo@h.KyHieu</span>
+                                    <div class="fw-bold font-monospace text-primary">@(h.SoHoaDon ?? "Chưa cấp số")</div>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold">@h.KhachHang?.TenDoiTuong</div>
+                                    <small class="text-muted">MST: @(h.KhachHang?.MaSoThue ?? "Không có")</small>
+                                </td>
+                                <td>
+                                    @switch (h.TrangThai)
+                                    {
+                                        case ninjaTax.Models.Entities.TrangThaiHddt.MoiTao:
+                                            <span class="badge bg-secondary">Mới tạo</span>
+                                            break;
+                                        case ninjaTax.Models.Entities.TrangThaiHddt.CoQuanThueCapMa:
+                                            <span class="badge bg-success"><i class="bi bi-check-all me-1"></i>Đã cấp mã CQT</span>
+                                            break;
+                                        case ninjaTax.Models.Entities.TrangThaiHddt.DaHuy:
+                                            <span class="badge bg-danger">Đã hủy</span>
+                                            break;
+                                        default:
+                                            <span class="badge bg-info">@h.TrangThai</span>
+                                            break;
+                                    }
+                                </td>
+                                <td class="text-end font-monospace">@h.TongTienHang.ToString("N0") đ</td>
+                                <td class="text-end font-monospace">@h.TongTienThue.ToString("N0") đ</td>
+                                <td class="text-end font-monospace fw-bold text-success">@h.TongThanhToan.ToString("N0") đ</td>
+                                <td class="text-end font-monospace @(h.ConPhaiThu > 0 ? "text-danger fw-bold" : "text-muted")">
+                                    @h.ConPhaiThu.ToString("N0") đ
+                                </td>
+                                <td class="text-center">
+                                    @if (h.DaGhiSo)
+                                    {
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-check me-1"></i>Đã ghi sổ</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning-subtle text-dark border border-warning-subtle">Chưa ghi sổ</span>
+                                    }
+                                </td>
+                                <td class="text-end pe-3">
+                                    <div class="btn-group btn-group-sm">
+                                        <a asp-action="Details" asp-route-id="@h.Id" class="btn btn-outline-secondary" title="Xem chi tiết">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        @if (h.TrangThai == ninjaTax.Models.Entities.TrangThaiHddt.MoiTao)
+                                        {
+                                            <form asp-action="PhatHanhHddt" asp-route-id="@h.Id" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-outline-primary" title="Phát hành HĐĐT (Cấp mã CQT)">
+                                                    <i class="bi bi-send-check"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                        @if (!h.DaGhiSo && h.TrangThai != ninjaTax.Models.Entities.TrangThaiHddt.DaHuy)
+                                        {
+                                            <form asp-action="GhiSo" asp-route-id="@h.Id" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-outline-success" title="Ghi sổ kép Doanh thu & Giá vốn">
+                                                    <i class="bi bi-journal-check"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

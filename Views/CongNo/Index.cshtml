@@ -1,0 +1,147 @@
+@model ninjaTax.Models.ViewModels.CongNoIndexViewModel
+@{
+    ViewData["Title"] = "Quản Trị Công Nợ & Báo Cáo Tuổi Nợ (AR/AP Aging)";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0 text-primary"><i class="bi bi-wallet2 me-2"></i>Quản Trị Công Nợ Chi Tiết & Phân Tích Tuổi Nợ (Aging)</h3>
+            <small class="text-muted">Theo dõi công nợ Khách hàng (TK 131), Nhà cung cấp (TK 331) và đối trừ thanh toán</small>
+        </div>
+        <div class="d-flex gap-2">
+            <form method="get" class="d-flex align-items-center gap-2">
+                <label class="form-label mb-0 small text-nowrap">Mốc tính:</label>
+                <input type="date" name="mocThoiGian" value="@Model.MocThoiGian.ToString("yyyy-MM-dd")" class="form-control form-control-sm" />
+                <button type="submit" class="btn btn-sm btn-outline-primary text-nowrap"><i class="bi bi-filter me-1"></i>Lọc</button>
+            </form>
+            <a asp-action="DoiTru" class="btn btn-primary text-nowrap">
+                <i class="bi bi-arrow-left-right me-1"></i>Đối Trừ & Thanh Toán
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["ThongBaoThanhCong"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["ThongBaoThanhCong"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Summary metrics -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 border-start border-warning border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-bold">Tổng nợ Phải Thu Khách Hàng (TK 131)</div>
+                    <div class="fs-3 fw-bold text-warning">@Model.TongPhaiThu.ToString("N0") đ</div>
+                    <small class="text-muted">@Model.BaoCaoTuoiNoPhaiThu.Count khách hàng đang còn dư nợ</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 border-start border-danger border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-bold">Tổng nợ Phải Trả Nhà Cung Cấp (TK 331)</div>
+                    <div class="fs-3 fw-bold text-danger">@Model.TongPhaiTra.ToString("N0") đ</div>
+                    <small class="text-muted">@Model.BaoCaoTuoiNoPhaiTra.Count nhà cung cấp đang còn công nợ</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AR Aging Table -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <span class="fw-bold text-dark"><i class="bi bi-graph-up-arrow text-warning me-2"></i>Phân Tích Tuổi Nợ Phải Thu (AR Aging Report - TK 131)</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light small">
+                    <tr>
+                        <th class="ps-3">Mã đối tượng</th>
+                        <th>Tên khách hàng</th>
+                        <th class="text-end">Trong hạn</th>
+                        <th class="text-end">1 - 30 ngày</th>
+                        <th class="text-end">31 - 60 ngày</th>
+                        <th class="text-end">61 - 90 ngày</th>
+                        <th class="text-end text-danger">Trên 90 ngày</th>
+                        <th class="text-end pe-3 fw-bold">Tổng Nợ (VNĐ)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.BaoCaoTuoiNoPhaiThu.Any())
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-3 text-muted">Không có dư nợ phải thu của khách hàng nào.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var row in Model.BaoCaoTuoiNoPhaiThu)
+                        {
+                            <tr>
+                                <td class="ps-3 font-monospace fw-bold">@row.MaDoiTuong</td>
+                                <td>@row.TenDoiTuong</td>
+                                <td class="text-end font-monospace">@row.TrongHan.ToString("N0")</td>
+                                <td class="text-end font-monospace text-warning">@row.Tu1Den30Ngay.ToString("N0")</td>
+                                <td class="text-end font-monospace text-warning-emphasis">@row.Tu31Den60Ngay.ToString("N0")</td>
+                                <td class="text-end font-monospace text-danger">@row.Tu61Den90Ngay.ToString("N0")</td>
+                                <td class="text-end font-monospace text-danger fw-bold">@row.Tren90Ngay.ToString("N0")</td>
+                                <td class="text-end pe-3 font-monospace fw-bold text-primary">@row.TongNo.ToString("N0") đ</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- AP Aging Table -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <span class="fw-bold text-dark"><i class="bi bi-graph-down-arrow text-danger me-2"></i>Phân Tích Tuổi Nợ Phải Trả (AP Aging Report - TK 331)</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light small">
+                    <tr>
+                        <th class="ps-3">Mã đối tượng</th>
+                        <th>Tên nhà cung cấp</th>
+                        <th class="text-end">Trong hạn</th>
+                        <th class="text-end">1 - 30 ngày</th>
+                        <th class="text-end">31 - 60 ngày</th>
+                        <th class="text-end">61 - 90 ngày</th>
+                        <th class="text-end text-danger">Trên 90 ngày</th>
+                        <th class="text-end pe-3 fw-bold">Tổng Nợ (VNĐ)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.BaoCaoTuoiNoPhaiTra.Any())
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-3 text-muted">Không có dư nợ phải trả cho nhà cung cấp nào.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var row in Model.BaoCaoTuoiNoPhaiTra)
+                        {
+                            <tr>
+                                <td class="ps-3 font-monospace fw-bold">@row.MaDoiTuong</td>
+                                <td>@row.TenDoiTuong</td>
+                                <td class="text-end font-monospace">@row.TrongHan.ToString("N0")</td>
+                                <td class="text-end font-monospace">@row.Tu1Den30Ngay.ToString("N0")</td>
+                                <td class="text-end font-monospace">@row.Tu31Den60Ngay.ToString("N0")</td>
+                                <td class="text-end font-monospace text-danger">@row.Tu61Den90Ngay.ToString("N0")</td>
+                                <td class="text-end font-monospace text-danger fw-bold">@row.Tren90Ngay.ToString("N0")</td>
+                                <td class="text-end pe-3 font-monospace fw-bold text-danger">@row.TongNo.ToString("N0") đ</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

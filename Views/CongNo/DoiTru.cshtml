@@ -1,0 +1,98 @@
+@model ninjaTax.Models.ViewModels.DoiTruCongNoCreateViewModel
+@{
+    ViewData["Title"] = "Đối Trừ Công Nợ & Thanh Toán";
+}
+
+<div class="container py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0 text-primary"><i class="bi bi-arrow-left-right me-2"></i>Đối Trừ Công Nợ & Ghi Nhận Thanh Toán</h3>
+            <small class="text-muted">Cấn trừ công nợ theo hóa đơn chi tiết hoặc giải phóng công nợ tự động theo phương pháp FIFO</small>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Quay lại báo cáo
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <form asp-action="DoiTru" method="post" id="doiTruForm">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="Loai" class="form-label fw-semibold">Loại nghiệp vụ</label>
+                        <select asp-for="Loai" class="form-select" id="loaiCongNoSelect" onchange="window.location.reload();">
+                            <option value="1">Thu tiền Khách hàng (Giảm TK 131 - AR)</option>
+                            <option value="2">Trả tiền Nhà cung cấp (Giảm TK 331 - AP)</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="DoiTuongId" class="form-label fw-semibold"></label>
+                        <select asp-for="DoiTuongId" class="form-select" asp-items="Model.DanhSachDoiTuong" id="doiTuongSelect">
+                            <option value="">-- Chọn Khách hàng / Nhà cung cấp --</option>
+                        </select>
+                        <span asp-validation-for="DoiTuongId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label asp-for="HoaDonId" class="form-label fw-semibold"></label>
+                        <select asp-for="HoaDonId" class="form-select" id="hoaDonSelect">
+                            <option value="">-- [Tự động đối trừ theo tuổi nợ cũ nhất - FIFO] --</option>
+                        </select>
+                        <small class="text-muted">Nếu để trống, hệ thống sẽ tự động quét các hóa đơn từ cũ nhất đến mới nhất để đối trừ.</small>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="SoTien" class="form-label fw-semibold"></label>
+                        <div class="input-group">
+                            <input asp-for="SoTien" class="form-control text-end fs-5 fw-bold" type="number" step="1000" />
+                            <span class="input-group-text">VNĐ</span>
+                        </div>
+                        <span asp-validation-for="SoTien" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="GhiChu" class="form-label fw-semibold"></label>
+                        <input asp-for="GhiChu" class="form-control" placeholder="VD: Khách chuyển khoản VCB, UNC trả tiền..." />
+                    </div>
+
+                    <div class="col-12 mt-4 text-end">
+                        <a asp-action="Index" class="btn btn-outline-secondary me-2">Hủy bỏ</a>
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-check-circle me-1"></i>Xác Nhận Đối Trừ
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.getElementById('doiTuongSelect').addEventListener('change', function () {
+            const doiTuongId = this.value;
+            const loai = document.getElementById('loaiCongNoSelect').value;
+            const hoaDonSelect = document.getElementById('hoaDonSelect');
+
+            hoaDonSelect.innerHTML = '<option value="">-- [Tự động đối trừ theo tuổi nợ cũ nhất - FIFO] --</option>';
+
+            if (!doiTuongId) return;
+
+            fetch(`/CongNo/GetHoaDonChuaThanhToan?loai=${loai}&doiTuongId=${doiTuongId}`)
+                .then(r => r.json())
+                .then(data => {
+                    data.forEach(item => {
+                        const opt = document.createElement('option');
+                        opt.value = item.id;
+                        opt.textContent = `${item.soChungTu} (HĐ: ${item.soHoaDon}, Ngày: ${item.ngay}) - Còn nợ: ${new Intl.NumberFormat('vi-VN').format(item.conNo)} đ`;
+                        hoaDonSelect.appendChild(opt);
+                    });
+                })
+                .catch(err => console.error("Lỗi khi tải danh sách hóa đơn:", err));
+        });
+    </script>
+}
