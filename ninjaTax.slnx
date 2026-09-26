@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="ninjaTax.csproj" />
+  <Project Path="ninjaTax.Tests/ninjaTax.Tests.csproj" />
+</Solution>

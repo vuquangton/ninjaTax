@@ -1,0 +1,267 @@
+@model ButToanCreateViewModel
+@{
+    ViewData["Title"] = "Lập Chứng Từ Bút Toán - Sổ Nhật Ký Chung";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="h3 mb-0 text-gray-800">Lập Chứng Từ Bút Toán Kế Toán</h2>
+            <small class="text-muted">Tuân thủ nguyên tắc định khoản kép TT99 (Tổng Nợ == Tổng Có, Không dùng TK 911)</small>
+        </div>
+        <div>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                &larr; Quay lại danh sách
+            </a>
+        </div>
+    </div>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger" role="alert">
+            <h6 class="alert-heading fw-bold">Thông báo lỗi:</h6>
+            <div asp-validation-summary="All" class="mb-0"></div>
+        </div>
+    }
+
+    <form asp-action="Create" method="post" id="formButToan">
+        @Html.AntiForgeryToken()
+
+        <!-- Phần 1: Thông tin chung chứng từ -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 bg-light">
+                <h6 class="m-0 font-weight-bold text-primary">1. Thông Tin Chung & Chứng Từ Gốc (TT99)</h6>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label asp-for="SoChungTu" class="form-label fw-bold">Số Chứng Từ</label>
+                        <input asp-for="SoChungTu" class="form-control" placeholder="Tự động sinh nếu để trống" />
+                        <span asp-validation-for="SoChungTu" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="NgayHachToan" class="form-label fw-bold">Ngày Hạch Toán</label>
+                        <input asp-for="NgayHachToan" type="date" class="form-control" />
+                        <span asp-validation-for="NgayHachToan" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="NgayChungTu" class="form-label fw-bold">Ngày Chứng Từ</label>
+                        <input asp-for="NgayChungTu" type="date" class="form-control" />
+                        <span asp-validation-for="NgayChungTu" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="SoChungTuGoc" class="form-label fw-bold text-danger">Số Chứng Từ Gốc *</label>
+                        <input asp-for="SoChungTuGoc" class="form-control border-danger-subtle" placeholder="VD: HĐ-0012938, UNC-882" required />
+                        <small class="text-muted d-block">Bắt buộc theo TT99</small>
+                        <span asp-validation-for="SoChungTuGoc" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="NgayChungTuGoc" class="form-label fw-bold text-danger">Ngày Chứng Từ Gốc *</label>
+                        <input asp-for="NgayChungTuGoc" type="date" class="form-control border-danger-subtle" required />
+                        <span asp-validation-for="NgayChungTuGoc" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-9">
+                        <label asp-for="DienGiai" class="form-label fw-bold">Diễn Giải Nghiệp Vụ *</label>
+                        <input asp-for="DienGiai" class="form-control" placeholder="VD: Rút tiền gửi ngân hàng nhập quỹ tiền mặt..." required />
+                        <span asp-validation-for="DienGiai" class="text-danger small"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phần 2: Chi tiết định khoản kép -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 bg-light d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">2. Chi Tiết Định Khoản (Nợ / Có)</h6>
+                <button type="button" class="btn btn-sm btn-success" id="btnThemDong">
+                    + Thêm Dòng Định Khoản
+                </button>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-bordered mb-0 align-middle" id="bangDinhKhoan">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 50px;">STT</th>
+                                <th style="width: 260px;">TK Nợ (Debit) *</th>
+                                <th style="width: 260px;">TK Có (Credit) *</th>
+                                <th style="width: 200px;">Số Tiền (VNĐ) *</th>
+                                <th style="width: 260px;">Đối Tượng Công Nợ</th>
+                                <th>Diễn Giải Dòng</th>
+                                <th style="width: 60px;" class="text-center">Xóa</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyChiTiet">
+                            @for (int i = 0; i < Model.ChiTiets.Count; i++)
+                            {
+                                <tr class="row-dinh-khoan">
+                                    <td class="text-center fw-bold stt-cot">@(i + 1)</td>
+                                    <td>
+                                        <select name="ChiTiets[@i].TaiKhoanNoId" class="form-select form-select-sm select-tk-no" required>
+                                            <option value="">-- Chọn TK Nợ --</option>
+                                            @foreach (var tk in Model.DanhSachTaiKhoan)
+                                            {
+                                                <option value="@tk.Value" selected="@(tk.Value == Model.ChiTiets[i].TaiKhoanNoId.ToString())">@tk.Text</option>
+                                            }
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select name="ChiTiets[@i].TaiKhoanCoId" class="form-select form-select-sm select-tk-co" required>
+                                            <option value="">-- Chọn TK Có --</option>
+                                            @foreach (var tk in Model.DanhSachTaiKhoan)
+                                            {
+                                                <option value="@tk.Value" selected="@(tk.Value == Model.ChiTiets[i].TaiKhoanCoId.ToString())">@tk.Text</option>
+                                            }
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="number" step="0.0001" name="ChiTiets[@i].SoTien" value="@Model.ChiTiets[i].SoTien" class="form-control form-control-sm text-end input-so-tien" required />
+                                    </td>
+                                    <td>
+                                        <select name="ChiTiets[@i].DoiTuongId" class="form-select form-select-sm">
+                                            <option value="">-- Không chọn --</option>
+                                            @foreach (var dt in Model.DanhSachDoiTuong)
+                                            {
+                                                <option value="@dt.Value" selected="@(dt.Value == Model.ChiTiets[i].DoiTuongId?.ToString())">@dt.Text</option>
+                                            }
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text" name="ChiTiets[@i].DienGiai" value="@Model.ChiTiets[i].DienGiai" class="form-control form-control-sm" placeholder="Nếu để trống sẽ dùng diễn giải chung" />
+                                    </td>
+                                    <td class="text-center">
+                                        <button type="button" class="btn btn-outline-danger btn-sm btn-xoa-dong" title="Xóa dòng">&times;</button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot class="table-light fw-bold">
+                            <tr>
+                                <td colspan="3" class="text-end">Tổng Cộng:</td>
+                                <td class="text-end text-primary fs-6" id="hienThiTongTien">0</td>
+                                <td colspan="3">
+                                    <span id="trangThaiCanDoi" class="badge bg-success">Cân đối Nợ = Có</span>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer d-flex justify-content-between align-items-center">
+                <small class="text-muted">
+                    * Lưu ý: Hệ thống kiểm tra nghiêm ngặt quy tắc định khoản kép. Không chấp nhận dòng có số tiền &le; 0 hoặc TK Nợ trùng TK Có.
+                </small>
+                <div>
+                    <button type="submit" class="btn btn-primary px-4">
+                        Lưu Chứng Từ (Chưa Ghi Sổ)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Template HTML cho dòng định khoản mới (Javascript) -->
+<template id="templateRow">
+    <tr class="row-dinh-khoan">
+        <td class="text-center fw-bold stt-cot">__INDEX__</td>
+        <td>
+            <select name="ChiTiets[__INDEX_ZERO__].TaiKhoanNoId" class="form-select form-select-sm select-tk-no" required>
+                <option value="">-- Chọn TK Nợ --</option>
+                @foreach (var tk in Model.DanhSachTaiKhoan)
+                {
+                    <option value="@tk.Value">@tk.Text</option>
+                }
+            </select>
+        </td>
+        <td>
+            <select name="ChiTiets[__INDEX_ZERO__].TaiKhoanCoId" class="form-select form-select-sm select-tk-co" required>
+                <option value="">-- Chọn TK Có --</option>
+                @foreach (var tk in Model.DanhSachTaiKhoan)
+                {
+                    <option value="@tk.Value">@tk.Text</option>
+                }
+            </select>
+        </td>
+        <td>
+            <input type="number" step="0.0001" name="ChiTiets[__INDEX_ZERO__].SoTien" value="0" class="form-control form-control-sm text-end input-so-tien" required />
+        </td>
+        <td>
+            <select name="ChiTiets[__INDEX_ZERO__].DoiTuongId" class="form-select form-select-sm">
+                <option value="">-- Không chọn --</option>
+                @foreach (var dt in Model.DanhSachDoiTuong)
+                {
+                    <option value="@dt.Value">@dt.Text</option>
+                }
+            </select>
+        </td>
+        <td>
+            <input type="text" name="ChiTiets[__INDEX_ZERO__].DienGiai" class="form-control form-control-sm" placeholder="Nếu để trống sẽ dùng diễn giải chung" />
+        </td>
+        <td class="text-center">
+            <button type="button" class="btn btn-outline-danger btn-sm btn-xoa-dong" title="Xóa dòng">&times;</button>
+        </td>
+    </tr>
+</template>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const tbody = document.getElementById("tbodyChiTiet");
+            const btnThemDong = document.getElementById("btnThemDong");
+            const template = document.getElementById("templateRow").innerHTML;
+            const hienThiTongTien = document.getElementById("hienThiTongTien");
+
+            function capNhatSTT() {
+                const rows = tbody.querySelectorAll(".row-dinh-khoan");
+                rows.forEach((row, idx) => {
+                    row.querySelector(".stt-cot").innerText = idx + 1;
+                    row.querySelectorAll("input, select").forEach(input => {
+                        const name = input.getAttribute("name");
+                        if (name) {
+                            input.setAttribute("name", name.replace(/ChiTiets\[\d+\]/, `ChiTiets[${idx}]`));
+                        }
+                    });
+                });
+                tinhTong();
+            }
+
+            function tinhTong() {
+                let tong = 0;
+                tbody.querySelectorAll(".input-so-tien").forEach(input => {
+                    const val = parseFloat(input.value) || 0;
+                    tong += val;
+                });
+                hienThiTongTien.innerText = tong.toLocaleString("vi-VN", { minimumFractionDigits: 0, maximumFractionDigits: 4 });
+            }
+
+            btnThemDong.addEventListener("click", function () {
+                const rowCount = tbody.querySelectorAll(".row-dinh-khoan").length;
+                let newRowHtml = template.replace(/__INDEX__/g, rowCount + 1).replace(/__INDEX_ZERO__/g, rowCount);
+                tbody.insertAdjacentHTML("beforeend", newRowHtml);
+                capNhatSTT();
+            });
+
+            tbody.addEventListener("click", function (e) {
+                if (e.target.classList.contains("btn-xoa-dong") || e.target.closest(".btn-xoa-dong")) {
+                    const rows = tbody.querySelectorAll(".row-dinh-khoan");
+                    if (rows.length <= 1) {
+                        alert("Bút toán phải có ít nhất một dòng định khoản.");
+                        return;
+                    }
+                    const row = e.target.closest(".row-dinh-khoan");
+                    row.remove();
+                    capNhatSTT();
+                }
+            });
+
+            tbody.addEventListener("input", function (e) {
+                if (e.target.classList.contains("input-so-tien")) {
+                    tinhTong();
+                }
+            });
+
+            tinhTong();
+        });
+    </script>
+}

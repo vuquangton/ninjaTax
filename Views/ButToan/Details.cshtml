@@ -1,0 +1,149 @@
+@model ButToan
+@{
+    ViewData["Title"] = $"Chi Tiết Bút Toán {Model.SoChungTu}";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="h3 mb-0 text-gray-800">Chi Tiết Chứng Từ Bút Toán: @Model.SoChungTu</h2>
+            <small class="text-muted">Hạch toán theo Chuẩn mực Kế toán Việt Nam (VAS) & Thông tư TT99</small>
+        </div>
+        <div class="btn-group">
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                &larr; Danh sách
+            </a>
+            @if (Model.TrangThai == TrangThaiButToan.ChuaGhiSo)
+            {
+                <form asp-action="GhiSo" asp-route-id="@Model.Id" method="post" class="d-inline ms-2">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Ghi Sổ Kế Toán
+                    </button>
+                </form>
+            }
+            else if (Model.TrangThai == TrangThaiButToan.DaGhiSo)
+            {
+                <form asp-action="BoGhiSo" asp-route-id="@Model.Id" method="post" class="d-inline ms-2">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-warning">
+                        Bỏ Ghi Sổ
+                    </button>
+                </form>
+            }
+        </div>
+    </div>
+
+    <!-- Thông tin chung -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Thông Tin Chứng Từ</h6>
+            <div>
+                @if (Model.TrangThai == TrangThaiButToan.DaGhiSo)
+                {
+                    <span class="badge bg-success fs-6">Đã Ghi Sổ</span>
+                }
+                else if (Model.TrangThai == TrangThaiButToan.ChuaGhiSo)
+                {
+                    <span class="badge bg-warning text-dark fs-6">Chưa Ghi Sổ</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary fs-6">Đã Hủy</span>
+                }
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <span class="text-muted d-block small">Số chứng từ:</span>
+                    <strong class="fs-6">@Model.SoChungTu</strong>
+                </div>
+                <div class="col-md-3">
+                    <span class="text-muted d-block small">Ngày hạch toán:</span>
+                    <strong>@Model.NgayHachToan.ToString("dd/MM/yyyy")</strong>
+                </div>
+                <div class="col-md-3">
+                    <span class="text-muted d-block small">Ngày chứng từ:</span>
+                    <strong>@Model.NgayChungTu.ToString("dd/MM/yyyy")</strong>
+                </div>
+                <div class="col-md-3">
+                    <span class="text-muted d-block small">Tổng tiền:</span>
+                    <strong class="fs-6 text-primary">@Model.TongTien.ToString("N0") VNĐ</strong>
+                </div>
+                <div class="col-md-3">
+                    <span class="text-muted d-block small">Số chứng từ gốc (TT99):</span>
+                    <span class="badge bg-light text-dark border fs-6">@Model.SoChungTuGoc</span>
+                </div>
+                <div class="col-md-3">
+                    <span class="text-muted d-block small">Ngày chứng từ gốc:</span>
+                    <strong>@Model.NgayChungTuGoc.ToString("dd/MM/yyyy")</strong>
+                </div>
+                <div class="col-md-6">
+                    <span class="text-muted d-block small">Diễn giải:</span>
+                    <span>@Model.DienGiai</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chi tiết định khoản -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Định Khoản Bút Toán Kép (Double-Entry Ledger)</h6>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 50px;">STT</th>
+                            <th>Tài Khoản Nợ</th>
+                            <th>Tài Khoản Có</th>
+                            <th class="text-end">Số Tiền (VNĐ)</th>
+                            <th>Đối Tượng Công Nợ</th>
+                            <th>Diễn Giải Dòng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var line in Model.ChiTietButToans.OrderBy(c => c.DongSo))
+                        {
+                            <tr>
+                                <td class="text-center fw-bold">@line.DongSo</td>
+                                <td>
+                                    <span class="badge bg-primary">@line.TaiKhoanNo?.MaTaiKhoan</span>
+                                    <span>@line.TaiKhoanNo?.TenTaiKhoan</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info text-dark">@line.TaiKhoanCo?.MaTaiKhoan</span>
+                                    <span>@line.TaiKhoanCo?.TenTaiKhoan</span>
+                                </td>
+                                <td class="text-end fw-bold">@line.SoTien.ToString("N0")</td>
+                                <td>
+                                    @if (line.DoiTuong != null)
+                                    {
+                                        <span>[@line.DoiTuong.MaDoiTuong] @line.DoiTuong.TenDoiTuong</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>@line.DienGiai</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot class="table-light fw-bold">
+                        <tr>
+                            <td colspan="3" class="text-end">Tổng Phát Sinh Nợ / Có:</td>
+                            <td class="text-end text-primary fs-6">@Model.TongTien.ToString("N0") VNĐ</td>
+                            <td colspan="2">
+                                <span class="badge bg-success">Cân đối (Nợ = Có)</span>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,147 @@
+@model ButToanIndexViewModel
+@{
+    ViewData["Title"] = "Sổ Nhật Ký Chung - Chứng Từ Nghiệp Vụ Khác";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="h3 mb-0 text-gray-800">Sổ Nhật Ký Chung (Chứng Từ Nghiệp Vụ)</h2>
+            <small class="text-muted">Tuân thủ chế độ kế toán Thông tư TT99 - VAS (Không sử dụng TK 911)</small>
+        </div>
+        <div>
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> + Lập Chứng Từ Mới
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["ThongBaoThanhCong"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["ThongBaoThanhCong"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ThongBaoLoi"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ThongBaoLoi"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Thống kê tổng hợp -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Tổng Số Chứng Từ</div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TongSoChungTu chứng từ</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Tổng Tiền Phát Sinh (VNĐ)</div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TongPhatSinh.ToString("N0") VNĐ</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bảng danh sách chứng từ -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Danh Sách Bút Toán</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Số CT</th>
+                            <th>Ngày Hạch Toán</th>
+                            <th>Số CT Gốc (TT99)</th>
+                            <th>Diễn Giải</th>
+                            <th class="text-end">Tổng Tiền</th>
+                            <th>Trạng Thái</th>
+                            <th class="text-center" style="width: 260px;">Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.DanhSachButToan.Any())
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center py-4 text-muted">
+                                    Chưa có chứng từ nào được ghi nhận. Bấm "+ Lập Chứng Từ Mới" để tạo bút toán đầu tiên.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in Model.DanhSachButToan)
+                            {
+                                <tr>
+                                    <td>
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="fw-bold text-decoration-none">
+                                            @item.SoChungTu
+                                        </a>
+                                    </td>
+                                    <td>@item.NgayHachToan.ToString("dd/MM/yyyy")</td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border">@item.SoChungTuGoc</span>
+                                        <small class="d-block text-muted">@item.NgayChungTuGoc.ToString("dd/MM/yyyy")</small>
+                                    </td>
+                                    <td>@item.DienGiai</td>
+                                    <td class="text-end fw-bold">@item.TongTien.ToString("N0")</td>
+                                    <td>
+                                        @if (item.TrangThai == TrangThaiButToan.DaGhiSo)
+                                        {
+                                            <span class="badge bg-success">Đã Ghi Sổ</span>
+                                        }
+                                        else if (item.TrangThai == TrangThaiButToan.ChuaGhiSo)
+                                        {
+                                            <span class="badge bg-warning text-dark">Chưa Ghi Sổ</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Đã Hủy</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-info" title="Xem chi tiết">
+                                                Xem
+                                            </a>
+                                            @if (item.TrangThai == TrangThaiButToan.ChuaGhiSo)
+                                            {
+                                                <form asp-action="GhiSo" asp-route-id="@item.Id" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-outline-success">Ghi Sổ</button>
+                                                </form>
+                                                <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa chứng từ này?');">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-outline-danger">Xóa</button>
+                                                </form>
+                                            }
+                                            else if (item.TrangThai == TrangThaiButToan.DaGhiSo)
+                                            {
+                                                <form asp-action="BoGhiSo" asp-route-id="@item.Id" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-outline-warning">Bỏ Ghi Sổ</button>
+                                                </form>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
