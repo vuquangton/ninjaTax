@@ -1,0 +1,174 @@
+@model ninjaTax.Models.ViewModels.ThuChiFilterViewModel
+@using ninjaTax.Models.Entities
+@{
+    ViewData["Title"] = "Quản lý Chi Tiền Mặt & Ủy Nhiệm Chi";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0 text-danger"><i class="bi bi-cash-stack me-2"></i>Chi Tiền Mặt & Ủy Nhiệm Chi (Báo Nợ)</h3>
+            <small class="text-muted">Kiểm soát âm quỹ tiền mặt và bẫy 20 triệu VNĐ thanh toán không dùng tiền mặt (TT 219 & TT 26)</small>
+        </div>
+        <div class="btn-group">
+            <a asp-action="Create" asp-route-loai="@LoaiChungTuThuChi.ChiTienMat" class="btn btn-danger">
+                <i class="bi bi-cash me-1"></i>Lập Phiếu Chi (1111)
+            </a>
+            <a asp-action="Create" asp-route-loai="@LoaiChungTuThuChi.UyNhiemChi" class="btn btn-primary">
+                <i class="bi bi-bank me-1"></i>Lập Ủy Nhiệm Chi (1121)
+            </a>
+            <a asp-controller="ThuTien" asp-action="SoQuy" class="btn btn-info text-white">
+                <i class="bi bi-journal-text me-1"></i>Xem Sổ Quỹ
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["ThanhCong"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["ThanhCong"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["CanhBao"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show border-start border-warning border-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2 text-warning fs-5"></i>@TempData["CanhBao"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Loi"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-start border-danger border-4" role="alert">
+            <i class="bi bi-shield-x me-2 text-danger fs-5"></i>@TempData["Loi"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Bộ lọc tìm kiếm -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Loại chứng từ</label>
+                    <select name="loaiChungTu" class="form-select">
+                        <option value="">-- Tất cả chứng từ chi --</option>
+                        <option value="@((int)LoaiChungTuThuChi.ChiTienMat)" selected="@(Model.LoaiChungTu == LoaiChungTuThuChi.ChiTienMat)">Phiếu chi tiền mặt (1111)</option>
+                        <option value="@((int)LoaiChungTuThuChi.UyNhiemChi)" selected="@(Model.LoaiChungTu == LoaiChungTuThuChi.UyNhiemChi)">Ủy nhiệm chi ngân hàng (1121)</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Từ ngày</label>
+                    <input type="date" name="tuNgay" class="form-control" value="@Model.TuNgay?.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Đến ngày</label>
+                    <input type="date" name="denNgay" class="form-control" value="@Model.DenNgay?.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Từ khóa</label>
+                    <div class="input-group">
+                        <input type="text" name="tuKhoa" class="form-control" placeholder="Số CT, người nhận, lý do..." value="@Model.TuKhoa" />
+                        <button type="submit" class="btn btn-secondary"><i class="bi bi-search"></i></button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bảng danh sách chứng từ chi -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Số CT</th>
+                            <th>Loại</th>
+                            <th>Ngày CT</th>
+                            <th>NCC / Người nhận</th>
+                            <th>Lý do</th>
+                            <th class="text-end">Tổng tiền (VNĐ)</th>
+                            <th>Cảnh báo 20M</th>
+                            <th>Bút toán GL</th>
+                            <th>Trạng thái</th>
+                            <th class="text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.DanhSach.Any())
+                        {
+                            <tr>
+                                <td colspan="10" class="text-center text-muted py-4">Chưa có chứng từ chi nào</td>
+                            </tr>
+                        }
+                        @foreach (var item in Model.DanhSach)
+                        {
+                            <tr>
+                                <td class="fw-bold">@item.SoChungTu</td>
+                                <td>
+                                    @if (item.LoaiChungTu == LoaiChungTuThuChi.ChiTienMat)
+                                    {
+                                        <span class="badge bg-danger">Phiếu chi (1111)</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-primary">Ủy nhiệm chi (@item.SoTaiKhoanNganHang)</span>
+                                    }
+                                </td>
+                                <td>@item.NgayChungTu.ToString("dd/MM/yyyy")</td>
+                                <td>@(item.TenDoiTuong ?? item.NguoiGiaoNopNhan ?? "-")</td>
+                                <td>@item.LyDo</td>
+                                <td class="text-end fw-bold text-danger">@item.TongTien.ToString("N0")</td>
+                                <td>
+                                    @if (item.ViPhamQuyTac20Tr)
+                                    {
+                                        <span class="badge bg-danger" title="Vi phạm quy tắc thanh toán không dùng tiền mặt HĐ >= 20tr">
+                                            <i class="bi bi-exclamation-triangle-fill me-1"></i>Vi phạm 20Tr
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success-subtle text-success">An toàn</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.SoButToan))
+                                    {
+                                        <span class="badge bg-secondary">@item.SoButToan</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">Chưa ghi sổ</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.TrangThai == TrangThaiThuChi.DaGhiSo)
+                                    {
+                                        <span class="badge bg-success"><i class="bi bi-check2-circle me-1"></i>Đã ghi sổ</span>
+                                    }
+                                    else if (item.TrangThai == TrangThaiThuChi.ChoGhiSo)
+                                    {
+                                        <span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i>Chờ ghi sổ</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Đã hủy</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a asp-action="In" asp-route-id="@item.Id" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-printer"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

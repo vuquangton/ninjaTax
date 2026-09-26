@@ -54,7 +54,8 @@ public static class DbInitializer
 
             // Nhóm 2: Tài sản dài hạn
             new() { MaTaiKhoan = "211", TenTaiKhoan = "Tài sản cố định hữu hình", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuNo, LaTaiKhoanSoCai = false },
-            new() { MaTaiKhoan = "214", TenTaiKhoan = "Hao mòn tài sản cố định", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuCo, LaTaiKhoanSoCai = false },
+            new() { MaTaiKhoan = "214", TenTaiKhoan = "Hao mòn tài sản cố định", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuCo, LaTaiKhoanSoCai = true },
+            new() { MaTaiKhoan = "2141", TenTaiKhoan = "Hao mòn tài sản cố định hữu hình", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuCo, LaTaiKhoanSoCai = false },
             new() { MaTaiKhoan = "242", TenTaiKhoan = "Chi phí trả trước", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuNo, LaTaiKhoanSoCai = false },
 
             // Nhóm 3: Nợ phải trả

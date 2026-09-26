@@ -1,0 +1,152 @@
+@model ninjaTax.Models.ViewModels.SoQuyBaoCaoViewModel
+@{
+    ViewData["Title"] = Model.TenSo;
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0 text-primary"><i class="bi bi-journal-text me-2"></i>@Model.TenSo</h3>
+            <small class="text-muted">Báo cáo luân chuyển dòng tiền theo chuẩn Thông tư TT99/2025/TT-BTC</small>
+        </div>
+        <div class="btn-group">
+            <button onclick="window.print()" class="btn btn-outline-secondary"><i class="bi bi-printer me-1"></i>In Sổ Quỹ</button>
+        </div>
+    </div>
+
+    <!-- Bộ lọc thời gian và loại sổ -->
+    <div class="card shadow-sm border-0 mb-4 no-print">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Loại sổ quỹ</label>
+                    <select name="loaiSo" class="form-select" onchange="this.form.submit()">
+                        <option value="1111" selected="@(Model.LoaiSo == "1111")">Sổ quỹ tiền mặt (TK 1111)</option>
+                        <option value="1121" selected="@(Model.LoaiSo == "1121")">Sổ tiền gửi ngân hàng (TK 1121)</option>
+                    </select>
+                </div>
+                @if (Model.LoaiSo == "1121")
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold">Tài khoản ngân hàng</label>
+                        <select name="taiKhoanNganHangId" class="form-select" asp-items="ViewBag.TaiKhoanNganHangs" onchange="this.form.submit()">
+                            <option value="">-- Tất cả tài khoản ngân hàng --</option>
+                        </select>
+                    </div>
+                }
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold">Từ ngày</label>
+                    <input type="date" name="tuNgay" class="form-control" value="@Model.TuNgay.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold">Đến ngày</label>
+                    <input type="date" name="denNgay" class="form-control" value="@Model.DenNgay.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel me-1"></i>Xem Báo Cáo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Summary cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 border-start border-secondary border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-bold">Số dư đầu kỳ</div>
+                    <div class="fs-4 fw-bold text-dark">@Model.SoDuDauKy.ToString("N0") đ</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 border-start border-success border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-bold">Tổng thu trong kỳ</div>
+                    <div class="fs-4 fw-bold text-success">+@Model.TongThuTrongKy.ToString("N0") đ</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 border-start border-danger border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-bold">Tổng chi trong kỳ</div>
+                    <div class="fs-4 fw-bold text-danger">-@Model.TongChiTrongKy.ToString("N0") đ</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 border-start border-primary border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-bold">Số dư cuối kỳ</div>
+                    <div class="fs-4 fw-bold text-primary">@Model.SoDuCuoiKy.ToString("N0") đ</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bảng chi tiết sổ quỹ -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle mb-0">
+                    <thead class="table-light text-center">
+                        <tr>
+                            <th rowspan="2" style="width: 100px;">Ngày ghi sổ</th>
+                            <th rowspan="2" style="width: 100px;">Ngày CT</th>
+                            <th colspan="2">Số hiệu chứng từ</th>
+                            <th rowspan="2">Diễn giải</th>
+                            <th rowspan="2" style="width: 100px;">TK đối ứng</th>
+                            <th colspan="3">Số tiền phát sinh và tồn (VNĐ)</th>
+                        </tr>
+                        <tr>
+                            <th style="width: 120px;">Thu</th>
+                            <th style="width: 120px;">Chi</th>
+                            <th style="width: 150px;">Thu</th>
+                            <th style="width: 150px;">Chi</th>
+                            <th style="width: 160px;">Tồn quỹ lũy kế</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="table-secondary fw-bold">
+                            <td colspan="6" class="text-center">Số dư đầu kỳ tính đến ngày @Model.TuNgay.ToString("dd/MM/yyyy")</td>
+                            <td class="text-end">-</td>
+                            <td class="text-end">-</td>
+                            <td class="text-end text-primary fs-6">@Model.SoDuDauKy.ToString("N0")</td>
+                        </tr>
+
+                        @if (!Model.DongSoQuys.Any())
+                        {
+                            <tr>
+                                <td colspan="9" class="text-center text-muted py-4">Không có phát sinh thu chi trong khoảng thời gian này</td>
+                            </tr>
+                        }
+
+                        @foreach (var dong in Model.DongSoQuys)
+                        {
+                            <tr>
+                                <td class="text-center">@dong.NgayGhiSo.ToString("dd/MM/yyyy")</td>
+                                <td class="text-center">@dong.NgayChungTu.ToString("dd/MM/yyyy")</td>
+                                <td class="text-center text-success fw-bold">@dong.SoChungTuThu</td>
+                                <td class="text-center text-danger fw-bold">@dong.SoChungTuChi</td>
+                                <td>@dong.DienGiai</td>
+                                <td class="text-center fw-bold text-muted">@dong.TaiKhoanDoiUng</td>
+                                <td class="text-end text-success">@(dong.SoTienThu > 0 ? dong.SoTienThu.ToString("N0") : "-")</td>
+                                <td class="text-end text-danger">@(dong.SoTienChi > 0 ? dong.SoTienChi.ToString("N0") : "-")</td>
+                                <td class="text-end fw-bold text-primary">@dong.SoDuLuyKe.ToString("N0")</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-light fw-bold">
+                            <td colspan="6" class="text-center">Tổng phát sinh trong kỳ & Số dư cuối kỳ</td>
+                            <td class="text-end text-success fs-6">@Model.TongThuTrongKy.ToString("N0")</td>
+                            <td class="text-end text-danger fs-6">@Model.TongChiTrongKy.ToString("N0")</td>
+                            <td class="text-end text-primary fs-5">@Model.SoDuCuoiKy.ToString("N0")</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

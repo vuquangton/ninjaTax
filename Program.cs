@@ -19,6 +19,8 @@ builder.Services.AddScoped<IButToanService, ButToanService>();
 builder.Services.AddScoped<IHachToanMuaHangService, HachToanMuaHangService>();
 builder.Services.AddScoped<IHachToanBanHangService, HachToanBanHangService>();
 builder.Services.AddScoped<ICongNoService, CongNoService>();
+builder.Services.AddScoped<IThuChiService, ThuChiService>();
+builder.Services.AddScoped<ITaiSanService, TaiSanService>();
 
 var app = builder.Build();
 

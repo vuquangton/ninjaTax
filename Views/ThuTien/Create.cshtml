@@ -1,0 +1,207 @@
+@model ninjaTax.Models.ViewModels.ThuChiCreateViewModel
+@using ninjaTax.Models.Entities
+@{
+    var isNganHang = Model.LoaiChungTu == LoaiChungTuThuChi.BaoCoNganHang;
+    ViewData["Title"] = isNganHang ? "Lập Báo Có Ngân Hàng (TK 1121)" : "Lập Phiếu Thu Tiền Mặt (TK 1111)";
+}
+
+<div class="container-fluid py-3">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-success text-white py-3">
+                    <h5 class="mb-0"><i class="bi bi-wallet2 me-2"></i>@ViewData["Title"]</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post" id="formThuTien">
+                        <div asp-validation-summary="All" class="alert alert-danger" role="alert" style="display: @(ViewData.ModelState.IsValid ? "none" : "block")"></div>
+
+                        <input type="hidden" asp-for="LoaiChungTu" />
+
+                        <!-- Thông tin chung -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-3">
+                                <label asp-for="NgayChungTu" class="form-label fw-bold">Ngày chứng từ *</label>
+                                <input asp-for="NgayChungTu" type="date" class="form-control" />
+                                <span asp-validation-for="NgayChungTu" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-3">
+                                <label asp-for="NgayHachToan" class="form-label fw-bold">Ngày hạch toán *</label>
+                                <input asp-for="NgayHachToan" type="date" class="form-control" />
+                                <span asp-validation-for="NgayHachToan" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-3">
+                                <label asp-for="SoChungTuGoc" class="form-label">Số chứng từ kèm theo</label>
+                                <input asp-for="SoChungTuGoc" class="form-control" placeholder="HĐ, Giấy báo Có..." />
+                            </div>
+                            @if (isNganHang)
+                            {
+                                <div class="col-md-3">
+                                    <label asp-for="TaiKhoanNganHangId" class="form-label fw-bold">Tài khoản ngân hàng *</label>
+                                    <select asp-for="TaiKhoanNganHangId" class="form-select" asp-items="ViewBag.TaiKhoanNganHangs">
+                                        <option value="">-- Chọn tài khoản ngân hàng --</option>
+                                    </select>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="col-md-3">
+                                    <label class="form-label">Tồn quỹ hiện tại</label>
+                                    <input type="text" class="form-control text-success fw-bold" readonly value="@Model.TonQuyHienTai.ToString("N0") VNĐ" />
+                                </div>
+                            }
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label asp-for="DoiTuongId" class="form-label">Đối tượng nộp (Khách hàng)</label>
+                                <select asp-for="DoiTuongId" class="form-select select2" asp-items="ViewBag.DoiTuongs">
+                                    <option value="">-- Khách vãng lai / Khác --</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="NguoiGiaoNopNhan" class="form-label">Người nộp tiền</label>
+                                <input asp-for="NguoiGiaoNopNhan" class="form-control" placeholder="Họ và tên người nộp" />
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="HoaDonBanHangId" class="form-label">Đối trừ Hóa đơn bán hàng</label>
+                                <select asp-for="HoaDonBanHangId" class="form-select" asp-items="ViewBag.HoaDonBanHangs">
+                                    <option value="">-- Chọn hóa đơn bán nếu có --</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label asp-for="DiaChi" class="form-label">Địa chỉ</label>
+                                <input asp-for="DiaChi" class="form-control" placeholder="Địa chỉ đối tượng nộp" />
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="LyDo" class="form-label fw-bold">Lý do thu *</label>
+                                <input asp-for="LyDo" class="form-control" placeholder="Thu tiền bán hàng, thu nợ KH..." />
+                                <span asp-validation-for="LyDo" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <!-- Chi tiết định khoản kép -->
+                        <h6 class="fw-bold border-bottom pb-2 mb-3 text-secondary">
+                            <i class="bi bi-list-check me-2"></i>Định khoản kép kế toán (TT99 - Tuyệt đối không dùng TK 911)
+                        </h6>
+
+                        <div class="table-responsive mb-3">
+                            <table class="table table-bordered align-middle" id="tableChiTiet">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Diễn giải</th>
+                                        <th style="width: 180px;">TK Nợ</th>
+                                        <th style="width: 180px;">TK Có</th>
+                                        <th style="width: 220px;">Số tiền (VNĐ)</th>
+                                        <th style="width: 50px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bodyChiTiet">
+                                    @for (int i = 0; i < Model.ChiTiets.Count; i++)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <input type="text" name="ChiTiets[@i].DienGiai" class="form-control form-control-sm" value="@Model.ChiTiets[i].DienGiai" placeholder="Lý do thu..." />
+                                            </td>
+                                            <td>
+                                                <select name="ChiTiets[@i].TaiKhoanNoId" class="form-select form-select-sm" asp-items="ViewBag.TaiKhoanNos">
+                                                    <option value="@Model.ChiTiets[i].TaiKhoanNoId" selected>@(isNganHang ? "1121" : "1111")</option>
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <select name="ChiTiets[@i].TaiKhoanCoId" class="form-select form-select-sm" asp-items="ViewBag.TaiKhoanCos">
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <input type="number" step="1" min="1" name="ChiTiets[@i].SoTien" class="form-control form-control-sm text-end input-sotien" value="@Model.ChiTiets[i].SoTien" required oninput="capNhatTongTien()" />
+                                            </td>
+                                            <td class="text-center">
+                                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="xoaDong(this)"><i class="bi bi-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="3" class="text-end fw-bold">Tổng số tiền:</td>
+                                        <td class="text-end fw-bold text-success fs-5" id="tongTienHienThi">0 đ</td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="themDong()">
+                                <i class="bi bi-plus-lg me-1"></i>Thêm dòng định khoản
+                            </button>
+                            <div>
+                                <a asp-action="Index" class="btn btn-outline-secondary me-2">Hủy bỏ</a>
+                                <button type="submit" class="btn btn-success px-4">
+                                    <i class="bi bi-check2-circle me-1"></i>Lưu Chứng Từ Thu
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function capNhatTongTien() {
+            let total = 0;
+            document.querySelectorAll('.input-sotien').forEach(inp => {
+                const val = parseFloat(inp.value) || 0;
+                total += val;
+            });
+            document.getElementById('tongTienHienThi').innerText = new Intl.NumberFormat('vi-VN').format(total) + ' đ';
+        }
+
+        function themDong() {
+            const tbody = document.getElementById('bodyChiTiet');
+            const rowCount = tbody.rows.length;
+            const firstRow = tbody.rows[0];
+            const newRow = firstRow.cloneNode(true);
+
+            newRow.querySelectorAll('input, select').forEach(el => {
+                const name = el.getAttribute('name');
+                if (name) {
+                    el.setAttribute('name', name.replace(/\[\d+\]/, `[${rowCount}]`));
+                }
+                if (el.classList.contains('input-sotien')) {
+                    el.value = 0;
+                }
+            });
+
+            tbody.appendChild(newRow);
+            capNhatTongTien();
+        }
+
+        function xoaDong(btn) {
+            const tbody = document.getElementById('bodyChiTiet');
+            if (tbody.rows.length > 1) {
+                btn.closest('tr').remove();
+                // Đánh số lại name
+                tbody.querySelectorAll('tr').forEach((row, idx) => {
+                    row.querySelectorAll('input, select').forEach(el => {
+                        const name = el.getAttribute('name');
+                        if (name) {
+                            el.setAttribute('name', name.replace(/\[\d+\]/, `[${idx}]`));
+                        }
+                    });
+                });
+                capNhatTongTien();
+            } else {
+                alert('Chứng từ phải có ít nhất 1 dòng hạch toán!');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', capNhatTongTien);
+    </script>
+}

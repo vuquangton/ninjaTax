@@ -1,0 +1,174 @@
+@model ninjaTax.Models.Entities.TaiSanCoDinh
+@using ninjaTax.Models.Entities
+@{
+    var isTscd = Model.LoaiTaiSan == LoaiTaiSan.TaiSanCoDinh;
+    ViewData["Title"] = $"Chi tiết {(isTscd ? "TSCĐ" : "CCDC")} {Model.MaTaiSan}";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0 text-info">
+                <i class="bi @(isTscd ? "bi-box-seam" : "bi-tools") me-2"></i>@ViewData["Title"] - @Model.TenTaiSan
+            </h3>
+            <small class="text-muted">Ngày ghi tăng: @Model.NgayGhiTang.ToString("dd/MM/yyyy") | Bắt đầu trích: @Model.NgayBatDauKhauHao.ToString("dd/MM/yyyy")</small>
+        </div>
+        <div class="btn-group">
+            <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Danh sách</a>
+            <a asp-action="BangKhauHao" class="btn btn-primary"><i class="bi bi-calculator me-1"></i>Bảng Khấu Hao Tháng</a>
+        </div>
+    </div>
+
+    @if (TempData["ThanhCong"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["ThanhCong"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Header card -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="text-muted small">Mã tài sản:</div>
+                    <div class="fw-bold fs-5 text-primary">@Model.MaTaiSan</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small">Phân loại:</div>
+                    <div>
+                        @if (isTscd)
+                        {
+                            <span class="badge bg-info text-dark fs-6">Tài sản cố định (211)</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark fs-6">Công cụ dụng cụ (242)</span>
+                        }
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small">Trạng thái:</div>
+                    <div>
+                        @if (Model.TrangThai == TrangThaiTaiSan.DangSuDung)
+                        {
+                            <span class="badge bg-success fs-6">Đang trích khấu hao</span>
+                        }
+                        else if (Model.TrangThai == TrangThaiTaiSan.DaKhauHaoHet)
+                        {
+                            <span class="badge bg-secondary fs-6">Đã khấu hao hết</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger fs-6">Đã thanh lý</span>
+                        }
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small">Bộ phận sử dụng:</div>
+                    <div class="fw-bold">@(Model.BoPhanSuDung ?? "Toàn công ty")</div>
+                </div>
+            </div>
+
+            <hr class="my-3" />
+
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="text-muted small text-uppercase fw-bold">Nguyên giá:</div>
+                    <div class="fs-4 fw-bold text-dark">@Model.NguyenGia.ToString("N0") đ</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small text-uppercase fw-bold">Đã trích khấu hao:</div>
+                    <div class="fs-4 fw-bold text-warning">@Model.GiaTriDaKhauHao.ToString("N0") đ</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small text-uppercase fw-bold">Giá trị còn lại:</div>
+                    <div class="fs-4 fw-bold text-success">@Model.GiaTriConLai.ToString("N0") đ</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small text-uppercase fw-bold">Mức trích / tháng:</div>
+                    <div class="fs-4 fw-bold text-info">@Model.MucKhauHaoThang.ToString("N0") đ</div>
+                </div>
+            </div>
+
+            <hr class="my-3" />
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="text-muted small">Thời gian sử dụng:</div>
+                    <div class="fw-bold">@Model.ThoiGianSuDungThang tháng (@((Model.ThoiGianSuDungThang / 12.0).ToString("0.1")) năm)</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-muted small">Tài khoản hạch toán:</div>
+                    <div>
+                        Nguyên giá: <strong>@Model.TaiKhoanNguyenGia?.MaTaiKhoan</strong> |
+                        Khấu hao: <strong>@(Model.TaiKhoanKhauHao?.MaTaiKhoan ?? (isTscd ? "2141" : "242"))</strong> |
+                        Chi phí: <strong>@Model.TaiKhoanChiPhi?.MaTaiKhoan</strong>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-muted small">Ghi chú:</div>
+                    <div>@(string.IsNullOrEmpty(Model.GhiChu) ? "-" : Model.GhiChu)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lịch sử trích khấu hao -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-light fw-bold py-3">
+            <i class="bi bi-clock-history me-2"></i>Lịch Sử Trích Khấu Hao & Bút Toán Sổ Cái Core GL
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Kỳ kế toán</th>
+                            <th>Từ ngày</th>
+                            <th>Đến ngày</th>
+                            <th class="text-end">Số tiền trích (VNĐ)</th>
+                            <th class="text-end">Lũy kế trích (VNĐ)</th>
+                            <th class="text-end">Giá trị còn lại (VNĐ)</th>
+                            <th>Bút toán Sổ Cái GL</th>
+                            <th>Ngày tạo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.BangTinhKhauHaos.Any())
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">Chưa có kỳ trích khấu hao nào cho tài sản này</td>
+                            </tr>
+                        }
+                        @foreach (var b in Model.BangTinhKhauHaos.OrderByDescending(x => x.KyKeToan))
+                        {
+                            <tr>
+                                <td class="fw-bold text-primary">@b.KyKeToan</td>
+                                <td>@b.TuNgay.ToString("dd/MM/yyyy")</td>
+                                <td>@b.DenNgay.ToString("dd/MM/yyyy")</td>
+                                <td class="text-end fw-bold text-info">@b.SoTienKhauHao.ToString("N0")</td>
+                                <td class="text-end text-warning">@b.LuyKeKhauHao.ToString("N0")</td>
+                                <td class="text-end fw-bold text-success">@b.GiaTriConLai.ToString("N0")</td>
+                                <td>
+                                    @if (b.ButToan != null)
+                                    {
+                                        <a asp-controller="ButToan" asp-action="Details" asp-route-id="@b.ButToanId" class="badge bg-secondary text-decoration-none">
+                                            @b.ButToan.SoChungTu
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">-</span>
+                                    }
+                                </td>
+                                <td>@b.NgayTao.ToString("dd/MM/yyyy HH:mm")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

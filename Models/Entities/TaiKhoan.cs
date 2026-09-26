@@ -88,4 +88,6 @@ public class TaiKhoan
     /// Trạng thái hoạt động (true: đang sử dụng; false: ngừng sử dụng)
     /// </summary>
     public bool DangHoatDong { get; set; } = true;
+
+    public string TenHienThiDropdown => $"{MaTaiKhoan} - {TenTaiKhoan}";
 }

@@ -1,0 +1,111 @@
+@model ninjaTax.Models.Entities.ChungTuThuChi
+@using ninjaTax.Models.Entities
+@{
+    Layout = null;
+    var isNganHang = Model.LoaiChungTu == LoaiChungTuThuChi.UyNhiemChi;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <title>@(isNganHang ? "ỦY NHIỆM CHI" : "PHIẾU CHI") - @Model.SoChungTu</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        body { font-family: 'Times New Roman', Times, serif; color: #000; background: #fff; }
+        .print-container { max-width: 800px; margin: 20px auto; padding: 30px; border: 1px solid #ddd; }
+        @@media print {
+            .no-print { display: none !important; }
+            .print-container { border: none; margin: 0; padding: 0; max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container text-center my-3 no-print">
+        <button onclick="window.print()" class="btn btn-primary px-4 me-2">In Chứng Từ</button>
+        <button onclick="window.close()" class="btn btn-secondary px-3">Đóng</button>
+    </div>
+
+    <div class="print-container">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-7">
+                <div class="fw-bold">ĐƠN VỊ: CÔNG TY TNHH NINJATAX VIỆT NAM</div>
+                <div>Địa chỉ: Hà Nội, Việt Nam</div>
+                <div>Mã số thuế: 0109999999</div>
+            </div>
+            <div class="col-5 text-end">
+                <div class="fw-bold">@(isNganHang ? "MẪU ỦY NHIỆM CHI" : "Mẫu số 02 - TT")</div>
+                <div class="small fst-italic">(Ban hành theo Thông tư số 99/2025/TT-BTC)</div>
+                <div class="mt-2">Số: <strong>@Model.SoChungTu</strong></div>
+                <div>Quyển số: .........</div>
+            </div>
+        </div>
+
+        <div class="text-center my-4">
+            <h2 class="fw-bold mb-1">@(isNganHang ? "ỦY NHIỆM CHI" : "PHIẾU CHI")</h2>
+            <div><em>Ngày @Model.NgayChungTu.Day tháng @Model.NgayChungTu.Month năm @Model.NgayChungTu.Year</em></div>
+        </div>
+
+        <!-- Body content -->
+        <div class="mb-4" style="line-height: 2;">
+            <div>- Họ và tên người nhận tiền: <strong>@(Model.NguoiGiaoNopNhan ?? Model.DoiTuong?.TenDoiTuong ?? "...........................................................")</strong></div>
+            <div>- Địa chỉ: <strong>@(Model.DiaChi ?? Model.DoiTuong?.DiaChi ?? "...........................................................")</strong></div>
+            <div>- Lý do chi: <strong>@Model.LyDo</strong></div>
+            <div>- Số tiền: <strong class="fs-5 text-danger">@Model.TongTien.ToString("N0") VNĐ</strong></div>
+            <div>- Kèm theo: <strong>@(string.IsNullOrEmpty(Model.SoChungTuGoc) ? "01" : Model.SoChungTuGoc)</strong> chứng từ gốc.</div>
+            @if (isNganHang && Model.TaiKhoanNganHang != null)
+            {
+                <div>- Tài khoản trích nợ: <strong>@Model.TaiKhoanNganHang.SoTaiKhoan</strong> tại Ngân hàng: <strong>@Model.TaiKhoanNganHang.TenNganHang</strong></div>
+            }
+        </div>
+
+        <!-- Bảng chi tiết định khoản -->
+        <table class="table table-bordered mb-4">
+            <thead>
+                <tr class="text-center">
+                    <th>Diễn giải</th>
+                    <th style="width: 120px;">TK Nợ</th>
+                    <th style="width: 120px;">TK Có</th>
+                    <th style="width: 180px;">Số tiền (VNĐ)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ct in Model.ChiTietThuChis)
+                {
+                    <tr>
+                        <td>@ct.DienGiai</td>
+                        <td class="text-center fw-bold">@ct.TaiKhoanNo?.MaTaiKhoan</td>
+                        <td class="text-center fw-bold">@ct.TaiKhoanCo?.MaTaiKhoan</td>
+                        <td class="text-end fw-bold">@ct.SoTien.ToString("N0")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <!-- Chữ ký -->
+        <div class="row text-center mt-5" style="page-break-inside: avoid;">
+            <div class="col-3">
+                <div class="fw-bold">Giám đốc</div>
+                <div class="small fst-italic">(Ký, họ tên, đóng dấu)</div>
+                <div style="height: 80px;"></div>
+            </div>
+            <div class="col-3">
+                <div class="fw-bold">Kế toán trưởng</div>
+                <div class="small fst-italic">(Ký, họ tên)</div>
+                <div style="height: 80px;"></div>
+            </div>
+            <div class="col-3">
+                <div class="fw-bold">Thủ quỹ / GDV</div>
+                <div class="small fst-italic">(Ký, họ tên)</div>
+                <div style="height: 80px;"></div>
+            </div>
+            <div class="col-3">
+                <div class="fw-bold">Người nhận tiền</div>
+                <div class="small fst-italic">(Ký, họ tên)</div>
+                <div style="height: 80px;"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

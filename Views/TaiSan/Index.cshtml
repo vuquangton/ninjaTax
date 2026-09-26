@@ -1,0 +1,185 @@
+@model ninjaTax.Models.ViewModels.TaiSanListViewModel
+@using ninjaTax.Models.Entities
+@{
+    ViewData["Title"] = "Quản lý Tài sản cố định (211) & Công cụ dụng cụ (242)";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0 text-info"><i class="bi bi-box-seam me-2"></i>Tài Sản Cố Định (211) & CCDC (242)</h3>
+            <small class="text-muted">Kiểm soát điều kiện ghi nhận TSCĐ >= 30 triệu (TT 45) và giới hạn phân bổ CCDC <= 36 tháng (TT 78 & TT 96)</small>
+        </div>
+        <div class="btn-group">
+            <a asp-action="Create" asp-route-loai="@LoaiTaiSan.TaiSanCoDinh" class="btn btn-info text-white">
+                <i class="bi bi-plus-circle me-1"></i>Khai Báo TSCĐ (211)
+            </a>
+            <a asp-action="Create" asp-route-loai="@LoaiTaiSan.CongCuDungCu" class="btn btn-outline-info">
+                <i class="bi bi-tools me-1"></i>Khai Báo CCDC (242)
+            </a>
+            <a asp-action="BangKhauHao" class="btn btn-primary">
+                <i class="bi bi-calculator me-1"></i>Bảng Khấu Hao Tháng
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["ThanhCong"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["ThanhCong"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Loi"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Loi"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Summary cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 border-start border-info border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-bold">Tổng nguyên giá</div>
+                    <div class="fs-4 fw-bold text-info">@Model.DanhSach.Sum(t => t.NguyenGia).ToString("N0") đ</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 border-start border-warning border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-bold">Đã khấu hao / phân bổ</div>
+                    <div class="fs-4 fw-bold text-warning">@Model.DanhSach.Sum(t => t.GiaTriDaKhauHao).ToString("N0") đ</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 border-start border-success border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-bold">Giá trị còn lại</div>
+                    <div class="fs-4 fw-bold text-success">@Model.DanhSach.Sum(t => t.GiaTriConLai).ToString("N0") đ</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 border-start border-primary border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-bold">Số lượng tài sản & CCDC</div>
+                    <div class="fs-4 fw-bold text-primary">@Model.DanhSach.Count (TSCĐ: @Model.DanhSach.Count(t => t.LoaiTaiSan == LoaiTaiSan.TaiSanCoDinh))</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bộ lọc tìm kiếm -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Loại tài sản</label>
+                    <select name="loai" class="form-select">
+                        <option value="">-- Tất cả loại --</option>
+                        <option value="@((int)LoaiTaiSan.TaiSanCoDinh)" selected="@(Model.LoaiTaiSan == LoaiTaiSan.TaiSanCoDinh)">Tài sản cố định (211)</option>
+                        <option value="@((int)LoaiTaiSan.CongCuDungCu)" selected="@(Model.LoaiTaiSan == LoaiTaiSan.CongCuDungCu)">Công cụ dụng cụ (242)</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Trạng thái</label>
+                    <select name="trangThai" class="form-select">
+                        <option value="">-- Tất cả trạng thái --</option>
+                        <option value="@((int)TrangThaiTaiSan.DangSuDung)" selected="@(Model.TrangThai == TrangThaiTaiSan.DangSuDung)">Đang sử dụng</option>
+                        <option value="@((int)TrangThaiTaiSan.DaKhauHaoHet)" selected="@(Model.TrangThai == TrangThaiTaiSan.DaKhauHaoHet)">Đã khấu hao hết</option>
+                        <option value="@((int)TrangThaiTaiSan.GiamTaiSan)" selected="@(Model.TrangThai == TrangThaiTaiSan.GiamTaiSan)">Đã thanh lý / giảm</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">Từ khóa</label>
+                    <div class="input-group">
+                        <input type="text" name="tuKhoa" class="form-control" placeholder="Mã hoặc tên tài sản..." value="@Model.TuKhoa" />
+                        <button type="submit" class="btn btn-secondary"><i class="bi bi-search"></i></button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bảng danh sách tài sản -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Mã TS</th>
+                            <th>Tên tài sản / CCDC</th>
+                            <th>Loại</th>
+                            <th>Ngày tính KH</th>
+                            <th class="text-end">Nguyên giá (VNĐ)</th>
+                            <th class="text-center">TGSD (tháng)</th>
+                            <th class="text-end">KH/Tháng</th>
+                            <th class="text-end">Đã trích</th>
+                            <th class="text-end">Còn lại</th>
+                            <th>TK Khấu hao / CP</th>
+                            <th>Trạng thái</th>
+                            <th class="text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.DanhSach.Any())
+                        {
+                            <tr>
+                                <td colspan="12" class="text-center text-muted py-4">Chưa có tài sản hoặc CCDC nào</td>
+                            </tr>
+                        }
+                        @foreach (var item in Model.DanhSach)
+                        {
+                            <tr>
+                                <td class="fw-bold">@item.MaTaiSan</td>
+                                <td>@item.TenTaiSan</td>
+                                <td>
+                                    @if (item.LoaiTaiSan == LoaiTaiSan.TaiSanCoDinh)
+                                    {
+                                        <span class="badge bg-info text-dark">TSCĐ (211)</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark">CCDC (242)</span>
+                                    }
+                                </td>
+                                <td>@item.NgayBatDauKhauHao.ToString("dd/MM/yyyy")</td>
+                                <td class="text-end fw-bold">@item.NguyenGia.ToString("N0")</td>
+                                <td class="text-center">@item.ThoiGianSuDungThang</td>
+                                <td class="text-end text-muted">@item.MucKhauHaoThang.ToString("N0")</td>
+                                <td class="text-end text-warning">@item.GiaTriDaKhauHao.ToString("N0")</td>
+                                <td class="text-end fw-bold text-success">@item.GiaTriConLai.ToString("N0")</td>
+                                <td><small class="badge bg-secondary">@(item.MaTaiKhoanKhauHao ?? "2141") / @(item.MaTaiKhoanChiPhi ?? "642")</small></td>
+                                <td>
+                                    @if (item.TrangThai == TrangThaiTaiSan.DangSuDung)
+                                    {
+                                        <span class="badge bg-success">Đang trích</span>
+                                    }
+                                    else if (item.TrangThai == TrangThaiTaiSan.DaKhauHaoHet)
+                                    {
+                                        <span class="badge bg-secondary">Hết khấu hao</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Đã thanh lý</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

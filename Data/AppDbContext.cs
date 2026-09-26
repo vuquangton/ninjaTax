@@ -30,6 +30,11 @@ public class AppDbContext : DbContext
     public DbSet<HoaDonBanHang> HoaDonBanHangs => Set<HoaDonBanHang>();
     public DbSet<ChiTietHoaDonBan> ChiTietHoaDonBans => Set<ChiTietHoaDonBan>();
     public DbSet<DoiTruCongNo> DoiTruCongNos => Set<DoiTruCongNo>();
+    public DbSet<TaiKhoanNganHang> TaiKhoanNganHangs => Set<TaiKhoanNganHang>();
+    public DbSet<ChungTuThuChi> ChungTuThuChis => Set<ChungTuThuChi>();
+    public DbSet<ChiTietChungTuThuChi> ChiTietChungTuThuChis => Set<ChiTietChungTuThuChi>();
+    public DbSet<TaiSanCoDinh> TaiSanCoDinhs => Set<TaiSanCoDinh>();
+    public DbSet<BangTinhKhauHao> BangTinhKhauHaos => Set<BangTinhKhauHao>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -466,6 +471,210 @@ public class AppDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.ButToanId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // ========================================================
+        // 11. Cấu hình Tài khoản Ngân hàng (TaiKhoanNganHang)
+        // ========================================================
+        modelBuilder.Entity<TaiKhoanNganHang>(entity =>
+        {
+            entity.ToTable("TaiKhoanNganHang");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+
+            entity.Property(e => e.SoTaiKhoan)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.HasIndex(e => e.SoTaiKhoan)
+                .IsUnique();
+
+            entity.Property(e => e.TenNganHang)
+                .IsRequired()
+                .HasMaxLength(255);
+
+            entity.Property(e => e.SoDuBanDau).HasPrecision(19, 4);
+
+            if (Database.IsSqlite())
+            {
+                entity.Property(e => e.SoDuBanDau).HasColumnType("TEXT");
+            }
+
+            entity.HasOne(e => e.TaiKhoanKeToan)
+                .WithMany()
+                .HasForeignKey(e => e.TaiKhoanKeToanId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // ========================================================
+        // 12. Cấu hình Chứng từ Thu - Chi (ChungTuThuChi)
+        // ========================================================
+        modelBuilder.Entity<ChungTuThuChi>(entity =>
+        {
+            entity.ToTable("ChungTuThuChi");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+
+            entity.Property(e => e.SoChungTu)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.HasIndex(e => e.SoChungTu)
+                .IsUnique();
+
+            entity.Property(e => e.TongTien).HasPrecision(19, 4);
+
+            if (Database.IsSqlite())
+            {
+                entity.Property(e => e.TongTien).HasColumnType("TEXT");
+            }
+
+            entity.HasOne(e => e.DoiTuong)
+                .WithMany()
+                .HasForeignKey(e => e.DoiTuongId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.TaiKhoanNganHang)
+                .WithMany()
+                .HasForeignKey(e => e.TaiKhoanNganHangId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.ButToan)
+                .WithMany()
+                .HasForeignKey(e => e.ButToanId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.HoaDonBanHang)
+                .WithMany()
+                .HasForeignKey(e => e.HoaDonBanHangId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.HoaDonMuaHang)
+                .WithMany()
+                .HasForeignKey(e => e.HoaDonMuaHangId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasMany(e => e.ChiTietThuChis)
+                .WithOne(d => d.ChungTuThuChi)
+                .HasForeignKey(d => d.ChungTuThuChiId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ========================================================
+        // 13. Cấu hình Chi tiết Thu - Chi (ChiTietChungTuThuChi)
+        // ========================================================
+        modelBuilder.Entity<ChiTietChungTuThuChi>(entity =>
+        {
+            entity.ToTable("ChiTietChungTuThuChi");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+
+            entity.Property(e => e.SoTien).HasPrecision(19, 4);
+
+            if (Database.IsSqlite())
+            {
+                entity.Property(e => e.SoTien).HasColumnType("TEXT");
+            }
+
+            entity.HasOne(e => e.TaiKhoanNo)
+                .WithMany()
+                .HasForeignKey(e => e.TaiKhoanNoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.TaiKhoanCo)
+                .WithMany()
+                .HasForeignKey(e => e.TaiKhoanCoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.DoiTuong)
+                .WithMany()
+                .HasForeignKey(e => e.DoiTuongId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // ========================================================
+        // 14. Cấu hình Tài sản cố định (TaiSanCoDinh)
+        // ========================================================
+        modelBuilder.Entity<TaiSanCoDinh>(entity =>
+        {
+            entity.ToTable("TaiSanCoDinh");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+
+            entity.Property(e => e.MaTaiSan)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.HasIndex(e => e.MaTaiSan)
+                .IsUnique();
+
+            entity.Property(e => e.NguyenGia).HasPrecision(19, 4);
+            entity.Property(e => e.GiaTriDaKhauHao).HasPrecision(19, 4);
+            entity.Property(e => e.GiaTriConLai).HasPrecision(19, 4);
+            entity.Property(e => e.MucKhauHaoThang).HasPrecision(19, 4);
+
+            if (Database.IsSqlite())
+            {
+                entity.Property(e => e.NguyenGia).HasColumnType("TEXT");
+                entity.Property(e => e.GiaTriDaKhauHao).HasColumnType("TEXT");
+                entity.Property(e => e.GiaTriConLai).HasColumnType("TEXT");
+                entity.Property(e => e.MucKhauHaoThang).HasColumnType("TEXT");
+            }
+
+            entity.HasOne(e => e.TaiKhoanNguyenGia)
+                .WithMany()
+                .HasForeignKey(e => e.TaiKhoanNguyenGiaId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.TaiKhoanKhauHao)
+                .WithMany()
+                .HasForeignKey(e => e.TaiKhoanKhauHaoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.TaiKhoanChiPhi)
+                .WithMany()
+                .HasForeignKey(e => e.TaiKhoanChiPhiId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasMany(e => e.BangTinhKhauHaos)
+                .WithOne(d => d.TaiSanCoDinh)
+                .HasForeignKey(d => d.TaiSanCoDinhId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ========================================================
+        // 15. Cấu hình Bảng tính khấu hao (BangTinhKhauHao)
+        // ========================================================
+        modelBuilder.Entity<BangTinhKhauHao>(entity =>
+        {
+            entity.ToTable("BangTinhKhauHao");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+
+            entity.Property(e => e.KyKeToan)
+                .IsRequired()
+                .HasMaxLength(10);
+
+            entity.HasIndex(e => new { e.TaiSanCoDinhId, e.KyKeToan })
+                .IsUnique();
+
+            entity.Property(e => e.NguyenGia).HasPrecision(19, 4);
+            entity.Property(e => e.SoTienKhauHao).HasPrecision(19, 4);
+            entity.Property(e => e.LuyKeKhauHao).HasPrecision(19, 4);
+            entity.Property(e => e.GiaTriConLai).HasPrecision(19, 4);
+
+            if (Database.IsSqlite())
+            {
+                entity.Property(e => e.NguyenGia).HasColumnType("TEXT");
+                entity.Property(e => e.SoTienKhauHao).HasColumnType("TEXT");
+                entity.Property(e => e.LuyKeKhauHao).HasColumnType("TEXT");
+                entity.Property(e => e.GiaTriConLai).HasColumnType("TEXT");
+            }
+
+            entity.HasOne(e => e.ButToan)
+                .WithMany()
+                .HasForeignKey(e => e.ButToanId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
     }
 }

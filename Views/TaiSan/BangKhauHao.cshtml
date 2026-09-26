@@ -1,0 +1,180 @@
+@model ninjaTax.Models.ViewModels.BangKhauHaoKyViewModel
+@using ninjaTax.Models.Entities
+@{
+    ViewData["Title"] = $"Bảng Tính Khấu Hao TSCĐ & CCDC Kỳ {Model.KyKeToan}";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0 text-primary"><i class="bi bi-calculator me-2"></i>Bảng Tính Khấu Hao Kỳ @Model.KyKeToan</h3>
+            <small class="text-muted">Phương pháp đường thẳng theo TT 45/2013/TT-BTC & Tự động sinh Bút toán Sổ Cái GL (TT99 - Tuyệt đối không dùng TK 911)</small>
+        </div>
+        <div class="btn-group">
+            <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Danh mục Tài sản</a>
+            <button onclick="window.print()" class="btn btn-outline-primary"><i class="bi bi-printer me-1"></i>In Bảng</button>
+        </div>
+    </div>
+
+    @if (TempData["ThanhCong"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["ThanhCong"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Loi"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Loi"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Bộ chọn kỳ kế toán và Nút chạy khấu hao -->
+    <div class="card shadow-sm border-0 mb-4 no-print">
+        <div class="card-body">
+            <div class="row g-3 align-items-center justify-content-between">
+                <div class="col-md-5">
+                    <form method="get" class="row g-2 align-items-center">
+                        <div class="col-auto">
+                            <label class="form-label fw-bold mb-0">Chọn kỳ kế toán (YYYY-MM):</label>
+                        </div>
+                        <div class="col-auto">
+                            <input type="month" name="kyKeToan" class="form-control" value="@Model.KyKeToan" />
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-secondary">Xem</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-7 text-end">
+                    @if (Model.DaChayKhauHao)
+                    {
+                        <span class="badge bg-success fs-6 py-2 px-3">
+                            <i class="bi bi-check2-all me-1"></i>Kỳ @Model.KyKeToan đã trích khấu hao & ghi sổ GL
+                        </span>
+                    }
+                    else
+                    {
+                        <form asp-action="ChayKhauHao" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn thực hiện trích khấu hao và tự động sinh bút toán sổ cái cho kỳ @Model.KyKeToan không?');">
+                            <input type="hidden" name="kyKeToan" value="@Model.KyKeToan" />
+                            <button type="submit" class="btn btn-success px-4" @(Model.ChiTiets.Any() ? "" : "disabled")>
+                                <i class="bi bi-play-circle me-1"></i>Chạy Khấu Hao & Ghi Sổ GL Kỳ @Model.KyKeToan
+                            </button>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 border-start border-primary border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-bold">Tổng trích khấu hao kỳ này</div>
+                    <div class="fs-4 fw-bold text-primary">@Model.TongKhauHaoKy.ToString("N0") đ</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 border-start border-info border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-bold">Số lượng tài sản / CCDC trích kỳ này</div>
+                    <div class="fs-4 fw-bold text-info">@Model.ChiTiets.Count(c => c.KhauHaoKyNay > 0)</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 border-start border-success border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-bold">Định khoản tự động sinh</div>
+                    <div class="fs-6 fw-bold text-success mt-1">
+                        TSCĐ: Nợ 642 / Có 2141 <br />
+                        CCDC: Nợ 642 / Có 242
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bảng trích khấu hao chi tiết -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle mb-0">
+                    <thead class="table-light text-center">
+                        <tr>
+                            <th rowspan="2" style="width: 50px;">STT</th>
+                            <th rowspan="2" style="width: 120px;">Mã TS</th>
+                            <th rowspan="2">Tên tài sản / CCDC</th>
+                            <th rowspan="2" style="width: 100px;">Loại</th>
+                            <th rowspan="2" style="width: 150px;">Nguyên giá (VNĐ)</th>
+                            <th colspan="3">Khấu hao / Phân bổ kỳ @Model.KyKeToan (VNĐ)</th>
+                            <th rowspan="2" style="width: 120px;">Định khoản</th>
+                            <th rowspan="2" style="width: 120px;">Bút toán GL</th>
+                        </tr>
+                        <tr>
+                            <th style="width: 150px;">Trích kỳ này</th>
+                            <th style="width: 150px;">Lũy kế</th>
+                            <th style="width: 150px;">Còn lại</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.ChiTiets.Any())
+                        {
+                            <tr>
+                                <td colspan="10" class="text-center text-muted py-4">Không có tài sản hoặc CCDC nào cần trích trong kỳ này</td>
+                            </tr>
+                        }
+                        @{ int idx = 1; }
+                        @foreach (var item in Model.ChiTiets)
+                        {
+                            <tr>
+                                <td class="text-center">@(idx++)</td>
+                                <td class="fw-bold">@item.MaTaiSan</td>
+                                <td>@item.TenTaiSan</td>
+                                <td class="text-center">
+                                    @if (item.LoaiTaiSan == LoaiTaiSan.TaiSanCoDinh)
+                                    {
+                                        <span class="badge bg-info text-dark">TSCĐ</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark">CCDC</span>
+                                    }
+                                </td>
+                                <td class="text-end fw-bold">@item.NguyenGia.ToString("N0")</td>
+                                <td class="text-end fw-bold text-primary">@item.KhauHaoKyNay.ToString("N0")</td>
+                                <td class="text-end text-warning">@item.LuyKeKhauHao.ToString("N0")</td>
+                                <td class="text-end text-success">@item.GiaTriConLai.ToString("N0")</td>
+                                <td class="text-center">
+                                    <small class="badge bg-secondary">Nợ @item.MaTaiKhoanChiPhi / Có @item.MaTaiKhoanKhauHao</small>
+                                </td>
+                                <td class="text-center">
+                                    @if (!string.IsNullOrEmpty(item.SoButToan))
+                                    {
+                                        <span class="badge bg-success">@item.SoButToan</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">Dự tính</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-light fw-bold">
+                            <td colspan="5" class="text-end">Tổng số tiền trích khấu hao kỳ @Model.KyKeToan:</td>
+                            <td class="text-end text-primary fs-5">@Model.TongKhauHaoKy.ToString("N0") đ</td>
+                            <td colspan="4"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

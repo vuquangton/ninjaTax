@@ -1,0 +1,215 @@
+@model ninjaTax.Models.Entities.ChungTuThuChi
+@using ninjaTax.Models.Entities
+@{
+    var isNganHang = Model.LoaiChungTu == LoaiChungTuThuChi.UyNhiemChi;
+    ViewData["Title"] = $"Chi tiết {(isNganHang ? "Ủy Nhiệm Chi" : "Phiếu Chi")} {Model.SoChungTu}";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0 text-danger">
+                <i class="bi @(isNganHang ? "bi-bank" : "bi-cash-stack") me-2"></i>@ViewData["Title"]
+            </h3>
+            <small class="text-muted">Ngày lập: @Model.NgayChungTu.ToString("dd/MM/yyyy") | Hạch toán: @Model.NgayHachToan.ToString("dd/MM/yyyy")</small>
+        </div>
+        <div class="btn-group">
+            <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Danh sách</a>
+            <a asp-action="In" asp-route-id="@Model.Id" target="_blank" class="btn btn-outline-primary"><i class="bi bi-printer me-1"></i>In Phiếu</a>
+            @if (Model.TrangThai == TrangThaiThuChi.ChoGhiSo)
+            {
+                <form asp-action="GhiSo" asp-route-id="@Model.Id" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-danger ms-2"><i class="bi bi-check2-circle me-1"></i>Ghi Sổ Cái GL</button>
+                </form>
+            }
+            @if (Model.TrangThai != TrangThaiThuChi.DaHuy)
+            {
+                <button type="button" class="btn btn-outline-danger ms-2" data-bs-toggle="modal" data-bs-target="#modalHuy">
+                    <i class="bi bi-x-circle me-1"></i>Hủy Chứng Từ
+                </button>
+            }
+        </div>
+    </div>
+
+    @if (TempData["ThanhCong"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["ThanhCong"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["CanhBao"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show border-start border-warning border-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>@TempData["CanhBao"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Loi"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-start border-danger border-4" role="alert">
+            <i class="bi bi-shield-x me-2 fs-5"></i>@TempData["Loi"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (Model.ViPhamQuyTac20Tr)
+    {
+        <div class="alert alert-danger border-start border-danger border-4 d-flex align-items-center mb-3">
+            <i class="bi bi-exclamation-octagon-fill text-danger fs-3 me-3"></i>
+            <div>
+                <h6 class="fw-bold mb-1">CẢNH BÁO VI PHẠM NGUYÊN TẮC THANH TOÁN 20 TRIỆU ĐỒNG (TT 219/2013 & TT 26/2015)</h6>
+                <div>Chứng từ này chi tiền mặt cho giao dịch có giá trị từ 20.000.000 VNĐ. Cơ quan thuế sẽ <strong>loại trừ khấu trừ thuế GTGT đầu vào</strong> và <strong>không chấp nhận tính vào chi phí hợp lý khi tính thuế TNDN</strong>. Khuyến nghị chuyển sang hình thức Ủy nhiệm chi (1121).</div>
+            </div>
+        </div>
+    }
+
+    <!-- Header card -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="text-muted small">Số chứng từ:</div>
+                    <div class="fw-bold fs-5 text-danger">@Model.SoChungTu</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small">Trạng thái:</div>
+                    <div>
+                        @if (Model.TrangThai == TrangThaiThuChi.DaGhiSo)
+                        {
+                            <span class="badge bg-success fs-6"><i class="bi bi-check2-circle me-1"></i>Đã ghi sổ</span>
+                        }
+                        else if (Model.TrangThai == TrangThaiThuChi.ChoGhiSo)
+                        {
+                            <span class="badge bg-warning text-dark fs-6"><i class="bi bi-clock me-1"></i>Chờ ghi sổ</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger fs-6"><i class="bi bi-x-circle me-1"></i>Đã hủy</span>
+                        }
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small">Bút toán Sổ cái GL:</div>
+                    <div class="fw-bold">
+                        @if (Model.ButToan != null)
+                        {
+                            <a asp-controller="ButToan" asp-action="Details" asp-route-id="@Model.ButToanId" class="badge bg-info text-decoration-none">
+                                @Model.ButToan.SoChungTu
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Chưa ghi sổ</span>
+                        }
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small">Tổng tiền chi:</div>
+                    <div class="fw-bold fs-5 text-danger">@Model.TongTien.ToString("N0") VNĐ</div>
+                </div>
+            </div>
+
+            <hr class="my-3" />
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="text-muted small">Nhà cung cấp / Đối tượng nhận:</div>
+                    <div class="fw-bold">@(Model.DoiTuong?.TenDoiTuong ?? "Chi khác")</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-muted small">Người nhận tiền:</div>
+                    <div>@(Model.NguoiGiaoNopNhan ?? "-")</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-muted small">Địa chỉ:</div>
+                    <div>@(Model.DiaChi ?? "-")</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted small">Lý do chi:</div>
+                    <div>@Model.LyDo</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small">Chứng từ gốc kèm theo:</div>
+                    <div>@(string.IsNullOrEmpty(Model.SoChungTuGoc) ? "-" : Model.SoChungTuGoc)</div>
+                </div>
+                @if (isNganHang && Model.TaiKhoanNganHang != null)
+                {
+                    <div class="col-md-3">
+                        <div class="text-muted small">Tài khoản ngân hàng trích nợ:</div>
+                        <div class="fw-bold text-primary">@Model.TaiKhoanNganHang.TenNganHang - @Model.TaiKhoanNganHang.SoTaiKhoan</div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Bảng định khoản chi tiết -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-light fw-bold py-3">
+            <i class="bi bi-list-check me-2"></i>Chi Tiết Hạch Toán Kép (General Ledger Postings)
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>STT</th>
+                            <th>Diễn giải chi tiết</th>
+                            <th>TK Nợ</th>
+                            <th>TK Có</th>
+                            <th class="text-end">Số tiền (VNĐ)</th>
+                            <th>Đối tượng theo dõi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{ int idx = 1; }
+                        @foreach (var ct in Model.ChiTietThuChis)
+                        {
+                            <tr>
+                                <td>@(idx++)</td>
+                                <td>@ct.DienGiai</td>
+                                <td class="fw-bold text-primary">@ct.TaiKhoanNo?.MaTaiKhoan</td>
+                                <td class="fw-bold text-secondary">@ct.TaiKhoanCo?.MaTaiKhoan</td>
+                                <td class="text-end fw-bold text-danger">@ct.SoTien.ToString("N0")</td>
+                                <td>@(ct.DoiTuong?.TenDoiTuong ?? Model.DoiTuong?.TenDoiTuong ?? "-")</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-light fw-bold">
+                            <td colspan="4" class="text-end">Tổng cộng:</td>
+                            <td class="text-end text-danger fs-6">@Model.TongTien.ToString("N0") đ</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Hủy chứng từ -->
+<div class="modal fade" id="modalHuy" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Huy" asp-route-id="@Model.Id" method="post">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Xác nhận hủy chứng từ chi</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Bạn có chắc chắn muốn hủy chứng từ chi <strong>@Model.SoChungTu</strong> không? Bút toán sổ cái và công nợ (nếu có) sẽ được hoàn trả lại.</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Lý do hủy *</label>
+                        <textarea name="lyDo" class="form-control" rows="3" required placeholder="Nhập lý do hủy chứng từ..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-danger">Hủy Chứng Từ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

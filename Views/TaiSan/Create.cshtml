@@ -1,0 +1,165 @@
+@model ninjaTax.Models.ViewModels.TaiSanCreateViewModel
+@using ninjaTax.Models.Entities
+@{
+    var isTscd = Model.LoaiTaiSan == LoaiTaiSan.TaiSanCoDinh;
+    ViewData["Title"] = isTscd ? "Khai Báo Tài Sản Cố Định (TK 211)" : "Khai Báo Công Cụ Dụng Cụ (TK 242)";
+}
+
+<div class="container-fluid py-3">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card shadow-sm border-0">
+                <div class="card-header @(isTscd ? "bg-info" : "bg-warning") text-dark py-3">
+                    <h5 class="mb-0"><i class="bi @(isTscd ? "bi-box-seam" : "bi-tools") me-2"></i>@ViewData["Title"]</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post" id="formTaiSan">
+                        <div asp-validation-summary="All" class="alert alert-danger" role="alert" style="display: @(ViewData.ModelState.IsValid ? "none" : "block")"></div>
+
+                        <!-- Cảnh báo quy tắc pháp lý -->
+                        <div class="alert alert-info border-start border-info border-4 mb-4">
+                            <h6 class="fw-bold mb-1"><i class="bi bi-shield-check me-2"></i>Quy chuẩn pháp lý kế toán tài sản & CCDC:</h6>
+                            <ul class="mb-0 ps-3">
+                                <li><strong>Tài sản cố định (TK 211 - TT 45/2013/TT-BTC)</strong>: Bắt buộc <code>Nguyên giá &ge; 30.000.000 VNĐ</code> và <code>Thời gian sử dụng &gt; 1 năm (12 tháng)</code>.</li>
+                                <li><strong>Công cụ dụng cụ (TK 242 - TT 78/2014 & TT 96/2015/TT-BTC)</strong>: Thời gian phân bổ chi phí trả trước tối đa không quá <code>36 tháng (3 năm)</code>.</li>
+                            </ul>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label asp-for="LoaiTaiSan" class="form-label fw-bold">Phân loại *</label>
+                                <select asp-for="LoaiTaiSan" class="form-select" id="selectLoaiTaiSan" onchange="doiLoaiTaiSan(this.value)">
+                                    <option value="@((int)LoaiTaiSan.TaiSanCoDinh)" selected="@isTscd">Tài sản cố định (TK 211)</option>
+                                    <option value="@((int)LoaiTaiSan.CongCuDungCu)" selected="@(!isTscd)">Công cụ dụng cụ (TK 242)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="MaTaiSan" class="form-label fw-bold">Mã tài sản / CCDC *</label>
+                                <input asp-for="MaTaiSan" class="form-control" placeholder="VD: TS-OTO-01, CCDC-MT-02" required />
+                                <span asp-validation-for="MaTaiSan" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="TenTaiSan" class="form-label fw-bold">Tên tài sản / CCDC *</label>
+                                <input asp-for="TenTaiSan" class="form-control" placeholder="VD: Xe ô tô Mazda CX5, Máy tính Dell XPS..." required />
+                                <span asp-validation-for="TenTaiSan" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label asp-for="NgayGhiTang" class="form-label fw-bold">Ngày ghi tăng *</label>
+                                <input asp-for="NgayGhiTang" type="date" class="form-control" />
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="NgayBatDauKhauHao" class="form-label fw-bold">Ngày bắt đầu trích KH / PB *</label>
+                                <input asp-for="NgayBatDauKhauHao" type="date" class="form-control" />
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="BoPhanSuDung" class="form-label">Bộ phận sử dụng</label>
+                                <input asp-for="BoPhanSuDung" class="form-control" placeholder="Phòng Kế toán, Ban Giám đốc..." />
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label asp-for="NguyenGia" class="form-label fw-bold">Nguyên giá (VNĐ) *</label>
+                                <input asp-for="NguyenGia" type="number" step="1000" min="1" class="form-control" id="inputNguyenGia" oninput="tinhKhauHaoThang()" required />
+                                <div id="canhBao30Tr" class="text-danger small fw-bold d-none mt-1">
+                                    <i class="bi bi-exclamation-circle me-1"></i>Nguyên giá &lt; 30.000.000 VNĐ không đủ điều kiện ghi nhận TSCĐ hữu hình!
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="ThoiGianSuDungThang" class="form-label fw-bold">Thời gian sử dụng (Tháng) *</label>
+                                <input asp-for="ThoiGianSuDungThang" type="number" step="1" min="1" max="600" class="form-control" id="inputThoiGian" oninput="tinhKhauHaoThang()" required />
+                                <div id="canhBao36Thang" class="text-danger small fw-bold d-none mt-1">
+                                    <i class="bi bi-exclamation-circle me-1"></i>CCDC phân bổ tối đa không quá 36 tháng (TT 96 & TT 78)!
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Mức trích bình quân / tháng</label>
+                                <input type="text" class="form-control text-primary fw-bold" id="mucKhauHaoHienThi" readonly value="0 đ" />
+                            </div>
+                        </div>
+
+                        <!-- Cấu hình tài khoản hạch toán -->
+                        <h6 class="fw-bold border-bottom pb-2 mb-3 mt-4 text-secondary">
+                            <i class="bi bi-journal-bookmark me-2"></i>Tài khoản kế toán hạch toán định kỳ (TT99 - Tuyệt đối không dùng TK 911)
+                        </h6>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label asp-for="TaiKhoanNguyenGiaId" class="form-label fw-bold">TK Nguyên giá / CCDC *</label>
+                                <select asp-for="TaiKhoanNguyenGiaId" class="form-select" asp-items="ViewBag.TaiKhoanNguyenGias" required>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="TaiKhoanKhauHaoId" class="form-label fw-bold">TK Hao mòn lũy kế</label>
+                                <select asp-for="TaiKhoanKhauHaoId" class="form-select" asp-items="ViewBag.TaiKhoanKhauHaos">
+                                    <option value="">-- Mặc định (2141 / 242) --</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="TaiKhoanChiPhiId" class="form-label fw-bold">TK Chi phí trích khấu hao *</label>
+                                <select asp-for="TaiKhoanChiPhiId" class="form-select" asp-items="ViewBag.TaiKhoanChiPhis" required>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="GhiChu" class="form-label">Ghi chú / Thông số kỹ thuật</label>
+                            <textarea asp-for="GhiChu" class="form-control" rows="2" placeholder="Biển số xe, số khung, cấu hình phần cứng..."></textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <a asp-action="Index" class="btn btn-outline-secondary me-2">Hủy bỏ</a>
+                            <button type="submit" class="btn @(isTscd ? "btn-info text-white" : "btn-warning") px-4" id="btnLuu">
+                                <i class="bi bi-check2-circle me-1"></i>Lưu Khai Báo Tài Sản
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function doiLoaiTaiSan(val) {
+            const isTscd = val == "1";
+            window.location.href = '@Url.Action("Create")?loai=' + val;
+        }
+
+        function tinhKhauHaoThang() {
+            const loai = document.getElementById('selectLoaiTaiSan').value;
+            const ng = parseFloat(document.getElementById('inputNguyenGia').value) || 0;
+            const tg = parseInt(document.getElementById('inputThoiGian').value) || 0;
+
+            const canhBao30Tr = document.getElementById('canhBao30Tr');
+            const canhBao36Thang = document.getElementById('canhBao36Thang');
+
+            // Kiểm tra tiêu chuẩn 30 triệu
+            if (loai == "1" && ng > 0 && ng < 30000000) {
+                canhBao30Tr.classList.remove('d-none');
+            } else {
+                canhBao30Tr.classList.add('d-none');
+            }
+
+            // Kiểm tra giới hạn 36 tháng
+            if (loai == "2" && tg > 36) {
+                canhBao36Thang.classList.remove('d-none');
+            } else {
+                canhBao36Thang.classList.add('d-none');
+            }
+
+            if (ng > 0 && tg > 0) {
+                const muc = Math.round(ng / tg);
+                document.getElementById('mucKhauHaoHienThi').value = new Intl.NumberFormat('vi-VN').format(muc) + ' đ/tháng';
+            } else {
+                document.getElementById('mucKhauHaoHienThi').value = '0 đ';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', tinhKhauHaoThang);
+    </script>
+}
