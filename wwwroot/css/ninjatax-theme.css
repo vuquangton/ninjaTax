@@ -1,0 +1,672 @@
+/* =============================================================
+   ninjaTax Design System — Theme CSS
+   All custom properties consumed by other modules.
+   ============================================================= */
+
+:root {
+  /* ── Primary palette — calming blue ── */
+  --nt-primary:       #2563EB;
+  --nt-primary-light: #DBEAFE;
+  --nt-primary-dark:  #1E40AF;
+  --nt-primary-hover: #1D4ED8;
+
+  /* ── Neutral palette ── */
+  --nt-bg:            #F8FAFC;
+  --nt-bg-card:       #FFFFFF;
+  --nt-bg-hover:      #F1F5F9;
+  --nt-border:        #E2E8F0;
+  --nt-border-focus:  #93C5FD;
+  --nt-text:          #1E293B;
+  --nt-text-muted:    #64748B;
+  --nt-text-disabled: #94A3B8;
+
+  /* ── Workflow status colors ── */
+  --nt-draft:         #F59E0B;
+  --nt-draft-bg:      #FFFBEB;
+  --nt-draft-border:  #FCD34D;
+  --nt-posted:        #10B981;
+  --nt-posted-bg:     #ECFDF5;
+  --nt-posted-border: #6EE7B7;
+  --nt-cancelled:     #EF4444;
+  --nt-cancelled-bg:  #FEF2F2;
+  --nt-cancelled-border: #FCA5A5;
+
+  /* ── Success / Warning / Info ── */
+  --nt-success:       #10B981;
+  --nt-success-bg:    #ECFDF5;
+  --nt-warning:       #F59E0B;
+  --nt-warning-bg:    #FFFBEB;
+  --nt-error:         #EF4444;
+  --nt-error-bg:      #FEF2F2;
+  --nt-info:          #3B82F6;
+  --nt-info-bg:       #EFF6FF;
+
+  /* ── Spacing — compact enterprise density ── */
+  --nt-spacing-xs:    0.25rem;   /* 4px */
+  --nt-spacing-sm:    0.5rem;    /* 8px */
+  --nt-spacing-md:    0.75rem;   /* 12px */
+  --nt-spacing-lg:    1rem;      /* 16px */
+  --nt-spacing-xl:    1.5rem;    /* 24px */
+
+  /* ── Typography ── */
+  --nt-font-family:   'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+  --nt-font-size-xs:  0.75rem;    /* 12px */
+  --nt-font-size-sm:  0.8125rem;  /* 13px — compact tables */
+  --nt-font-size-base:0.875rem;   /* 14px — body text */
+  --nt-font-size-lg:  1rem;       /* 16px — headings */
+  --nt-font-size-xl:  1.125rem;   /* 18px */
+  --nt-line-height:   1.5;
+
+  /* ── Border radius ── */
+  --nt-radius-sm:     0.25rem;   /* 4px */
+  --nt-radius:        0.375rem;  /* 6px */
+  --nt-radius-lg:     0.5rem;    /* 8px */
+
+  /* ── Shadows ── */
+  --nt-shadow-sm:     0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --nt-shadow:        0 1px 3px 0 rgb(0 0 0 / 0.10), 0 1px 2px -1px rgb(0 0 0 / 0.10);
+  --nt-shadow-lg:     0 10px 15px -3px rgb(0 0 0 / 0.10), 0 4px 6px -4px rgb(0 0 0 / 0.10);
+
+  /* ── Table ── */
+  --nt-table-row-height:   36px;
+  --nt-table-header-height:38px;
+  --nt-table-font-size:    var(--nt-font-size-sm);
+}
+
+/* =============================================================
+   Base reset for nt-app
+   ============================================================= */
+
+.nt-app {
+  background-color: var(--nt-bg);
+  font-family:      var(--nt-font-family);
+  font-size:        var(--nt-font-size-base);
+  color:            var(--nt-text);
+  line-height:      var(--nt-line-height);
+}
+
+/* =============================================================
+   Cards
+   ============================================================= */
+
+.nt-card {
+  background:    var(--nt-bg-card);
+  border:        1px solid var(--nt-border);
+  border-radius: var(--nt-radius);
+  padding:       var(--nt-spacing-lg);
+  box-shadow:    var(--nt-shadow-sm);
+}
+
+.nt-card + .nt-card {
+  margin-top: var(--nt-spacing-lg);
+}
+
+/* =============================================================
+   Page header
+   ============================================================= */
+
+.nt-page-header {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  flex-wrap:       wrap;
+  gap:             var(--nt-spacing-sm);
+  margin-bottom:   var(--nt-spacing-lg);
+}
+
+.nt-page-header__title {
+  font-size:   var(--nt-font-size-lg);
+  font-weight: 600;
+  color:       var(--nt-text);
+  margin:      0;
+}
+
+.nt-page-header__breadcrumb {
+  font-size: var(--nt-font-size-sm);
+  color:     var(--nt-text-muted);
+  margin:    0;
+}
+
+.nt-page-header__actions {
+  display:    flex;
+  align-items:center;
+  gap:        var(--nt-spacing-sm);
+  flex-shrink:0;
+}
+
+/* =============================================================
+   Status badges
+   ============================================================= */
+
+.nt-badge {
+  display:       inline-flex;
+  align-items:   center;
+  padding:       0.125rem 0.5rem;
+  font-size:     var(--nt-font-size-xs);
+  font-weight:   600;
+  border-radius: 9999px;
+  border:        1px solid transparent;
+  letter-spacing:0.025em;
+  text-transform:uppercase;
+  white-space:   nowrap;
+}
+
+.nt-badge--draft {
+  color:            #92400E;
+  background-color: var(--nt-draft-bg);
+  border-color:     var(--nt-draft-border);
+}
+
+.nt-badge--posted {
+  color:            #065F46;
+  background-color: var(--nt-posted-bg);
+  border-color:     var(--nt-posted-border);
+}
+
+.nt-badge--cancelled {
+  color:            #991B1B;
+  background-color: var(--nt-cancelled-bg);
+  border-color:     var(--nt-cancelled-border);
+}
+
+/* =============================================================
+   Compact data table
+   ============================================================= */
+
+.nt-table {
+  width:       100%;
+  font-size:   var(--nt-table-font-size);
+  border-collapse: collapse;
+}
+
+.nt-table thead th {
+  height:          var(--nt-table-header-height);
+  padding:         0 var(--nt-spacing-sm);
+  background:      var(--nt-bg);
+  border-bottom:   2px solid var(--nt-border);
+  font-weight:     600;
+  font-size:       var(--nt-font-size-xs);
+  text-transform:  uppercase;
+  letter-spacing:  0.05em;
+  color:           var(--nt-text-muted);
+  white-space:     nowrap;
+  position:        sticky;
+  top:             0;
+  z-index:         1;
+}
+
+.nt-table thead th a {
+  color:           var(--nt-text-muted);
+  text-decoration: none;
+}
+
+.nt-table thead th a:hover {
+  color: var(--nt-primary);
+}
+
+.nt-table tbody tr {
+  height:         var(--nt-table-row-height);
+  border-bottom:  1px solid var(--nt-border);
+  transition:     background 0.1s ease;
+}
+
+.nt-table tbody tr:nth-child(odd) {
+  background: var(--nt-bg);
+}
+
+.nt-table tbody tr:nth-child(even) {
+  background: var(--nt-bg-card);
+}
+
+.nt-table tbody tr:hover {
+  background: var(--nt-primary-light);
+}
+
+.nt-table tbody td {
+  padding:     0 var(--nt-spacing-sm);
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow:    hidden;
+  text-overflow: ellipsis;
+  max-width:   300px;
+}
+
+.nt-table .nt-table__actions {
+  width:      120px;
+  text-align: right;
+  white-space:nowrap;
+}
+
+.nt-table .nt-table__actions a,
+.nt-table .nt-table__actions button {
+  padding:   0.125rem 0.375rem;
+  font-size: var(--nt-font-size-xs);
+}
+
+/* Numeric cells — right-aligned */
+.nt-table .nt-col-number {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* =============================================================
+   Form fields
+   ============================================================= */
+
+.nt-field {
+  margin-bottom: var(--nt-spacing-md);
+}
+
+.nt-field label {
+  display:     block;
+  font-size:   var(--nt-font-size-sm);
+  font-weight: 500;
+  color:       var(--nt-text-muted);
+  margin-bottom: var(--nt-spacing-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.nt-field label .nt-required {
+  color:       var(--nt-error);
+  margin-left: 0.2em;
+}
+
+.nt-field input,
+.nt-field select,
+.nt-field textarea {
+  height:        34px;
+  font-size:     var(--nt-font-size-base);
+  border:        1px solid var(--nt-border);
+  border-radius: var(--nt-radius-sm);
+  padding:       0 var(--nt-spacing-sm);
+  transition:    border-color 0.15s ease, box-shadow 0.15s ease;
+  width:         100%;
+}
+
+.nt-field textarea {
+  height: auto;
+  min-height: 72px;
+  padding: var(--nt-spacing-sm);
+}
+
+.nt-field input:focus,
+.nt-field select:focus,
+.nt-field textarea:focus {
+  outline:      none;
+  border-color: var(--nt-border-focus);
+  box-shadow:   0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+/* Error state */
+.nt-field--error input,
+.nt-field--error select,
+.nt-field--error textarea {
+  border-color:     var(--nt-error);
+  background-color: var(--nt-error-bg);
+}
+
+.nt-field--error input:focus,
+.nt-field--error select:focus,
+.nt-field--error textarea:focus {
+  border-color: var(--nt-error);
+  box-shadow:   0 0 0 3px rgba(239, 68, 68, 0.12);
+}
+
+.nt-field__help {
+  display:    block;
+  font-size:  var(--nt-font-size-xs);
+  margin-top: var(--nt-spacing-xs);
+  color:      var(--nt-text-muted);
+}
+
+.nt-field--error .nt-field__help {
+  color: var(--nt-error);
+}
+
+/* =============================================================
+   Action bar (form footer: cancel | save-draft | post)
+   ============================================================= */
+
+.nt-action-bar {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  padding:         var(--nt-spacing-md) var(--nt-spacing-lg);
+  background:      var(--nt-bg-card);
+  border-top:      1px solid var(--nt-border);
+  margin-top:      var(--nt-spacing-lg);
+  border-radius:   0 0 var(--nt-radius) var(--nt-radius);
+  gap:             var(--nt-spacing-md);
+  position:        sticky;
+  bottom:          0;
+  z-index:         10;
+}
+
+.nt-action-bar__secondary {
+  display:    flex;
+  align-items:center;
+  gap:        var(--nt-spacing-sm);
+}
+
+.nt-action-bar__primary {
+  display:    flex;
+  align-items:center;
+  gap:        var(--nt-spacing-sm);
+}
+
+.nt-action-bar .shortcut-hint {
+  font-size:   var(--nt-font-size-xs);
+  color:       var(--nt-text-muted);
+  font-weight: 400;
+}
+
+/* =============================================================
+   KPI cards (dashboard)
+   ============================================================= */
+
+.nt-kpi-card {
+  background:    var(--nt-bg-card);
+  border:        1px solid var(--nt-border);
+  border-radius: var(--nt-radius);
+  padding:       var(--nt-spacing-lg);
+  text-decoration:none;
+  display:       block;
+  transition:    box-shadow 0.15s ease, transform 0.15s ease;
+  cursor:        pointer;
+}
+
+.nt-kpi-card:hover {
+  box-shadow: var(--nt-shadow);
+  transform:  translateY(-1px);
+  text-decoration: none;
+}
+
+.nt-kpi-card__label {
+  font-size:      var(--nt-font-size-sm);
+  color:          var(--nt-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom:  var(--nt-spacing-xs);
+}
+
+.nt-kpi-card__value {
+  font-size:   1.5rem;
+  font-weight: 700;
+  color:       var(--nt-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.nt-kpi-card__trend {
+  font-size:  var(--nt-font-size-sm);
+  margin-top: var(--nt-spacing-xs);
+}
+
+/* =============================================================
+   Toolbar (list pages)
+   ============================================================= */
+
+.nt-toolbar {
+  display:     flex;
+  align-items: center;
+  gap:         var(--nt-spacing-sm);
+  flex-wrap:   wrap;
+  margin-bottom: var(--nt-spacing-md);
+}
+
+.nt-toolbar__filters {
+  display:    flex;
+  align-items:center;
+  gap:        var(--nt-spacing-sm);
+  flex-wrap:  wrap;
+  flex:       1;
+}
+
+.nt-toolbar__actions {
+  display:    flex;
+  align-items:center;
+  gap:        var(--nt-spacing-sm);
+  flex-shrink:0;
+}
+
+.nt-toolbar input,
+.nt-toolbar select {
+  height:     32px;
+  font-size:  var(--nt-font-size-sm);
+  border:     1px solid var(--nt-border);
+  border-radius: var(--nt-radius-sm);
+  padding:    0 var(--nt-spacing-sm);
+}
+
+/* =============================================================
+   Overlay for cancelled docs
+   ============================================================= */
+
+.nt-form--cancelled {
+  position: relative;
+}
+
+.nt-form--cancelled::after {
+  content:  '';
+  position: absolute;
+  inset:    0;
+  background: rgba(248, 250, 252, 0.7);
+  border-radius: var(--nt-radius);
+  pointer-events: none;
+  z-index:  5;
+}
+
+/* =============================================================
+   Shortcut help overlay
+   ============================================================= */
+
+#nt-shortcut-help {
+  display:        none;
+  position:       fixed;
+  inset:          0;
+  background:     rgba(15, 23, 42, 0.6);
+  z-index:        9999;
+  align-items:    center;
+  justify-content:center;
+}
+
+#nt-shortcut-help.is-visible {
+  display: flex;
+}
+
+#nt-shortcut-help .nt-shortcut-panel {
+  background:    var(--nt-bg-card);
+  border-radius: var(--nt-radius-lg);
+  padding:       var(--nt-spacing-xl);
+  min-width:     360px;
+  box-shadow:    var(--nt-shadow-lg);
+}
+
+#nt-shortcut-help .nt-shortcut-panel h5 {
+  margin:      0 0 var(--nt-spacing-md) 0;
+  font-size:   var(--nt-font-size-lg);
+  font-weight: 600;
+}
+
+#nt-shortcut-help table {
+  width:       100%;
+  font-size:   var(--nt-font-size-sm);
+  border-collapse: collapse;
+}
+
+#nt-shortcut-help td {
+  padding:     var(--nt-spacing-xs) var(--nt-spacing-sm);
+  border-bottom: 1px solid var(--nt-border);
+}
+
+#nt-shortcut-help kbd {
+  background:    var(--nt-bg);
+  border:        1px solid var(--nt-border);
+  border-radius: var(--nt-radius-sm);
+  padding:       0.1rem 0.4rem;
+  font-size:     var(--nt-font-size-xs);
+  font-family:   monospace;
+}
+
+/* =============================================================
+   Toast notifications
+   ============================================================= */
+
+#nt-toast-container {
+  z-index: 9998;
+}
+
+.nt-toast {
+  min-width:     280px;
+  max-width:     400px;
+  padding:       var(--nt-spacing-sm) var(--nt-spacing-md);
+  border-radius: var(--nt-radius);
+  font-size:     var(--nt-font-size-sm);
+  display:       flex;
+  align-items:   flex-start;
+  gap:           var(--nt-spacing-sm);
+  box-shadow:    var(--nt-shadow-lg);
+  animation:     nt-toast-in 0.2s ease;
+  margin-bottom: var(--nt-spacing-sm);
+  border-left:   4px solid transparent;
+}
+
+@keyframes nt-toast-in {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.nt-toast--success {
+  background:  var(--nt-success-bg);
+  border-color:var(--nt-success);
+  color:       #065F46;
+}
+
+.nt-toast--warning {
+  background:  var(--nt-warning-bg);
+  border-color:var(--nt-warning);
+  color:       #92400E;
+}
+
+.nt-toast--error {
+  background:  var(--nt-error-bg);
+  border-color:var(--nt-error);
+  color:       #991B1B;
+}
+
+.nt-toast__close {
+  margin-left: auto;
+  cursor:      pointer;
+  opacity:     0.6;
+  background:  none;
+  border:      none;
+  font-size:   1rem;
+  line-height: 1;
+  padding:     0;
+  flex-shrink: 0;
+}
+
+.nt-toast__close:hover {
+  opacity: 1;
+}
+
+/* =============================================================
+   Balance indicator (ButToan forms)
+   ============================================================= */
+
+.nt-balance-indicator {
+  display:    flex;
+  align-items:center;
+  gap:        var(--nt-spacing-sm);
+  padding:    var(--nt-spacing-sm) var(--nt-spacing-md);
+  border-radius: var(--nt-radius-sm);
+  font-size:  var(--nt-font-size-sm);
+  font-weight:600;
+}
+
+.nt-balance-indicator--balanced {
+  background: var(--nt-success-bg);
+  color:      #065F46;
+}
+
+.nt-balance-indicator--unbalanced {
+  background: var(--nt-error-bg);
+  color:      #991B1B;
+}
+
+/* =============================================================
+   Responsive nav overrides (NavMenu component)
+   ============================================================= */
+
+header .navbar {
+  background-color: var(--nt-bg-card) !important;
+  border-bottom:    1px solid var(--nt-border);
+  box-shadow:       var(--nt-shadow-sm);
+  font-size:        var(--nt-font-size-base);
+  padding:          0.375rem 1rem;
+}
+
+header .navbar .nav-link {
+  color:        var(--nt-text) !important;
+  padding:      0.5rem 0.75rem;
+  border-radius:var(--nt-radius-sm);
+  transition:   background 0.1s ease;
+  font-size:    var(--nt-font-size-sm);
+}
+
+header .navbar .nav-link:hover,
+header .navbar .nav-link:focus {
+  background: var(--nt-bg);
+  color:      var(--nt-primary) !important;
+}
+
+header .navbar .nav-item.active > .nav-link,
+header .navbar .nav-link.active {
+  background: var(--nt-primary-light);
+  color:      var(--nt-primary) !important;
+  font-weight:600;
+}
+
+header .navbar .dropdown-menu {
+  font-size:     var(--nt-font-size-sm);
+  border:        1px solid var(--nt-border);
+  box-shadow:    var(--nt-shadow);
+  border-radius: var(--nt-radius);
+}
+
+header .navbar .dropdown-item {
+  color:   var(--nt-text);
+  padding: 0.4rem 1rem;
+}
+
+header .navbar .dropdown-item:hover {
+  background: var(--nt-primary-light);
+  color:      var(--nt-primary);
+}
+
+header .navbar-brand {
+  font-weight:  700;
+  color:        var(--nt-primary) !important;
+  font-size:    var(--nt-font-size-lg);
+}
+
+/* =============================================================
+   Utility overrides for Bootstrap compatibility
+   ============================================================= */
+
+body.nt-app {
+  margin-bottom: 0;
+}
+
+.nt-app .container-fluid {
+  padding-top: var(--nt-spacing-lg);
+}
+
+/* Override Bootstrap's default table to use nt-table vars when both classes present */
+.nt-app .table {
+  font-size:  var(--nt-table-font-size);
+}
+
+.nt-app .table > :not(caption) > * > * {
+  padding: 0.375rem var(--nt-spacing-sm);
+}

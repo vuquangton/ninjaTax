@@ -1,121 +1,78 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - ninjaTax</title>
     <script type="importmap"></script>
+    <!-- Google Fonts — Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
+    <!-- Bootstrap & Icons -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <!-- ninjaTax design system (must come after Bootstrap to override) -->
+    <link rel="stylesheet" href="~/css/ninjatax-theme.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/ninjaTax.styles.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
 </head>
-<body>
+<body class="nt-app">
     <header>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand fw-bold text-warning" asp-area="" asp-controller="Home" asp-action="Index">
-                    <i class="bi bi-shield-check me-1"></i>ninjaTax <span class="badge bg-warning text-dark fs-6">TT99</span>
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-lg-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="MuaHang" asp-action="Index"><i class="bi bi-cart-check me-1"></i>Mua Hàng (Đầu Vào)</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="BanHang" asp-action="Index"><i class="bi bi-receipt-cutoff me-1"></i>Bán Hàng (HĐĐT NĐ123)</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="CongNo" asp-action="Index"><i class="bi bi-wallet2 me-1"></i>Công Nợ (AR/AP)</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="ThuTien" asp-action="Index"><i class="bi bi-cash me-1"></i>Thu Tiền (111/112)</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="ChiTien" asp-action="Index"><i class="bi bi-credit-card me-1"></i>Chi Tiền (UNC)</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="TaiSan" asp-action="Index"><i class="bi bi-box me-1"></i>TSCĐ & CCDC</a>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="payrollDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-people me-1"></i>Tiền Lương & Thuế
-                            </a>
-                            <ul class="dropdown-menu" aria-labelledby="payrollDropdown">
-                                <li><a class="dropdown-item" asp-controller="NhanVien" asp-action="Index"><i class="bi bi-person-lines-fill me-2"></i>Hồ sơ nhân sự</a></li>
-                                <li><a class="dropdown-item" asp-controller="Department" asp-action="Index"><i class="bi bi-diagram-3-fill me-2"></i>Cơ cấu phòng ban</a></li>
-                                <li><a class="dropdown-item" asp-controller="ChamCong" asp-action="Index"><i class="bi bi-calendar-check me-2"></i>Bảng chấm công</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" asp-controller="TienLuong" asp-action="Index"><i class="bi bi-cash-coin me-2"></i>Bảng tính lương</a></li>
-                            </ul>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="ThuTien" asp-action="SoQuy"><i class="bi bi-book me-1"></i>Sổ Quỹ</a>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="bctcDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-file-earmark-bar-graph me-1"></i>BCTC & Quyết Toán
-                            </a>
-                            <ul class="dropdown-menu" aria-labelledby="bctcDropdown">
-                                <li><a class="dropdown-item" asp-controller="BaoCaoTaiChinh" asp-action="Index"><i class="bi bi-file-earmark-spreadsheet me-2"></i>Báo cáo tài chính TT99</a></li>
-                                <li><a class="dropdown-item" asp-controller="QuyetToanThue" asp-action="Index"><i class="bi bi-calculator me-2"></i>Quyết toán thuế TNDN & TNCN</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-danger fw-bold" asp-controller="TaxAuditShield" asp-action="Index"><i class="bi bi-shield-shaded me-2"></i>Lá chắn rủi ro thuế</a></li>
-                            </ul>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="ButToan" asp-action="Index"><i class="bi bi-journal-text me-1"></i>Sổ Nhật Ký Chung</a>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="inventoryDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-boxes me-1"></i>Kho & Hàng Hóa
-                            </a>
-                            <ul class="dropdown-menu" aria-labelledby="inventoryDropdown">
-                                <li><a class="dropdown-item" asp-controller="Inventory" asp-action="Index"><i class="bi bi-card-checklist me-2"></i>Nhập - Xuất - Tồn kho</a></li>
-                                <li><a class="dropdown-item" asp-controller="Inventory" asp-action="CreateInward"><i class="bi bi-box-arrow-in-down me-2"></i>Lập phiếu nhập kho</a></li>
-                                <li><a class="dropdown-item" asp-controller="Inventory" asp-action="CreateOutward"><i class="bi bi-box-arrow-up-right me-2"></i>Lập phiếu xuất kho</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" asp-controller="Inventory" asp-action="BaoCaoNhapXuatTon"><i class="bi bi-file-earmark-spreadsheet me-2"></i>Báo cáo NXT (S10-DN)</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" asp-controller="VatTuHangHoa" asp-action="Index"><i class="bi bi-box-seam me-2"></i>Danh mục vật tư hàng hóa</a></li>
-                            </ul>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="companyDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-gear me-1"></i>Hệ Thống
-                            </a>
-                            <ul class="dropdown-menu" aria-labelledby="companyDropdown">
-                                <li><a class="dropdown-item" asp-controller="Company" asp-action="Index"><i class="bi bi-building me-2"></i>Hồ sơ doanh nghiệp</a></li>
-                                <li><a class="dropdown-item" asp-controller="Company" asp-action="Branches"><i class="bi bi-diagram-3 me-2"></i>Cơ cấu chi nhánh</a></li>
-                                <li><a class="dropdown-item" asp-controller="Department" asp-action="Index"><i class="bi bi-diagram-3-fill me-2"></i>Phòng ban & Bộ phận</a></li>
-                                <li><a class="dropdown-item" asp-controller="Company" asp-action="AccountingConfig"><i class="bi bi-sliders me-2"></i>Thiết lập kế toán & Khóa sổ</a></li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
+        @await Component.InvokeAsync("NavMenu")
     </header>
+
+    <!-- Toast notification container -->
+    <div id="nt-toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index:9998;"></div>
+
+    <!-- Keyboard shortcut help overlay -->
+    <div id="nt-shortcut-help" role="dialog" aria-modal="true" aria-label="Phím tắt">
+        <div class="nt-shortcut-panel">
+            <h5><i class="bi bi-keyboard me-2"></i>Phím tắt</h5>
+            <table>
+                <tbody>
+                    <tr><td><kbd>F2</kbd></td><td>Thêm mới</td></tr>
+                    <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>Lưu nháp</td></tr>
+                    <tr><td><kbd>F9</kbd></td><td>Ghi sổ / Duyệt</td></tr>
+                    <tr><td><kbd>Esc</kbd></td><td>Hủy / Đóng</td></tr>
+                    <tr><td><kbd>Enter</kbd></td><td>Chuyển ô tiếp theo</td></tr>
+                    <tr><td><kbd>Tab</kbd></td><td>Chuyển ô kế tiếp</td></tr>
+                    <tr><td><kbd>?</kbd></td><td>Mở/đóng bảng phím tắt</td></tr>
+                </tbody>
+            </table>
+            <div class="mt-3 text-end">
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('nt-shortcut-help').classList.remove('is-visible')">
+                    Đóng <kbd>Esc</kbd>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="container-fluid px-4">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - ninjaTax - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <footer class="border-top footer text-muted mt-4">
+        <div class="container py-2">
+            <small>&copy; 2026 ninjaTax &mdash; Phần mềm kế toán TT99 &mdash;
+                <a asp-area="" asp-controller="Home" asp-action="Privacy">Chính sách</a>
+            </small>
         </div>
     </footer>
+
+    <!-- Core scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- ninjaTax JS modules (loaded in dependency order) -->
+    <script src="~/js/ninjatax-locale.js" asp-append-version="true"></script>
+    <script src="~/js/ninjatax-search.js" asp-append-version="true"></script>
+    <script src="~/js/ninjatax-keys.js" asp-append-version="true"></script>
+    <script src="~/js/ninjatax-workflow.js" asp-append-version="true"></script>
+    <script src="~/js/ninjatax-toast.js" asp-append-version="true"></script>
+    <script src="~/js/ninjatax-validation.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
