@@ -41,20 +41,54 @@ Repository guidelines for autonomous agents working in `ninjaTax`.
 
 ## Skill Selection Matrix (5W1H)
 
-| Who (Role) | What (Skill) | When (Trigger) | Where (Scope) | Why (Purpose) | How (Action) |
+### 1. Requirements, Design & Architecture
+| Role | Skill | Trigger (When) | Scope (Where) | Purpose (Why) | Action (How) |
 |---|---|---|---|---|---|
+| **Product Designer** | `brainstorming` | Starting new feature, component, or behavior change | Requirements, UX flows | Explore user intent, uncover trade-offs | Interview user, evaluate alternatives, document spec |
 | **Domain Architect** | `domain-modeling` | Defining new TT99 entities, accounts, tax rules | `Models/Entities/`, ADRs | Prevent terminology drift, align VAS standards | Map ubiquitous terms, document invariants & boundaries |
 | **Software Architect** | `codebase-design` | Structuring multi-DB seams, service interfaces | `Models/Services/`, `Data/` | Keep interfaces deep, implementations thin | Define contracts (`IButToanService`, `IInventoryService`), isolate DB dialects |
-| **Developer** | `tdd` | Building calculation logic, journals, VAT rules | `ninjaTax.Tests/`, `Models/` | Guarantee invariants (TongNo == TongCo, Anti-Negative Stock) | Write failing unit test &rarr; pass &rarr; refactor |
-| **UI Developer** | `generative_ui` | Visualizing T-accounts, ledger balances, reports | Inline chat, standalone HTML | Clear visual inspection of financial flow | Render interactive debit/credit diagrams and ledger charts |
+| **System Refactorer** | `improve-codebase-architecture` | Code smells, tight coupling, bloated classes | Core domain, controllers | Eliminate architectural debt | Apply Fowler refactorings, extract services, decouple dependencies |
+| **Auditor / Reviewer** | `grilling` / `grill-me` | Validating accounting flows, period closing rules | PR plans, architecture decisions | Expose edge cases (e.g. 911 usage, precision loss) | Relentlessly question assumptions and invariants |
+
+### 2. Planning & Multi-Agent Execution
+| Role | Skill | Trigger (When) | Scope (Where) | Purpose (Why) | Action (How) |
+|---|---|---|---|---|---|
+| **Planner** | `writing-plans` | Complex, multi-step task before touching code | `docs/plans/`, workspace | Produce checkable, phased roadmap | Break down tasks with exact file targets and verification steps |
+| **Implementer** | `executing-plans` | Approved implementation plan ready for inline execution | Codebase | Ensure orderly execution | Execute step-by-step, verify after each slice |
+| **Coordinator** | `subagent-driven-development` | Plan tasks are independent with clean boundaries | Subagent pool | Accelerate execution without context pollution | Dispatch subagents per task, review diffs, integrate |
+| **Parallel Orchestrator**| `dispatching-parallel-agents` | 2+ independent research, review, or coding tasks | Multi-subagent pool | Maximize concurrency | Spawn parallel subagents, collect reports, synthesize |
+| **Workspace Isolator** | `using-git-worktrees` | Feature work needing workspace isolation | Git worktrees | Prevent branch collision and dirty working tree | Create and manage isolated worktree branches |
+
+### 3. Implementation & Testing
+| Role | Skill | Trigger (When) | Scope (Where) | Purpose (Why) | Action (How) |
+|---|---|---|---|---|---|
+| **TDD Developer** | `tdd` / `test-driven-development` | Implementing new features, calculations, or bugfixes | `ninjaTax.Tests/`, `Models/` | Guarantee invariants (TongNo == TongCo, Anti-Negative Stock) | Write failing test &rarr; make pass &rarr; refactor cleanly |
 | **Prototyper** | `prototype` | Testing complex tax formulas or UI layouts | `scratch/`, test views | Quick sanity check before full implementation | Build throwaway spike script or Razor mock |
-| **Auditor / Reviewer** | `grilling` | Validating accounting flows, period closing rules | PR plans, architecture decisions | Expose edge cases (e.g. 911 usage, precision loss) | Relentlessly question assumptions and invariants |
-| **Reviewer** | `code-review` | Before merging branch or completing major phase | Git diff, modified files | Verify repo standards (AGENTS.md) and TT99 spec | Run parallel Standards & Spec checks |
-| **Debugger** | `diagnosing-bugs` | Balance mismatch, DB dialect quirks, 500 error | Logs, DB queries, controller actions | Find root cause without guessing | Form testable hypothesis &rarr; instrument &rarr; isolate bug |
+| **UI Developer** | `generative_ui` | Visualizing T-accounts, ledger balances, reports | Inline chat, standalone HTML | Clear visual inspection of financial flow | Render interactive debit/credit diagrams and ledger charts |
+
+### 4. Debugging & Conflict Resolution
+| Role | Skill | Trigger (When) | Scope (Where) | Purpose (Why) | Action (How) |
+|---|---|---|---|---|---|
+| **Systematic Debugger**| `systematic-debugging` | Any bug, test failure, or unexpected behavior | Full stack | Isolate root cause before proposing fixes | Observe failure &rarr; form hypothesis &rarr; verify with test &rarr; fix |
+| **Domain Debugger** | `diagnosing-bugs` | Balance mismatch, DB dialect quirks, 500 error | Logs, DB queries, controller actions | Trace financial discrepancies | Instrument ledger trails &rarr; pinpoint erroneous posting |
 | **Integrator** | `resolving-merge-conflicts`| Git rebase or merge failure | Git workspace | Clean history, preserve accounting logic | Inspect base, ours, theirs &rarr; resolve &rarr; verify build |
-| **Researcher** | `research` | Checking obscure tax circulars or EF Core quirks | `docs/research/` | Authoritative source validation | Query official sources, write markdown finding summary |
+
+### 5. Review & Verification
+| Role | Skill | Trigger (When) | Scope (Where) | Purpose (Why) | Action (How) |
+|---|---|---|---|---|---|
+| **Verifier** | `verification-before-completion` | Before claiming work is done, fixed, or passing | CLI / Build runner | Evidence before assertions | Run `dotnet build` (0 warnings) and `dotnet test` (all pass) |
+| **Code Reviewer** | `code-review` | Before merging branch or completing major phase | Git diff, modified files | Verify repo standards (AGENTS.md) and TT99 spec | Run parallel Standards & Spec checks |
+| **Review Requester** | `requesting-code-review` | Completing a major feature or pull request | PR / Commit diff | Solicit structured critique | Format diff summary, highlight invariants, invoke reviewer |
+| **Review Receiver** | `receiving-code-review` | Review feedback received | Review comments | Rigorous technical validation | Evaluate suggestions technically before blindly modifying code |
+| **Release Finisher** | `finishing-a-development-branch`| All tests passing, work verified | Git branch / master | Clean merge and release | Decide integration strategy, rebase/merge, prune branch |
+
+### 6. Operations, Research & Customization
+| Role | Skill | Trigger (When) | Scope (Where) | Purpose (Why) | Action (How) |
+|---|---|---|---|---|---|
+| **Researcher** | `research` | Obscure tax circulars (TT 200, TT 99, VAS 02) | `docs/research/` | Authoritative source validation | Query official sources, write markdown finding summary |
 | **Ops Guide** | `wizard` | Manual DB migration, production server setup | CLI / Shell scripts | Guide human through credentials & manual steps | Generate step-by-step interactive CLI script |
 | **Prompt Engineer** | `writing-for-agents` | Updating `AGENTS.md`, `GEMINI.md`, or skills | `AGENTS.md`, `.gemini/skills/` | Optimize agent context load & instruction following | Apply progressive disclosure, leading words, positive rules |
+| **Skill Author** | `writing-skills` | Creating or modifying reusable skills | `.gemini/skills/` | Standardize agent workflows | Author `SKILL.md`, define triggers, test execution |
 | **Tool Configurator**| `agy-customizations`| Adding custom MCP, project-specific rules | `.gemini/antigravity/` | Extend agent capabilities for ninjaTax | Define rule files, hooks, or custom MCP servers |
 | **Platform Guide** | `antigravity-guide` | Questions about Antigravity CLI, IDE, configs | Antigravity IDE / CLI | Correct tool configuration and workflow usage | Lookup commands, slash tools, and IDE settings |
 | **Workflow Migrator**| `migrate-workflows` | Upgrading legacy workflow files to skills | `.gemini/workflows/` | Modernize agent configuration | Scan legacy scripts &rarr; convert to `SKILL.md` format |

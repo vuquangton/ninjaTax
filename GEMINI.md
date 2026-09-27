@@ -13,3 +13,4 @@ See [AGENTS.md](AGENTS.md) for full architectural guidelines, skill selection ma
   2. Double-entry balance: `TongNo == TongCo` in all journal postings.
   3. Anti-negative stock: Warehouse balance cannot fall below zero.
 - **Verification Rule**: Always run `dotnet build` (0 warnings) and `dotnet test` before marking any task complete.
+- **Skill Usage**: Consult 6-category Skill Matrix in [AGENTS.md](AGENTS.md) (Design, Planning, TDD, Debugging, Review, Operations) before choosing actions.
