@@ -259,7 +259,7 @@ public class MultiDatabaseTests : IDisposable
     public async Task Check_MariaDb_Connection()
     {
         var connStr = "Server=localhost;Port=3306;User ID=dev;Password=123456;";
-        await using var connection = new MySqlConnector.MySqlConnection(connStr);
+        await using var connection = new MySql.Data.MySqlClient.MySqlConnection(connStr);
         await connection.OpenAsync();
         await using var cmd = connection.CreateCommand();
         cmd.CommandText = "SELECT VERSION();";

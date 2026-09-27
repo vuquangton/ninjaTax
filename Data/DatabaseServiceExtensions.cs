@@ -84,8 +84,7 @@ public static class DatabaseServiceExtensions
                     break;
 
                 case "MariaDb":
-                    var serverVersion = new MariaDbServerVersion(new Version(11, 0, 0));
-                    options.UseMySql(connectionString, serverVersion);
+                    options.UseMySQL(connectionString);
                     break;
             }
         });

@@ -12,7 +12,7 @@ public static class DbInitializer
 {
     public static async Task InitializeAsync(AppDbContext context)
     {
-        if (context.Database.IsRelational())
+        if (context.Database.IsSqlite())
         {
             try
             {
