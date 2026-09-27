@@ -24,6 +24,9 @@ public class AppDbContext : DbContext
     public DbSet<DoiTuong> DoiTuongs => Set<DoiTuong>();
     public DbSet<ButToan> ButToans => Set<ButToan>();
     public DbSet<ChiTietButToan> ChiTietButToans => Set<ChiTietButToan>();
+    public DbSet<BangGiaBan> BangGiaBans => Set<BangGiaBan>();
+    public DbSet<ChiTietBangGia> ChiTietBangGias => Set<ChiTietBangGia>();
+    public DbSet<ExchangeRateHistory> ExchangeRateHistories => Set<ExchangeRateHistory>();
     public DbSet<VatTuHangHoa> VatTuHangHoas => Set<VatTuHangHoa>();
     public DbSet<HoaDonMuaHang> HoaDonMuaHangs => Set<HoaDonMuaHang>();
     public DbSet<ChiTietHoaDonMua> ChiTietHoaDonMuas => Set<ChiTietHoaDonMua>();

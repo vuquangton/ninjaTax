@@ -1,0 +1,142 @@
+{
+  "menu": [
+    {
+      "title": "Dashboard",
+      "icon": "bi bi-speedometer2",
+      "controller": "Home",
+      "action": "Index"
+    },
+    {
+      "title": "Mua Hàng",
+      "icon": "bi bi-cart-check",
+      "controller": "MuaHang",
+      "action": "Index"
+    },
+    {
+      "title": "Bán Hàng",
+      "icon": "bi bi-receipt-cutoff",
+      "controller": "BanHang",
+      "action": "Index"
+    },
+    {
+      "title": "Công Nợ",
+      "icon": "bi bi-wallet2",
+      "controller": "CongNo",
+      "action": "Index"
+    },
+    {
+      "title": "Thu Tiền",
+      "icon": "bi bi-cash",
+      "controller": "ThuTien",
+      "action": "Index"
+    },
+    {
+      "title": "Chi Tiền",
+      "icon": "bi bi-credit-card",
+      "controller": "ChiTien",
+      "action": "Index"
+    },
+    {
+      "title": "TSCĐ & CCDC",
+      "icon": "bi bi-box",
+      "controller": "TaiSan",
+      "action": "Index"
+    },
+    {
+      "title": "Tiền Lương",
+      "icon": "bi bi-cash-coin",
+      "controller": "TienLuong",
+      "action": "Index"
+    },
+    {
+      "title": "Sổ Quỹ",
+      "icon": "bi bi-book",
+      "controller": "ThuTien",
+      "action": "SoQuy"
+    },
+    {
+      "title": "Báo cáo",
+      "icon": "bi bi-file-earmark-bar-graph",
+      "children": [
+        {
+          "title": "Báo cáo tài chính",
+          "icon": "bi bi-file-earmark-spreadsheet",
+          "controller": "BaoCaoTaiChinh",
+          "action": "Index"
+        },
+        {
+          "title": "Quyết toán thuế",
+          "icon": "bi bi-calculator",
+          "controller": "QuyetToanThue",
+          "action": "Index"
+        },
+        {
+          "title": "Lá chắn rủi ro thuế",
+          "icon": "bi bi-shield-shaded",
+          "controller": "TaxAuditShield",
+          "action": "Index"
+        }
+      ]
+    },
+    {
+      "title": "Kho & Hàng Hóa",
+      "icon": "bi bi-boxes",
+      "children": [
+        {
+          "title": "Nhập - Xuất - Tồn kho",
+          "icon": "bi bi-card-checklist",
+          "controller": "Inventory",
+          "action": "Index"
+        },
+        {
+          "title": "Lập phiếu nhập kho",
+          "icon": "bi bi-box-arrow-in-down",
+          "controller": "Inventory",
+          "action": "CreateInward"
+        },
+        {
+          "title": "Lập phiếu xuất kho",
+          "icon": "bi bi-box-arrow-up-right",
+          "controller": "Inventory",
+          "action": "CreateOutward"
+        },
+        {
+          "title": "Báo cáo NXT (S10‑DN)",
+          "icon": "bi bi-file-earmark-spreadsheet",
+          "controller": "Inventory",
+          "action": "BaoCaoNhapXuatTon"
+        }
+      ]
+    },
+    {
+      "title": "Hệ Thống",
+      "icon": "bi bi-gear",
+      "children": [
+        {
+          "title": "Hồ sơ doanh nghiệp",
+          "icon": "bi bi-building",
+          "controller": "Company",
+          "action": "Index"
+        },
+        {
+          "title": "Cơ cấu chi nhánh",
+          "icon": "bi bi-diagram-3",
+          "controller": "Company",
+          "action": "Branches"
+        },
+        {
+          "title": "Phòng ban & Bộ phận",
+          "icon": "bi bi-diagram-3-fill",
+          "controller": "Department",
+          "action": "Index"
+        },
+        {
+          "title": "Thiết lập kế toán & Khóa sổ",
+          "icon": "bi bi-sliders",
+          "controller": "Company",
+          "action": "AccountingConfig"
+        }
+      ]
+    }
+  ]
+}

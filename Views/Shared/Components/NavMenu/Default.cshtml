@@ -1,0 +1,36 @@
+@model IEnumerable<ninjaTax.ViewComponents.MenuItem>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNavbar">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                @foreach (var item in Model)
+                {
+                    if (item.Children != null && item.Children.Any())
+                    {
+                        <li class="nav-item dropdown @(item.IsActive ? "active" : "")">
+                            <a class="nav-link dropdown-toggle" href="#" id="@item.Title.Replace(" ", "_")" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="@item.Icon"></i> @item.Title
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="@item.Title.Replace(" ", "_")">
+                                @foreach (var child in item.Children)
+                                {
+                                    <li><a class="dropdown-item @(child.IsActive ? "active" : "")" href="@Url.Action(child.Action, child.Controller)"><i class="@child.Icon"></i> @child.Title</a></li>
+                                }
+                            </ul>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item @(item.IsActive ? "active" : "")">
+                            <a class="nav-link" href="@Url.Action(item.Action, item.Controller)"><i class="@item.Icon"></i> @item.Title</a>
+                        </li>
+                    }
+                }
+            </ul>
+        </div>
+    </div>
+</nav>
