@@ -66,6 +66,9 @@ public static class DatabaseServiceExtensions
 
         services.AddDbContext<AppDbContext>(options =>
         {
+            options.ConfigureWarnings(warnings =>
+                warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+
             switch (provider)
             {
                 case "Sqlite":

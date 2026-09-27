@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using ninjaTax.Data;
 using ninjaTax.Models.Entities;
 using ninjaTax.Models.ViewModels;
@@ -149,7 +149,7 @@ public class TaxFinalizationService : ITaxFinalizationService
             .ToListAsync();
 
         var bangLuongs = await _context.BangLuongThangs
-            .Include(bl => bl.ChiTietLuongNhanViens)
+            .Include(bl => bl.ChiTiets)
             .Where(bl => bl.KyKeToan.StartsWith(namTaiChinh.ToString()))
             .ToListAsync();
 
@@ -159,7 +159,7 @@ public class TaxFinalizationService : ITaxFinalizationService
         foreach (var nv in nhanViens)
         {
             var chiTietsLuong = bangLuongs
-                .SelectMany(b => b.ChiTietLuongNhanViens)
+                .SelectMany(b => b.ChiTiets)
                 .Where(c => c.NhanVienId == nv.Id)
                 .ToList();
 

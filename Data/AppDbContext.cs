@@ -917,5 +917,18 @@ public class AppDbContext : DbContext
                 .HasForeignKey(e => e.NhanVienId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
+
+        // ========================================================
+        // 20. BCTC TT99, Quyết toán thuế & Tax Audit Risk Shield
+        // ========================================================
+        modelBuilder.Entity<BaoCaoTaiChinhNam>(entity => entity.ToTable("BaoCaoTaiChinhNam"));
+        modelBuilder.Entity<ChiTietChiTieuBctc>(entity => entity.ToTable("ChiTietChiTieuBctc"));
+        modelBuilder.Entity<QuyetToanThueTndn>(entity => entity.ToTable("QuyetToanThueTndn"));
+        modelBuilder.Entity<ChiPhiKhongHopLyB4>(entity => entity.ToTable("ChiPhiKhongHopLyB4"));
+        modelBuilder.Entity<QuyetToanThueTncn>(entity => entity.ToTable("QuyetToanThueTncn"));
+        modelBuilder.Entity<BangKeQttTncn051>(entity => entity.ToTable("BangKeQttTncn051"));
+        modelBuilder.Entity<BangKeQttTncn052>(entity => entity.ToTable("BangKeQttTncn052"));
+        modelBuilder.Entity<TaxAuditRiskShieldReport>(entity => entity.ToTable("TaxAuditRiskShieldReport"));
+        modelBuilder.Entity<TaxRiskFinding>(entity => entity.ToTable("TaxRiskFinding"));
     }
 }
