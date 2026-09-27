@@ -1,4 +1,5 @@
 using ninjaTax.Models.Entities;
+using ninjaTax.Models.ViewModels;
 
 namespace ninjaTax.Models.Services;
 
@@ -9,5 +10,7 @@ public interface IDepartmentService
     Task<PhongBan> SaveDepartmentAsync(PhongBan department);
     Task<bool> DeleteDepartmentAsync(long id);
     Task<List<PhongBan>> GetDepartmentTreeAsync(long? branchId = null);
+    Task<List<DepartmentListItemViewModel>> GetFlattenedHierarchyAsync(long? branchId = null);
+    Task<List<PhongBan>> GetAvailableParentDepartmentsAsync(long branchId, long? excludeDeptId = null);
     Task AssignEmployeeDepartmentAsync(long employeeId, long departmentId);
 }

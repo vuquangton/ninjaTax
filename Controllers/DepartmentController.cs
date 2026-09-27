@@ -28,10 +28,7 @@ public class DepartmentController : Controller
     public async Task<IActionResult> Index(long? branchId = null)
     {
         var branches = await _context.ChiNhanhs.AsNoTracking().OrderBy(b => b.MaChiNhanh).ToListAsync();
-        var departments = await _departmentService.GetDepartmentsAsync(branchId);
-
-        // Xây dựng danh sách phẳng có thứ tự cây phân cấp (Hierarchical flattened list)
-        var flattened = BuildFlattenedHierarchy(departments);
+        var flattened = await _departmentService.GetFlattenedHierarchyAsync(branchId);
 
         var vm = new DepartmentIndexViewModel
         {
@@ -83,8 +80,8 @@ public class DepartmentController : Controller
             {
                 ChiNhanhId = vm.ChiNhanhId,
                 PhongBanChaId = vm.PhongBanChaId > 0 ? vm.PhongBanChaId : null,
-                MaPhongBan = vm.MaPhongBan.Trim().ToUpper(),
-                TenPhongBan = vm.TenPhongBan.Trim(),
+                MaPhongBan = (vm.MaPhongBan ?? string.Empty).Trim().ToUpper(),
+                TenPhongBan = (vm.TenPhongBan ?? string.Empty).Trim(),
                 TenTiengAnh = vm.TenTiengAnh?.Trim(),
                 LoaiPhongBan = vm.LoaiPhongBan,
                 MaTaiKhoanChiPhi = string.IsNullOrWhiteSpace(vm.MaTaiKhoanChiPhi)
@@ -166,8 +163,8 @@ public class DepartmentController : Controller
 
             dept.ChiNhanhId = vm.ChiNhanhId;
             dept.PhongBanChaId = vm.PhongBanChaId > 0 ? vm.PhongBanChaId : null;
-            dept.MaPhongBan = vm.MaPhongBan.Trim().ToUpper();
-            dept.TenPhongBan = vm.TenPhongBan.Trim();
+            dept.MaPhongBan = (vm.MaPhongBan ?? string.Empty).Trim().ToUpper();
+            dept.TenPhongBan = (vm.TenPhongBan ?? string.Empty).Trim();
             dept.TenTiengAnh = vm.TenTiengAnh?.Trim();
             dept.LoaiPhongBan = vm.LoaiPhongBan;
             dept.MaTaiKhoanChiPhi = string.IsNullOrWhiteSpace(vm.MaTaiKhoanChiPhi)
@@ -242,20 +239,7 @@ public class DepartmentController : Controller
         }).ToList();
 
         // 2. Phòng ban cha trong cùng chi nhánh (Loại trừ chính nó và các con của nó nếu đang sửa để tránh chu trình)
-        var allDepts = await _context.PhongBans
-            .AsNoTracking()
-            .Where(p => p.ChiNhanhId == vm.ChiNhanhId)
-            .OrderBy(p => p.MaPhongBan)
-            .ToListAsync();
-
-        var excludedIds = new HashSet<long>();
-        if (excludeDepartmentId.HasValue && excludeDepartmentId.Value > 0)
-        {
-            CollectDescendantIds(excludeDepartmentId.Value, allDepts, excludedIds);
-            excludedIds.Add(excludeDepartmentId.Value);
-        }
-
-        var availableParents = allDepts.Where(p => !excludedIds.Contains(p.Id)).ToList();
+        var availableParents = await _departmentService.GetAvailableParentDepartmentsAsync(vm.ChiNhanhId, excludeDepartmentId);
         vm.ParentDepartmentList = new List<SelectListItem>
         {
             new SelectListItem { Value = "", Text = "-- Là phòng ban gốc cấp 1 (Không có cha) --" }
@@ -284,85 +268,6 @@ public class DepartmentController : Controller
             Text = $"{n.MaNhanVien} - {n.HoTen} ({n.ChucVu ?? "Nhân viên"})",
             Selected = vm.TruongPhongId.HasValue && vm.TruongPhongId.Value == n.Id
         }));
-    }
-
-    private static void CollectDescendantIds(long parentId, List<PhongBan> allDepts, HashSet<long> result)
-    {
-        var directChildren = allDepts.Where(p => p.PhongBanChaId == parentId).Select(p => p.Id).ToList();
-        foreach (var childId in directChildren)
-        {
-            if (result.Add(childId))
-            {
-                CollectDescendantIds(childId, allDepts, result);
-            }
-        }
-    }
-
-    private static List<DepartmentListItemViewModel> BuildFlattenedHierarchy(List<PhongBan> departments)
-    {
-        var result = new List<DepartmentListItemViewModel>();
-        var lookup = departments.ToLookup(d => d.PhongBanChaId);
-
-        // Bắt đầu từ các node gốc (Root nodes)
-        var roots = departments.Where(d => !d.PhongBanChaId.HasValue || d.PhongBanChaId.Value == 0).ToList();
-
-        void Traverse(PhongBan node, int level)
-        {
-            result.Add(new DepartmentListItemViewModel
-            {
-                Id = node.Id,
-                ChiNhanhId = node.ChiNhanhId,
-                TenChiNhanh = node.ChiNhanh?.TenChiNhanh ?? "Chi nhánh mặc định",
-                PhongBanChaId = node.PhongBanChaId,
-                TenPhongBanCha = node.PhongBanCha?.TenPhongBan,
-                MaPhongBan = node.MaPhongBan,
-                TenPhongBan = node.TenPhongBan,
-                TenTiengAnh = node.TenTiengAnh,
-                LoaiPhongBan = node.LoaiPhongBan,
-                MaTaiKhoanChiPhi = node.MaTaiKhoanChiPhi,
-                TenTruongPhong = node.TruongPhong?.HoTen,
-                LaTrungTamLoiNhuan = node.LaTrungTamLoiNhuan,
-                DangHoatDong = node.DangHoatDong,
-                SoNhanVien = node.NhanViens?.Count ?? 0,
-                Level = level
-            });
-
-            foreach (var child in lookup[node.Id])
-            {
-                Traverse(child, level + 1);
-            }
-        }
-
-        foreach (var root in roots)
-        {
-            Traverse(root, 0);
-        }
-
-        // Bổ sung các node mồ côi nếu có (orphan nodes)
-        var processedIds = result.Select(r => r.Id).ToHashSet();
-        foreach (var orphan in departments.Where(d => !processedIds.Contains(d.Id)))
-        {
-            result.Add(new DepartmentListItemViewModel
-            {
-                Id = orphan.Id,
-                ChiNhanhId = orphan.ChiNhanhId,
-                TenChiNhanh = orphan.ChiNhanh?.TenChiNhanh ?? "Chi nhánh mặc định",
-                PhongBanChaId = orphan.PhongBanChaId,
-                TenPhongBanCha = orphan.PhongBanCha?.TenPhongBan,
-                MaPhongBan = orphan.MaPhongBan,
-                TenPhongBan = orphan.TenPhongBan,
-                TenTiengAnh = orphan.TenTiengAnh,
-                LoaiPhongBan = orphan.LoaiPhongBan,
-                MaTaiKhoanChiPhi = orphan.MaTaiKhoanChiPhi,
-                TenTruongPhong = orphan.TruongPhong?.HoTen,
-                LaTrungTamLoiNhuan = orphan.LaTrungTamLoiNhuan,
-                DangHoatDong = orphan.DangHoatDong,
-                SoNhanVien = orphan.NhanViens?.Count ?? 0,
-                Level = 0
-            });
-        }
-
-        return result;
     }
 
     #endregion

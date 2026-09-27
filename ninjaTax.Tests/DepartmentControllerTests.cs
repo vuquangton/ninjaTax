@@ -151,5 +151,63 @@ public class DepartmentControllerTests : IDisposable
         var roots = Assert.IsAssignableFrom<List<PhongBan>>(jsonResult.Value);
         Assert.NotEmpty(roots);
     }
+
+    [Fact]
+    public async Task SaveDepartment_WithAccount911_ThrowsArgumentException()
+    {
+        using var context = new AppDbContext(_dbOptions);
+        var deptService = new DepartmentService(context, NullLogger<DepartmentService>.Instance);
+        var chiNhanh = await context.ChiNhanhs.FirstAsync();
+
+        var dept = new PhongBan
+        {
+            ChiNhanhId = chiNhanh.Id,
+            MaPhongBan = "PB-INVALID-911",
+            TenPhongBan = "Phòng Sai Chuẩn TT99",
+            LoaiPhongBan = LoaiPhongBan.QuanLy,
+            MaTaiKhoanChiPhi = "911"
+        };
+
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() => deptService.SaveDepartmentAsync(dept));
+        Assert.Contains("911", ex.Message);
+    }
+
+    [Fact]
+    public async Task SaveDepartment_WithNonExistentAccount_ThrowsArgumentException()
+    {
+        using var context = new AppDbContext(_dbOptions);
+        var deptService = new DepartmentService(context, NullLogger<DepartmentService>.Instance);
+        var chiNhanh = await context.ChiNhanhs.FirstAsync();
+
+        var dept = new PhongBan
+        {
+            ChiNhanhId = chiNhanh.Id,
+            MaPhongBan = "PB-INVALID-ACC",
+            TenPhongBan = "Phòng Tài Khoản Lạ",
+            LoaiPhongBan = LoaiPhongBan.QuanLy,
+            MaTaiKhoanChiPhi = "999999"
+        };
+
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() => deptService.SaveDepartmentAsync(dept));
+        Assert.Contains("không tồn tại", ex.Message);
+    }
+
+    [Fact]
+    public async Task GetAvailableParentDepartments_ExcludesTargetAndDescendants()
+    {
+        using var context = new AppDbContext(_dbOptions);
+        var deptService = new DepartmentService(context, NullLogger<DepartmentService>.Instance);
+        var chiNhanh = await context.ChiNhanhs.FirstAsync();
+
+        // Ban Giám Đốc (BOD) có con là PB-KTTC
+        var bod = await context.PhongBans.FirstAsync(p => p.MaPhongBan == "BOD");
+        var kttc = await context.PhongBans.FirstAsync(p => p.MaPhongBan == "PB-KTTC");
+
+        var available = await deptService.GetAvailableParentDepartmentsAsync(chiNhanh.Id, bod.Id);
+
+        Assert.DoesNotContain(available, p => p.Id == bod.Id);
+        Assert.DoesNotContain(available, p => p.Id == kttc.Id);
+    }
 }
+
 
