@@ -1,0 +1,121 @@
+﻿@{
+    ViewData["Title"] = $"Quyết Toán Thuế Năm {ViewBag.Nam}";
+    var tndn = (ninjaTax.Models.ViewModels.QuyetToanTndnViewModel)ViewBag.Tndn;
+    var tncn = (ninjaTax.Models.ViewModels.QuyetToanTncnViewModel)ViewBag.Tncn;
+    int nam = ViewBag.Nam;
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="h3 mb-0 text-gray-800">Quyết Toán Thuế Năm @nam</h2>
+            <small class="text-muted">Tờ khai Quyết toán Thuế TNDN (Mẫu 03/TNDN) & Thuế TNCN (Mẫu 05/QTT-TNCN) theo TT 80/2021 & NĐ 91/2022</small>
+        </div>
+        <div class="d-flex gap-2">
+            <form method="get" asp-action="Index" class="d-flex gap-2">
+                <select name="nam" class="form-select form-select-sm" onchange="this.form.submit()">
+                    @for (int y = DateTime.Today.Year; y >= DateTime.Today.Year - 5; y--)
+                    {
+                        if (y == nam)
+                        {
+                            <option value="@y" selected>Năm @y</option>
+                        }
+                        else
+                        {
+                            <option value="@y">Năm @y</option>
+                        }
+                    }
+                </select>
+            </form>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Cảnh báo quy tắc 80% NĐ 91/2022 -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-@(!tndn.ViPham80PhanTram ? "success" : "danger") h-100">
+                <div class="card-header bg-@(!tndn.ViPham80PhanTram ? "success" : "danger") text-white fw-bold">
+                    Quy Tắc Tạm Nộp 80% Thuế TNDN 4 Quý (Nghị định 91/2022/NĐ-CP)
+                </div>
+                <div class="card-body">
+                    <p>
+                        Trạng thái: 
+                        <strong class="text-@(!tndn.ViPham80PhanTram ? "success" : "danger")">
+                            @(!tndn.ViPham80PhanTram ? "ĐẠT CHUẨN (>= 80%)" : "CẢNH BÁO VI PHẠM (< 80%)")
+                        </strong>
+                    </p>
+                    <ul class="list-group list-group-flush mb-3">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Tổng thuế TNDN quyết toán phải nộp [C7]:</span>
+                            <strong>@tndn.ChiTieuC7_ThueTndnPhaiNop.ToString("N0") đ</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Mức tạm nộp tối thiểu 80%:</span>
+                            <strong>@tndn.Nguong80PhanTram.ToString("N0") đ</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Đã tạm nộp 4 quý:</span>
+                            <strong class="text-primary">@tndn.TongTamNop4Quy.ToString("N0") đ</strong>
+                        </li>
+                        @if (tndn.ViPham80PhanTram)
+                        {
+                            <li class="list-group-item d-flex justify-content-between bg-light text-danger">
+                                <span>Tiền nộp chậm ước tính (0.03%/ngày từ 31/01):</span>
+                                <strong>@tndn.TienPhatChamNopDuKien.ToString("N0") đ (@tndn.SoNgayChamNop ngày)</strong>
+                            </li>
+                        }
+                    </ul>
+                    <a asp-action="Tndn03" asp-route-nam="@nam" class="btn btn-outline-primary btn-sm w-100">Chi Tiết Tờ Khai 03/TNDN & Phụ Lục B4 &rarr;</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-primary text-white fw-bold">
+                    Tổng Hợp Quyết Toán Thuế TNCN (Mẫu 05/QTT-TNCN)
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush mb-3">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Tổng số người lao động quyết toán:</span>
+                            <strong>@tncn.TongSoNhanVienQuyetToan người</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Lao động ký hợp đồng dài hạn (Bảng kê 05-1):</span>
+                            <strong>@tncn.BangKe051.Count người</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Lao động thời vụ/vãng lai (Bảng kê 05-2):</span>
+                            <strong>@tncn.BangKe052.Count người</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Tổng thu nhập chịu thuế trả cho NLĐ:</span>
+                            <strong>@tncn.TongThuNhapChiuThue.ToString("N0") đ</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Tổng thuế TNCN đã khấu trừ:</span>
+                            <strong class="text-success">@tncn.TongThueDaKhauTru.ToString("N0") đ</strong>
+                        </li>
+                    </ul>
+                    <a asp-action="Tncn05" asp-route-nam="@nam" class="btn btn-outline-primary btn-sm w-100">Chi Tiết Tờ Khai 05/QTT-TNCN & Bảng Kê 05-1, 05-2 &rarr;</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

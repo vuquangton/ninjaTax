@@ -1,0 +1,70 @@
+﻿@model ninjaTax.Models.ViewModels.ThuyetMinhBctcViewModel
+@{
+    ViewData["Title"] = $"Bản Thuyết Minh BCTC (Mẫu B09-DN) - Năm {Model.NamTaiChinh}";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="h3 mb-0 text-gray-800">Bản Thuyết Minh Báo Cáo Tài Chính (Mẫu B09-DN)</h2>
+            <small class="text-muted">Ban hành kèm theo Thông tư 99/2025/TT-BTC - Năm tài chính @Model.NamTaiChinh</small>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Index" asp-route-nam="@Model.NamTaiChinh" class="btn btn-outline-secondary btn-sm">&larr; Quay Lại Tổng Hợp</a>
+            <button onclick="window.print()" class="btn btn-secondary btn-sm"><i class="bi bi-printer"></i> In Bản Thuyết Minh</button>
+        </div>
+    </div>
+
+    <!-- I. Đặc điểm hoạt động của doanh nghiệp -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light fw-bold">I. ĐẶC ĐIỂM HOẠT ĐỘNG CỦA DOANH NGHIỆP</div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>1. Tên doanh nghiệp:</strong> @Model.TenDoanhNghiep</p>
+                    <p><strong>2. Mã số thuế:</strong> @Model.MaSoThue</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>3. Địa chỉ trụ sở:</strong> @Model.DiaChi</p>
+                    <p><strong>4. Hình thức sổ kế toán:</strong> @Model.HinhThucSo</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- II. Chính sách kế toán áp dụng -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light fw-bold">II. CHÍNH SÁCH KẾ TOÁN ÁP DỤNG</div>
+        <div class="card-body">
+            <p><strong>1. Chế độ kế toán áp dụng:</strong> @Model.CheDoKeToan</p>
+            <p><strong>2. Đơn vị tiền tệ kế toán:</strong> @Model.DonViTienTe</p>
+            <p><strong>3. Nguyên tắc hạch toán:</strong> Hạch toán theo nguyên tắc kế toán dồn tích, không sử dụng tài khoản trung gian 911 theo đúng quy chuẩn Thông tư 99/2025/TT-BTC.</p>
+        </div>
+    </div>
+
+    <!-- III. Thông tin bổ sung cho các khoản mục -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light fw-bold">III. THÔNG TIN BỔ SUNG CHO CÁC KHOẢN MỤC TRÌNH BÀY TRÊN BÁO CÁO TÀI CHÍNH</div>
+        <div class="card-body">
+            <table class="table table-bordered table-sm mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 60%;">Khoản mục chỉ tiêu</th>
+                        <th style="width: 40%;" class="text-end">Số tiền (VNĐ)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>- Nguyên giá TSCĐ hữu hình (TK 211)</td><td class="text-end">@Model.NguyenGiaTscd.ToString("N0")</td></tr>
+                    <tr><td>- Hao mòn lũy kế TSCĐ (TK 2141)</td><td class="text-end text-danger">(@Model.HaoMonLuyKeTscd.ToString("N0"))</td></tr>
+                    <tr class="fw-bold"><td>- Giá trị còn lại của TSCĐ</td><td class="text-end">@Model.GiaTriConLaiTscd.ToString("N0")</td></tr>
+                    <tr><td>- Chi phí công cụ dụng cụ chờ phân bổ (TK 242)</td><td class="text-end">@Model.TongChiPhiCcDcPhanBo.ToString("N0")</td></tr>
+                    <tr><td>- Phải thu khách hàng (TK 131)</td><td class="text-end">@Model.TongPhaiThuKhachHang.ToString("N0")</td></tr>
+                    <tr><td>- Phải trả người bán (TK 331)</td><td class="text-end">@Model.TongPhaiTraNguoiBan.ToString("N0")</td></tr>
+                    <tr><td>- Tổng quỹ lương phát sinh trong năm (TK 334)</td><td class="text-end">@Model.TongQuyLuongTrongNam.ToString("N0")</td></tr>
+                    <tr><td>- Tổng bảo hiểm bắt buộc trích nộp (TK 3383, 3384, 3386)</td><td class="text-end">@Model.TongBaoHiemDaTrichNop.ToString("N0")</td></tr>
+                    <tr><td>- Tổng các loại thuế đã nộp vào NSNN (TK 333)</td><td class="text-end">@Model.TongThueDaNopTrongNam.ToString("N0")</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

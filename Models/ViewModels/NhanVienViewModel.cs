@@ -14,12 +14,11 @@ public class NhanVienListViewModel
 
 public class NhanVienIndexViewModel
 {
-    public string? TuKhoa { get; set; }
+    public List<NhanVienItemViewModel> DanhSachNhanVien { get; set; } = new();
+    public List<string> PhongBans { get; set; } = new();
     public string? PhongBan { get; set; }
     public LoaiHopDongLaoDong? LoaiHopDong { get; set; }
-    public bool? DangLamViec { get; set; }
-    public List<string> PhongBans { get; set; } = new();
-    public List<NhanVienItemViewModel> DanhSachNhanVien { get; set; } = new();
+    public string? TuKhoa { get; set; }
 }
 
 public class NhanVienItemViewModel

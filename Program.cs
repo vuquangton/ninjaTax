@@ -23,6 +23,9 @@ builder.Services.AddScoped<IThuChiService, ThuChiService>();
 builder.Services.AddScoped<ITaiSanService, TaiSanService>();
 builder.Services.AddScoped<ITimesheetService, TimesheetService>();
 builder.Services.AddScoped<IPayrollService, PayrollService>();
+builder.Services.AddScoped<IFinancialReportService, FinancialReportService>();
+builder.Services.AddScoped<ITaxFinalizationService, TaxFinalizationService>();
+builder.Services.AddScoped<ITaxAuditShieldService, TaxAuditShieldService>();
 
 var app = builder.Build();
 

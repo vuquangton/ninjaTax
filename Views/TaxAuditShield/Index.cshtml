@@ -1,0 +1,182 @@
+﻿@model ninjaTax.Models.ViewModels.TaxAuditShieldReportViewModel
+@{
+    ViewData["Title"] = $"Lá Chắn Rủi Ro Thuế (Tax Audit Risk Shield) - Năm {Model.NamTaiChinh}";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="h3 mb-0 text-gray-800">
+                <i class="bi bi-shield-lock-fill text-primary me-2"></i>Lá Chắn Rủi Ro Thuế Toàn Hệ Thống (Tax Audit Risk Shield)
+            </h2>
+            <small class="text-muted">Tự động quét & phát hiện 8 Bẫy Thuế Tử Thần khi quyết toán và thanh tra thuế tại doanh nghiệp</small>
+        </div>
+        <div class="d-flex gap-2">
+            <form method="get" asp-action="Index" class="d-flex gap-2">
+                <select name="nam" class="form-select form-select-sm" onchange="this.form.submit()">
+                    @for (int y = DateTime.Today.Year; y >= DateTime.Today.Year - 5; y--)
+                    {
+                        if (y == Model.NamTaiChinh)
+                        {
+                            <option value="@y" selected>Năm @y</option>
+                        }
+                        else
+                        {
+                            <option value="@y">Năm @y</option>
+                        }
+                    }
+                </select>
+            </form>
+            <form method="post" asp-action="QuetLai" class="d-inline">
+                <input type="hidden" name="nam" value="@Model.NamTaiChinh" />
+                <button type="submit" class="btn btn-warning btn-sm fw-bold">
+                    <i class="bi bi-radar"></i> Quét lại toàn bộ bẫy thuế
+                </button>
+            </form>
+            <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">
+                <i class="bi bi-printer"></i> In biên bản rủi ro
+            </button>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- KPI Thẻ Tóm Tắt Rủi Ro -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-danger text-white shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-white-50 small text-uppercase fw-bold">Cảnh báo ĐỎ (Nghiêm trọng)</div>
+                            <div class="h2 mb-0 fw-bold">@Model.SoCanhBaoDoNghiemTrong</div>
+                        </div>
+                        <i class="bi bi-exclamation-octagon-fill fs-1 text-white-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-black-50 small text-uppercase fw-bold">Cảnh báo VÀNG (Cần chú ý)</div>
+                            <div class="h2 mb-0 fw-bold">@Model.SoCanhBaoVangChuY</div>
+                        </div>
+                        <i class="bi bi-exclamation-triangle-fill fs-1 text-black-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-secondary text-white shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-white-50 small text-uppercase fw-bold">Chi phí rủi ro bị bóc</div>
+                            <div class="h3 mb-0 fw-bold">@Model.TongTienChiPhiRuiRo.ToString("N0") đ</div>
+                        </div>
+                        <i class="bi bi-cash-stack fs-1 text-white-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-dark text-white shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-white-50 small text-uppercase fw-bold">Ước tính Truy thu & Phạt</div>
+                            <div class="h3 mb-0 fw-bold text-warning">@((Model.TongTienThueTruyThuUocTinh + Model.TongTienPhatChamNopUocTinh).ToString("N0")) đ</div>
+                        </div>
+                        <i class="bi bi-shield-slash fs-1 text-white-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Danh sách 8 Bẫy Thuế -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-dark text-white fw-bold d-flex justify-content-between align-items-center">
+            <span>Chi Tiết Toàn Bộ Phát Hiện Rủi Ro Thuế Năm @Model.NamTaiChinh</span>
+            <span class="badge bg-light text-dark">Tổng cộng: @Model.TongSoPhatHien phát hiện</span>
+        </div>
+        <div class="card-body p-0">
+            @if (!Model.PhatHiens.Any())
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-shield-fill-check text-success display-1"></i>
+                    <h4 class="mt-3 text-success fw-bold">HỆ THỐNG AN TOÀN TUYỆT ĐỐI!</h4>
+                    <p class="text-muted">Không phát hiện vi phạm nào trong 8 bẫy rủi ro thuế trọng yếu. Doanh nghiệp sẵn sàng cho kỳ quyết toán và thanh tra thuế.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 50px;" class="text-center">Mức độ</th>
+                                <th style="width: 250px;">Bẫy thuế & Tiêu đề</th>
+                                <th>Chi tiết phát hiện & Căn cứ pháp lý</th>
+                                <th style="width: 130px;" class="text-end">Tiền vi phạm</th>
+                                <th style="width: 130px;" class="text-end">Thuế rủi ro</th>
+                                <th style="width: 120px;" class="text-end">Phạt dự kiến</th>
+                                <th style="width: 280px;">Biện pháp khắc phục khuyến nghị</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.PhatHiens)
+                            {
+                                var badgeClass = item.MucDo == ninjaTax.Models.Entities.MucDoRuiRo.Cao_CanhBaoDo ? "bg-danger" : "bg-warning text-dark";
+                                var rowBorderClass = item.MucDo == ninjaTax.Models.Entities.MucDoRuiRo.Cao_CanhBaoDo ? "border-start border-danger border-4" : "border-start border-warning border-4";
+                                <tr class="@rowBorderClass">
+                                    <td class="text-center align-middle">
+                                        <span class="badge @badgeClass">
+                                            @(item.MucDo == ninjaTax.Models.Entities.MucDoRuiRo.Cao_CanhBaoDo ? "ĐỎ" : "VÀNG")
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold">@item.TieuDe</div>
+                                        <small class="text-muted">Chứng từ: @(item.MaChungTuLienQuan ?? "N/A")</small>
+                                        @if (item.NgayPhatSinh.HasValue)
+                                        {
+                                            <div><small class="text-muted">Ngày: @item.NgayPhatSinh.Value.ToString("dd/MM/yyyy")</small></div>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div>@item.MoTaChiTiet</div>
+                                        <div class="mt-1"><span class="badge bg-secondary"><i class="bi bi-book me-1"></i>@item.CanCuPhapLy</span></div>
+                                    </td>
+                                    <td class="text-end fw-bold">@item.SoTienViPham.ToString("N0")</td>
+                                    <td class="text-end fw-bold text-danger">@item.SoTienThueRuiRo.ToString("N0")</td>
+                                    <td class="text-end text-danger">@item.SoTienPhatDuKien.ToString("N0")</td>
+                                    <td>
+                                        <div class="alert alert-light border-success text-success p-2 mb-0 small">
+                                            <i class="bi bi-lightbulb-fill me-1"></i>@item.BienPhapKhacPhuc
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

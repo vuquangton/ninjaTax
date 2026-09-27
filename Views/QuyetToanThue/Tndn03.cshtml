@@ -1,0 +1,177 @@
+﻿@model ninjaTax.Models.ViewModels.QuyetToanTndnViewModel
+@{
+    ViewData["Title"] = $"Tờ khai Quyết toán Thuế TNDN (Mẫu 03/TNDN) - Năm {Model.NamQuyetToan}";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="h3 mb-0 text-gray-800">Tờ Khai Quyết Toán Thuế TNDN (Mẫu 03/TNDN)</h2>
+            <small class="text-muted">Kỳ tính thuế năm @Model.NamQuyetToan - Ban hành kèm theo Thông tư 80/2021/TT-BTC</small>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Index" asp-route-nam="@Model.NamQuyetToan" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i> Quay lại
+            </a>
+            <form method="post" asp-action="LuuTndn" class="d-inline">
+                <input type="hidden" name="nam" value="@Model.NamQuyetToan" />
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="bi bi-save"></i> Lưu tờ khai
+                </button>
+            </form>
+            <button class="btn btn-success btn-sm" onclick="window.print()">
+                <i class="bi bi-printer"></i> In tờ khai
+            </button>
+        </div>
+    </div>
+
+    <!-- Cảnh báo quy tắc 80% -->
+    <div class="card mb-4 border-@(!Model.ViPham80PhanTram ? "success" : "danger")">
+        <div class="card-header bg-@(!Model.ViPham80PhanTram ? "success" : "danger") text-white fw-bold">
+            Kiểm tra Quy tắc Tạm nộp 80% Thuế TNDN 4 Quý (Nghị định 91/2022/NĐ-CP)
+        </div>
+        <div class="card-body">
+            <div class="row text-center">
+                <div class="col-md-3">
+                    <div class="text-muted small">Tổng thuế TNDN cả năm (Mã C7)</div>
+                    <div class="h5 fw-bold text-dark">@Model.ChiTieuC7_ThueTndnPhaiNop.ToString("N0") đ</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small">Ngưỡng 80% tối thiểu</div>
+                    <div class="h5 fw-bold text-dark">@Model.Nguong80PhanTram.ToString("N0") đ</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small">Tổng tạm nộp 4 quý</div>
+                    <div class="h5 fw-bold text-@(!Model.ViPham80PhanTram ? "success" : "danger")">@Model.TongTamNop4Quy.ToString("N0") đ (@Model.TyLeTamNop.ToString("N1")%)</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small">Số nộp thiếu & Phạt chậm nộp</div>
+                    @if (Model.ViPham80PhanTram)
+                    {
+                        <div class="h5 fw-bold text-danger">Thiếu: @Model.SoTienNopThieu.ToString("N0") đ (Phạt: @Model.TienPhatChamNopDuKien.ToString("N0") đ)</div>
+                    }
+                    else
+                    {
+                        <div class="h5 fw-bold text-success">ĐẠT CHUẨN</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bảng chỉ tiêu Mẫu 03/TNDN -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-dark text-white fw-bold">
+            I. Các Chỉ Tiêu Xác Định Nghĩa Vụ Thuế TNDN (Mẫu 03/TNDN)
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 80px;" class="text-center">Mã số</th>
+                            <th>Chỉ tiêu</th>
+                            <th style="width: 250px;" class="text-end">Số tiền (VNĐ)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="fw-bold table-light">
+                            <td class="text-center">A1</td>
+                            <td>Tổng lợi nhuận kế toán trước thuế thu nhập doanh nghiệp</td>
+                            <td class="text-end">@Model.ChiTieuA1_LoiNhuanKeToan.ToString("N0")</td>
+                        </tr>
+                        <tr class="fw-bold text-danger">
+                            <td class="text-center">B4</td>
+                            <td>Các khoản chi không được trừ khi xác định thu nhập chịu thuế</td>
+                            <td class="text-end">@Model.ChiTieuB4_ChiPhiKhongDuocTru.ToString("N0")</td>
+                        </tr>
+                        <tr>
+                            <td class="text-center">B7</td>
+                            <td>Thu nhập miễn thuế</td>
+                            <td class="text-end">@Model.ChiTieuB7_ThuNhapMienThue.ToString("N0")</td>
+                        </tr>
+                        <tr class="fw-bold">
+                            <td class="text-center">B14</td>
+                            <td>Tổng thu nhập chịu thuế (B14 = A1 + B4 - B7)</td>
+                            <td class="text-end">@Model.ChiTieuB14_ThuNhapChiuThue.ToString("N0")</td>
+                        </tr>
+                        <tr>
+                            <td class="text-center">C1</td>
+                            <td>Thu nhập tính thuế (C1 = B14 - C4)</td>
+                            <td class="text-end">@Model.ChiTieuC1_ThuNhapTinhThue.ToString("N0")</td>
+                        </tr>
+                        <tr>
+                            <td class="text-center">C4</td>
+                            <td>Lỗ từ các năm trước chuyển sang</td>
+                            <td class="text-end">@Model.ChiTieuC4_LoKetChuyen.ToString("N0")</td>
+                        </tr>
+                        <tr>
+                            <td class="text-center">C6</td>
+                            <td>Thuế suất thuế TNDN</td>
+                            <td class="text-end">@Model.ThueSuat.ToString("N0")%</td>
+                        </tr>
+                        <tr class="fw-bold table-warning">
+                            <td class="text-center">C7</td>
+                            <td>Thuế thu nhập doanh nghiệp phải nộp (C7 = C1 * C6)</td>
+                            <td class="text-end">@Model.ChiTieuC7_ThueTndnPhaiNop.ToString("N0")</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Phụ lục B4 -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-secondary text-white fw-bold">
+            II. Chi Tiết Các Khoản Chi Không Được Trừ (Bóc Tách Tự Động Vào Chỉ Tiêu B4)
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="text-center" style="width: 50px;">STT</th>
+                            <th>Mô tả khoản chi vi phạm</th>
+                            <th>Căn cứ pháp lý</th>
+                            <th>Số chứng từ</th>
+                            <th>Ngày chứng từ</th>
+                            <th class="text-end" style="width: 200px;">Số tiền (VNĐ)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.DanhSachChiPhiB4.Any())
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center text-success py-3">
+                                    <i class="bi bi-shield-check me-2"></i> Không phát hiện khoản chi không hợp lý nào thuộc chỉ tiêu B4.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            int stt = 1;
+                            foreach (var item in Model.DanhSachChiPhiB4)
+                            {
+                                <tr>
+                                    <td class="text-center">@(stt++)</td>
+                                    <td>@item.MoTa</td>
+                                    <td><small class="text-muted">@item.CanCuPhapLy</small></td>
+                                    <td>@(item.SoChungTuLienQuan ?? "-")</td>
+                                    <td>@(item.NgayChungTu?.ToString("dd/MM/yyyy") ?? "-")</td>
+                                    <td class="text-end fw-bold text-danger">@item.SoTien.ToString("N0")</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                    <tfoot class="table-light fw-bold">
+                        <tr>
+                            <td colspan="5" class="text-end">TỔNG CỘNG CHỈ TIÊU B4:</td>
+                            <td class="text-end text-danger">@Model.ChiTieuB4_ChiPhiKhongDuocTru.ToString("N0")</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,215 @@
+﻿@model ninjaTax.Models.ViewModels.QuyetToanTncnViewModel
+@{
+    ViewData["Title"] = $"Tờ khai Quyết toán Thuế TNCN (Mẫu 05/QTT-TNCN) - Năm {Model.NamQuyetToan}";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="h3 mb-0 text-gray-800">Tờ Khai Quyết Toán Thuế TNCN (Mẫu 05/QTT-TNCN)</h2>
+            <small class="text-muted">Kỳ tính thuế năm @Model.NamQuyetToan - Ban hành kèm theo Thông tư 80/2021/TT-BTC</small>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Index" asp-route-nam="@Model.NamQuyetToan" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i> Quay lại
+            </a>
+            <form method="post" asp-action="LuuTncn" class="d-inline">
+                <input type="hidden" name="nam" value="@Model.NamQuyetToan" />
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="bi bi-save"></i> Lưu tờ khai
+                </button>
+            </form>
+            <button class="btn btn-success btn-sm" onclick="window.print()">
+                <i class="bi bi-printer"></i> In tờ khai
+            </button>
+        </div>
+    </div>
+
+    <!-- Tổng hợp tờ khai chính 05/QTT-TNCN -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-dark text-white fw-bold">
+            I. Tổng Hợp Tờ Khai Quyết Toán Thuế TNCN (Dành Cho Tổ Chức Trả Thu Nhập)
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-bordered mb-0">
+                <tbody>
+                    <tr>
+                        <td class="fw-bold bg-light" style="width: 350px;">Tổng số cá nhân nhận thu nhập:</td>
+                        <td>@Model.TongSoNhanVienQuyetToan người</td>
+                        <td class="fw-bold bg-light" style="width: 350px;">Số cá nhân ủy quyền quyết toán:</td>
+                        <td>@Model.SoNhanVienUyQuyen người</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold bg-light">Tổng thu nhập chịu thuế trả cho cá nhân:</td>
+                        <td class="fw-bold">@Model.TongThuNhapChiuThue.ToString("N0") đ</td>
+                        <td class="fw-bold bg-light">Trong đó: Thu nhập được miễn thuế:</td>
+                        <td>@Model.TongThuNhapMienThue.ToString("N0") đ</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold bg-light">Tổng các khoản giảm trừ gia cảnh:</td>
+                        <td>@Model.TongGiamTruGiaCanh.ToString("N0") đ</td>
+                        <td class="fw-bold bg-light">Tổng các khoản bảo hiểm bắt buộc:</td>
+                        <td>@Model.TongBaoHiemBatBuoc.ToString("N0") đ</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold bg-light">Tổng thu nhập tính thuế:</td>
+                        <td class="fw-bold">@Model.TongThuNhapTinhThue.ToString("N0") đ</td>
+                        <td class="fw-bold bg-light">Tổng số thuế TNCN đã khấu trừ:</td>
+                        <td class="fw-bold text-primary">@Model.TongThueDaKhauTru.ToString("N0") đ</td>
+                    </tr>
+                    <tr class="table-warning">
+                        <td class="fw-bold bg-light">Tổng số thuế phải nộp sau quyết toán:</td>
+                        <td class="fw-bold">@Model.TongThuePhaiNopSauQtt.ToString("N0") đ</td>
+                        <td class="fw-bold bg-light">Chênh lệch (Nộp thừa / Nộp thêm):</td>
+                        <td class="fw-bold">
+                            @if (Model.TongThueNopThua > 0)
+                            {
+                                <span class="text-success">Nộp thừa: @Model.TongThueNopThua.ToString("N0") đ</span>
+                            }
+                            else if (Model.TongThueConPhaiNopThem > 0)
+                            {
+                                <span class="text-danger">Còn phải nộp thêm: @Model.TongThueConPhaiNopThem.ToString("N0") đ</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">Đã khớp (0 đ)</span>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Phụ lục 05-1/BK-QTT-TNCN: Cá nhân cư trú có HĐLĐ từ 3 tháng trở lên -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white fw-bold">
+            II. Phụ Lục 05-1/BK-QTT-TNCN: Lao Động Ký HĐLĐ Từ 3 Tháng Trở Lên (Biểu Lũy Tiến Từng Phần)
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover mb-0">
+                    <thead class="table-light">
+                        <tr class="text-center align-middle">
+                            <th style="width: 40px;">STT</th>
+                            <th>Họ và tên</th>
+                            <th>MST</th>
+                            <th>CCCD</th>
+                            <th>Ủy quyền</th>
+                            <th>TN Chịu thuế</th>
+                            <th>TN Miễn thuế</th>
+                            <th>Giảm trừ bản thân</th>
+                            <th>NPT</th>
+                            <th>Giảm trừ NPT</th>
+                            <th>Bảo hiểm</th>
+                            <th>TN Tính thuế</th>
+                            <th>Đã khấu trừ</th>
+                            <th>Sau QTT</th>
+                            <th>Nộp thừa</th>
+                            <th>Phải nộp thêm</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.BangKe051.Any())
+                        {
+                            <tr>
+                                <td colspan="16" class="text-center text-muted py-3">Không có nhân sự nào trong danh sách 05-1</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            int stt = 1;
+                            foreach (var item in Model.BangKe051)
+                            {
+                                <tr>
+                                    <td class="text-center">@(stt++)</td>
+                                    <td class="fw-bold">@item.HoTen</td>
+                                    <td>@(item.MaSoThue ?? "-")</td>
+                                    <td>@(item.SoCccd ?? "-")</td>
+                                    <td class="text-center">
+                                        @if (item.CaNhanUyQuyenQuyetToan)
+                                        {
+                                            <span class="badge bg-success">Có</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Không</span>
+                                        }
+                                    </td>
+                                    <td class="text-end">@item.TongThuNhapChiuThue.ToString("N0")</td>
+                                    <td class="text-end">@item.ThuNhapMienThue.ToString("N0")</td>
+                                    <td class="text-end">@item.GiamTruBanThan.ToString("N0")</td>
+                                    <td class="text-center">@item.SoNguoiPhuThuoc</td>
+                                    <td class="text-end">@item.GiamTruNguoiPhuThuoc.ToString("N0")</td>
+                                    <td class="text-end">@item.BaoHiemBatBuoc.ToString("N0")</td>
+                                    <td class="text-end fw-bold">@item.ThuNhapTinhThue.ToString("N0")</td>
+                                    <td class="text-end">@item.ThueDaKhauTruTrongNam.ToString("N0")</td>
+                                    <td class="text-end fw-bold">@item.ThuePhaiNopSauQuyetToan.ToString("N0")</td>
+                                    <td class="text-end text-success">@(item.ThueNopThua > 0 ? item.ThueNopThua.ToString("N0") : "-")</td>
+                                    <td class="text-end text-danger fw-bold">@(item.ThueConPhaiNop > 0 ? item.ThueConPhaiNop.ToString("N0") : "-")</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Phụ lục 05-2/BK-QTT-TNCN: Cá nhân không ký HĐ hoặc HĐ dưới 3 tháng -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-secondary text-white fw-bold">
+            III. Phụ Lục 05-2/BK-QTT-TNCN: Lao Động Thử Việc / Thời Vụ Dưới 3 Tháng (Khấu Trừ Toàn Phần 10%)
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover mb-0">
+                    <thead class="table-light">
+                        <tr class="text-center align-middle">
+                            <th style="width: 50px;">STT</th>
+                            <th>Họ và tên</th>
+                            <th>MST</th>
+                            <th>CCCD</th>
+                            <th>Cam kết Mẫu 08</th>
+                            <th class="text-end">Tổng thu nhập chịu thuế</th>
+                            <th class="text-end">Thuế TNCN đã khấu trừ (10%)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.BangKe052.Any())
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-3">Không có nhân sự nào trong danh sách 05-2</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            int stt = 1;
+                            foreach (var item in Model.BangKe052)
+                            {
+                                <tr>
+                                    <td class="text-center">@(stt++)</td>
+                                    <td class="fw-bold">@item.HoTen</td>
+                                    <td>@(item.MaSoThue ?? "-")</td>
+                                    <td>@(item.SoCccd ?? "-")</td>
+                                    <td class="text-center">
+                                        @if (item.CoCamKet08)
+                                        {
+                                            <span class="badge bg-info text-dark">Có CK 08 (Miễn khấu trừ)</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark">Khấu trừ 10%</span>
+                                        }
+                                    </td>
+                                    <td class="text-end">@item.TongThuNhapChiuThue.ToString("N0")</td>
+                                    <td class="text-end fw-bold text-danger">@item.ThueTncnDaKhauTru10.ToString("N0")</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

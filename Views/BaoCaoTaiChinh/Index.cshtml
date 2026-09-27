@@ -1,0 +1,210 @@
+﻿@model ninjaTax.Models.ViewModels.BctcDashboardViewModel
+@{
+    ViewData["Title"] = $"Báo Cáo Tài Chính Năm {Model.NamTaiChinh}";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="h3 mb-0 text-gray-800">Bộ Báo Cáo Tài Chính Năm @Model.NamTaiChinh</h2>
+            <small class="text-muted">Chuẩn mực Chế độ Kế toán Doanh nghiệp Thông tư 99/2025/TT-BTC (Tuyệt đối không TK 911)</small>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+            <form method="get" asp-action="Index" class="d-flex gap-2">
+                <select name="nam" class="form-select form-select-sm" onchange="this.form.submit()">
+                    @for (int y = DateTime.Today.Year; y >= DateTime.Today.Year - 5; y--)
+                    {
+                        if (y == Model.NamTaiChinh)
+                        {
+                            <option value="@y" selected>Năm @y</option>
+                        }
+                        else
+                        {
+                            <option value="@y">Năm @y</option>
+                        }
+                    }
+                </select>
+            </form>
+
+            <form method="post" asp-action="KhoaSo" class="d-inline">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="nam" value="@Model.NamTaiChinh" />
+                <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Bạn có chắc chắn muốn khóa sổ BCTC năm @Model.NamTaiChinh không?')">
+                    <i class="bi bi-lock-fill"></i> Khóa Sổ BCTC
+                </button>
+            </form>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Invariant checks -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-@(Model.B01CanDoi ? "success" : "danger")">
+                <div class="card-body">
+                    <h6 class="text-uppercase text-muted small fw-bold">Cân Đối B01-DN</h6>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fs-5 fw-bold text-@(Model.B01CanDoi ? "success" : "danger")">
+                            @(Model.B01CanDoi ? "CÂN ĐỐI (OK)" : "LỆCH BẢNG")
+                        </span>
+                        <span class="badge bg-@(Model.B01CanDoi ? "success" : "danger")">
+                            TS = NV
+                        </span>
+                    </div>
+                    <small class="text-muted d-block mt-2">Tổng TS: @Model.TongTaiSan.ToString("N0") đ = NV: @Model.TongNguonVon.ToString("N0") đ</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-success">
+                <div class="card-body">
+                    <h6 class="text-uppercase text-muted small fw-bold">Lợi Nhuận B02 & TK 4212</h6>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fs-5 fw-bold text-success">
+                            @Model.LoiNhuanSauThue.ToString("N0") đ
+                        </span>
+                        <span class="badge bg-success">Mã 60</span>
+                    </div>
+                    <small class="text-muted d-block mt-2">DTT: @Model.DoanhThuThuan.ToString("N0") đ | LNTT: @Model.LoiNhuanTruocThue.ToString("N0") đ</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-info">
+                <div class="card-body">
+                    <h6 class="text-uppercase text-muted small fw-bold">Tiền Tệ B03 & TK 111/112</h6>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fs-5 fw-bold text-info">
+                            @Model.TienCuoiKy.ToString("N0") đ
+                        </span>
+                        <span class="badge bg-info text-dark">Mã 70</span>
+                    </div>
+                    <small class="text-muted d-block mt-2">Tiền đầu kỳ: @Model.TienDauKy.ToString("N0") đ</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-@(Model.TrangThai == ninjaTax.Models.Entities.TrangThaiBaoCaoTaiChinh.DaKhoaSo ? "primary" : "secondary")">
+                <div class="card-body">
+                    <h6 class="text-uppercase text-muted small fw-bold">Trạng Thái Sổ Sách</h6>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fs-5 fw-bold text-@(Model.TrangThai == ninjaTax.Models.Entities.TrangThaiBaoCaoTaiChinh.DaKhoaSo ? "primary" : "secondary")">
+                            @Model.TrangThai
+                        </span>
+                        <span class="badge bg-@(Model.TrangThai == ninjaTax.Models.Entities.TrangThaiBaoCaoTaiChinh.DaKhoaSo ? "primary" : "secondary")">TT99</span>
+                    </div>
+                    <small class="text-muted d-block mt-2">Khóa sổ để chốt số liệu nộp Cơ quan Thuế</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4 Biểu mẫu BCTC chính -->
+    <div class="row g-4">
+        <!-- B01-DN -->
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <span class="fw-bold">Mẫu B01-DN: Báo Cáo Tình Hình Tài Chính</span>
+                    <a asp-action="B01" asp-route-nam="@Model.NamTaiChinh" class="btn btn-sm btn-light">Xem Chi Tiết &rarr;</a>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm table-striped">
+                        <tbody>
+                            <tr class="table-primary fw-bold"><td>TỔNG CỘNG TÀI SẢN (Mã 270)</td><td class="text-end">@Model.TongTaiSan.ToString("N0") đ</td></tr>
+                            <tr class="table-primary fw-bold"><td>TỔNG CỘNG NGUỒN VỐN (Mã 440)</td><td class="text-end">@Model.TongNguonVon.ToString("N0") đ</td></tr>
+                            <tr><td>Trạng thái cân đối kế toán</td><td class="text-end"><span class="badge bg-@(Model.B01CanDoi ? "success" : "danger")">@(Model.B01CanDoi ? "CÂN ĐỐI CHÍNH XÁC" : "LỆCH")</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- B02-DN -->
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <span class="fw-bold">Mẫu B02-DN: Báo Cáo Kết Quả Hoạt Động Kinh Doanh</span>
+                    <a asp-action="B02" asp-route-nam="@Model.NamTaiChinh" class="btn btn-sm btn-light">Xem Chi Tiết &rarr;</a>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm table-striped">
+                        <tbody>
+                            <tr><td>Doanh thu thuần (Mã 10)</td><td class="text-end">@Model.DoanhThuThuan.ToString("N0") đ</td></tr>
+                            <tr><td>Lợi nhuận gộp (Mã 20)</td><td class="text-end">@Model.LoiNhuanGop.ToString("N0") đ</td></tr>
+                            <tr><td>Lợi nhuận trước thuế (Mã 50)</td><td class="text-end">@Model.LoiNhuanTruocThue.ToString("N0") đ</td></tr>
+                            <tr><td>Chi phí thuế TNDN hiện hành (Mã 51)</td><td class="text-end">@Model.ThueTndnHienHanh.ToString("N0") đ</td></tr>
+                            <tr class="table-success fw-bold"><td>LỢI NHUẬN SAU THUẾ TNDN (Mã 60)</td><td class="text-end">@Model.LoiNhuanSauThue.ToString("N0") đ</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- B03-DN -->
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <span class="fw-bold">Mẫu B03-DN: Báo Cáo Lưu Chuyển Tiền Tệ (Trực Tiếp)</span>
+                    <a asp-action="B03" asp-route-nam="@Model.NamTaiChinh" class="btn btn-sm btn-light">Xem Chi Tiết &rarr;</a>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm table-striped">
+                        <tbody>
+                            <tr><td>Lưu chuyển tiền thuần từ HĐKD (Mã 20)</td><td class="text-end fw-bold">@Model.LuuChuyenHdkd.ToString("N0") đ</td></tr>
+                            <tr><td>Lưu chuyển tiền thuần từ HĐĐT (Mã 30)</td><td class="text-end fw-bold">@Model.LuuChuyenHddt.ToString("N0") đ</td></tr>
+                            <tr><td>Lưu chuyển tiền thuần từ HĐTC (Mã 40)</td><td class="text-end fw-bold">@Model.LuuChuyenHdtc.ToString("N0") đ</td></tr>
+                            <tr><td>Tiền và tương đương tiền đầu kỳ (Mã 60)</td><td class="text-end">@Model.TienDauKy.ToString("N0") đ</td></tr>
+                            <tr class="table-info fw-bold"><td>TIỀN VÀ TƯƠNG ĐƯƠNG TIỀN CUỐI KỲ (Mã 70)</td><td class="text-end">@Model.TienCuoiKy.ToString("N0") đ</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- B09-DN & Actions -->
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <span class="fw-bold">Mẫu B09-DN & Kiểm Soát Rủi Ro</span>
+                    <a asp-action="ThuyetMinh" asp-route-nam="@Model.NamTaiChinh" class="btn btn-sm btn-light">Thuyết Minh &rarr;</a>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span>Cảnh báo rủi ro thuế:</span>
+                        <div>
+                            <span class="badge bg-danger me-1">@Model.SoCanhBaoDo Đỏ</span>
+                            <span class="badge bg-warning text-dark me-1">@Model.SoCanhBaoVang Vàng</span>
+                            <span class="badge bg-secondary">@Model.TongTienRuiRo.ToString("N0") đ</span>
+                        </div>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <a asp-controller="QuyetToanThue" asp-action="Index" asp-route-nam="@Model.NamTaiChinh" class="btn btn-outline-primary">
+                            <i class="bi bi-file-earmark-spreadsheet"></i> Quyết Toán Thuế (TNDN 03 & TNCN 05)
+                        </a>
+                        <a asp-controller="TaxAuditShield" asp-action="Index" asp-route-nam="@Model.NamTaiChinh" class="btn btn-outline-danger">
+                            <i class="bi bi-shield-shaded"></i> Quét 8 Bẫy Thuế Tử Thần (Tax Audit Risk Shield)
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

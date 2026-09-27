@@ -1,0 +1,62 @@
+﻿@model ninjaTax.Models.ViewModels.BaoCaoTinhHinhTaiChinhViewModel
+@{
+    ViewData["Title"] = $"Báo Cáo Tình Hình Tài Chính (Mẫu B01-DN) - Năm {Model.NamTaiChinh}";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="h3 mb-0 text-gray-800">Báo Cáo Tình Hình Tài Chính (Mẫu B01-DN)</h2>
+            <small class="text-muted">Ban hành kèm theo Thông tư 99/2025/TT-BTC - Năm tài chính @Model.NamTaiChinh</small>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Index" asp-route-nam="@Model.NamTaiChinh" class="btn btn-outline-secondary btn-sm">&larr; Quay Lại Tổng Hợp</a>
+            <button onclick="window.print()" class="btn btn-secondary btn-sm"><i class="bi bi-printer"></i> In Báo Cáo</button>
+        </div>
+    </div>
+
+    <!-- Cảnh báo cân đối -->
+    <div class="alert alert-@(Model.IsCanDoi ? "success" : "danger") d-flex justify-content-between align-items-center">
+        <div>
+            <strong>Trạng thái cân đối: </strong>
+            @(Model.IsCanDoi ? "Bảng cân đối hoàn toàn chính xác (Tổng Tài Sản = Tổng Nguồn Vốn)" : "BẢNG CHƯA CÂN ĐỐI! Cần rà soát lại các bút toán kết chuyển.")
+        </div>
+        <div>
+            <span>Tổng Tài Sản: <strong>@Model.TongTaiSanCuoiNam.ToString("N0") đ</strong> | Tổng Nguồn Vốn: <strong>@Model.TongNguonVonCuoiNam.ToString("N0") đ</strong></span>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0">
+                    <thead class="table-light">
+                        <tr class="text-center">
+                            <th style="width: 45%;">CHỈ TIÊU</th>
+                            <th style="width: 10%;">MÃ SỐ</th>
+                            <th style="width: 15%;">THUYẾT MINH</th>
+                            <th style="width: 15%;">SỐ CUỐI NĂM</th>
+                            <th style="width: 15%;">SỐ ĐẦU NĂM</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.ChiTiets)
+                        {
+                            <tr class="@(item.InDam ? "fw-bold table-light" : "")">
+                                <td style="padding-left: @(item.CapDo * 15 + 5)px;">@item.ChiTieu</td>
+                                <td class="text-center">@item.MaSo</td>
+                                <td class="text-center">@item.ThuyetMinh</td>
+                                <td class="text-end @(item.SoCuoiNam < 0 ? "text-danger" : "")">
+                                    @(item.SoCuoiNam < 0 ? $"({Math.Abs(item.SoCuoiNam):N0})" : item.SoCuoiNam.ToString("N0"))
+                                </td>
+                                <td class="text-end @(item.SoDauNam < 0 ? "text-danger" : "")">
+                                    @(item.SoDauNam < 0 ? $"({Math.Abs(item.SoDauNam):N0})" : item.SoDauNam.ToString("N0"))
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

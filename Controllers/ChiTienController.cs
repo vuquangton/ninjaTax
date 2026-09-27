@@ -179,7 +179,7 @@ public class ChiTienController : Controller
             await _context.HoaDonMuaHangs
                 .Where(h => (h.TongThanhToan - h.DaThanhToan) > 0)
                 .OrderByDescending(h => h.NgayHoaDon)
-                .Select(h => new { h.Id, TenHienThi = $"{h.SoHoaDon} - Còn: {(h.TongThanhToan - h.DaThanhToan):N0} đ" })
+                .Select(h => new { h.Id, TenHienThi = $"{h.SoHoaDon} ({(h.NhaCungCap != null ? h.NhaCungCap.TenDoiTuong : "")}) - Còn: {(h.TongThanhToan - h.DaThanhToan):N0} đ" })
                 .ToListAsync(),
             "Id", "TenHienThi");
     }

@@ -51,6 +51,8 @@ public class BangLuongThang
     public TrangThaiBangLuong TrangThai { get; set; } = TrangThaiBangLuong.ChoDuyet;
 
     public virtual ICollection<ChiTietLuongNhanVien> ChiTiets { get; set; } = new List<ChiTietLuongNhanVien>();
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public virtual ICollection<ChiTietLuongNhanVien> ChiTietLuongNhanViens { get => ChiTiets; set => ChiTiets = value; }
 
     public DateTime NgayTao { get; set; } = DateTime.UtcNow;
     public DateTime? NgayCapNhat { get; set; }

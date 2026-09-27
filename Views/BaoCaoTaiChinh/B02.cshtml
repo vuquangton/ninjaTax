@@ -1,0 +1,62 @@
+﻿@model ninjaTax.Models.ViewModels.BaoCaoKetQuaKinhDoanhViewModel
+@{
+    ViewData["Title"] = $"Báo Cáo Kết Quả Hoạt Động Kinh Doanh (Mẫu B02-DN) - Năm {Model.NamTaiChinh}";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="h3 mb-0 text-gray-800">Báo Cáo Kết Quả Hoạt Động Kinh Doanh (Mẫu B02-DN)</h2>
+            <small class="text-muted">Ban hành kèm theo Thông tư 99/2025/TT-BTC - Năm tài chính @Model.NamTaiChinh</small>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Index" asp-route-nam="@Model.NamTaiChinh" class="btn btn-outline-secondary btn-sm">&larr; Quay Lại Tổng Hợp</a>
+            <button onclick="window.print()" class="btn btn-secondary btn-sm"><i class="bi bi-printer"></i> In Báo Cáo</button>
+        </div>
+    </div>
+
+    <!-- Khớp Lợi nhuận với TK 4212 -->
+    <div class="alert alert-@(Model.IsKhopSoSổCai ? "success" : "danger") d-flex justify-content-between align-items-center">
+        <div>
+            <strong>Kiểm soát khớp số liệu lợi nhuận: </strong>
+            @(Model.IsKhopSoSổCai ? "Lợi nhuận sau thuế B02 khớp 100% với biến động Có/Nợ TK 4212 trên Sổ Cái." : "CẢNH BÁO LỆCH LỢI NHUẬN! LNST B02 chưa khớp với biến động TK 4212.")
+        </div>
+        <div>
+            <span>LNST B02: <strong>@Model.LoiNhuanSauThue.ToString("N0") đ</strong> | Biến động TK 4212: <strong>@Model.ChenhLechTk4212.ToString("N0") đ</strong></span>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0">
+                    <thead class="table-light">
+                        <tr class="text-center">
+                            <th style="width: 45%;">CHỈ TIÊU</th>
+                            <th style="width: 10%;">MÃ SỐ</th>
+                            <th style="width: 15%;">THUYẾT MINH</th>
+                            <th style="width: 15%;">NĂM NAY</th>
+                            <th style="width: 15%;">NĂM TRƯỚC</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.ChiTiets)
+                        {
+                            <tr class="@(item.InDam ? "fw-bold table-light" : "")">
+                                <td class="ps-3">@item.ChiTieu</td>
+                                <td class="text-center">@item.MaSo</td>
+                                <td class="text-center">@item.ThuyetMinh</td>
+                                <td class="text-end @(item.NamNay < 0 ? "text-danger" : "")">
+                                    @(item.NamNay < 0 ? $"({Math.Abs(item.NamNay):N0})" : item.NamNay.ToString("N0"))
+                                </td>
+                                <td class="text-end @(item.NamTruoc < 0 ? "text-danger" : "")">
+                                    @(item.NamTruoc < 0 ? $"({Math.Abs(item.NamTruoc):N0})" : item.NamTruoc.ToString("N0"))
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

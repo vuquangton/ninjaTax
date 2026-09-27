@@ -41,6 +41,17 @@ public class AppDbContext : DbContext
     public DbSet<BangLuongThang> BangLuongThangs => Set<BangLuongThang>();
     public DbSet<ChiTietLuongNhanVien> ChiTietLuongNhanViens => Set<ChiTietLuongNhanVien>();
 
+    // Phase 5: BCTC TT99, Quyết toán thuế & Lá chắn rủi ro thuế
+    public DbSet<BaoCaoTaiChinhNam> BaoCaoTaiChinhNams => Set<BaoCaoTaiChinhNam>();
+    public DbSet<ChiTietChiTieuBctc> ChiTietChiTieuBctcs => Set<ChiTietChiTieuBctc>();
+    public DbSet<QuyetToanThueTndn> QuyetToanThueTndns => Set<QuyetToanThueTndn>();
+    public DbSet<ChiPhiKhongHopLyB4> ChiPhiKhongHopLyB4s => Set<ChiPhiKhongHopLyB4>();
+    public DbSet<QuyetToanThueTncn> QuyetToanThueTncns => Set<QuyetToanThueTncn>();
+    public DbSet<BangKeQttTncn051> BangKeQttTncn051s => Set<BangKeQttTncn051>();
+    public DbSet<BangKeQttTncn052> BangKeQttTncn052s => Set<BangKeQttTncn052>();
+    public DbSet<TaxAuditRiskShieldReport> TaxAuditRiskShieldReports => Set<TaxAuditRiskShieldReport>();
+    public DbSet<TaxRiskFinding> TaxRiskFindings => Set<TaxRiskFinding>();
+
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         base.ConfigureConventions(configurationBuilder);
