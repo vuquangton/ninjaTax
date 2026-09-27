@@ -1,0 +1,70 @@
+@*
+    _ActionBar.cshtml — Workflow action bar partial
+    ─────────────────────────────────────────────────
+    Usage:
+        @{ ViewData["TrangThai"] = (int)TrangThaiChungTu.Nhap; }
+        @await Html.PartialAsync("_ActionBar")
+
+    Or with a specific action controller override:
+        @{ ViewData["TrangThai"] = 0; ViewData["PostAction"] = "GhiSo"; }
+
+    TrangThai values:
+        0 = Nhap      (Draft)    → save + post buttons
+        1 = DaGhiSo   (Posted)   → unpost button only
+        2 = DaHuy     (Cancelled)→ status badge only, no actions
+*@
+
+@{
+    var trangThai = (int)(ViewData["TrangThai"] ?? 0);
+    var postAction = ViewData["PostAction"] as string ?? "GhiSo";
+    var unpostAction = ViewData["UnpostAction"] as string ?? "BoGhiSo";
+    var cancelUrl = ViewData["CancelUrl"] as string;
+}
+
+<div class="nt-action-bar">
+    <div class="nt-action-bar__secondary">
+        @if (trangThai == 0)
+        {
+            <a href="@(cancelUrl ?? "javascript:history.back()")"
+               class="btn btn-outline-secondary"
+               data-action="cancel">
+                <i class="bi bi-x-circle me-1"></i>Hủy bỏ
+                <small class="shortcut-hint ms-1">(Esc)</small>
+            </a>
+        }
+        else if (trangThai == 1)
+        {
+            <span class="nt-badge nt-badge--posted">
+                <i class="bi bi-check-circle me-1"></i>Đã ghi sổ
+            </span>
+        }
+        else if (trangThai == 2)
+        {
+            <span class="nt-badge nt-badge--cancelled">
+                <i class="bi bi-x-circle me-1"></i>Đã hủy
+            </span>
+        }
+    </div>
+
+    <div class="nt-action-bar__primary">
+        @if (trangThai == 0)
+        {
+            <button type="submit" class="btn btn-outline-primary" data-action="save">
+                <i class="bi bi-save me-1"></i>Lưu nháp
+                <small class="shortcut-hint ms-1">(Ctrl+S)</small>
+            </button>
+            <button type="button" class="btn btn-success" data-action="post"
+                    onclick="document.querySelector('form').action += (document.querySelector('form').action.includes('?') ? '&' : '?') + 'action=post'; document.querySelector('form').submit();">
+                <i class="bi bi-check-circle me-1"></i>Ghi sổ
+                <small class="shortcut-hint ms-1">(F9)</small>
+            </button>
+        }
+        else if (trangThai == 1)
+        {
+            <button type="button" class="btn btn-warning" data-action="unpost"
+                    onclick="if(confirm('Bỏ ghi sổ sẽ mở lại chứng từ để chỉnh sửa. Tiếp tục?')) { document.querySelector('form').action = '@Url.Action(unpostAction)'; document.querySelector('form').submit(); }">
+                <i class="bi bi-arrow-counterclockwise me-1"></i>Bỏ ghi sổ
+            </button>
+        }
+    </div>
+</div>

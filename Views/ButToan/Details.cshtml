@@ -17,8 +17,9 @@
             {
                 <form asp-action="GhiSo" asp-route-id="@Model.Id" method="post" class="d-inline ms-2">
                     @Html.AntiForgeryToken()
-                    <button type="submit" class="btn btn-success">
+                    <button type="submit" class="btn btn-success" data-action="post">
                         <i class="bi bi-check-circle"></i> Ghi Sổ Kế Toán
+                        <small class="shortcut-hint ms-1">(F9)</small>
                     </button>
                 </form>
             }
@@ -26,8 +27,8 @@
             {
                 <form asp-action="BoGhiSo" asp-route-id="@Model.Id" method="post" class="d-inline ms-2">
                     @Html.AntiForgeryToken()
-                    <button type="submit" class="btn btn-warning">
-                        Bỏ Ghi Sổ
+                    <button type="submit" class="btn btn-warning" data-action="unpost">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>Bỏ Ghi Sổ
                     </button>
                 </form>
             }
@@ -41,11 +42,15 @@
             <div>
                 @if (Model.TrangThai == TrangThaiButToan.DaGhiSo)
                 {
-                    <span class="badge bg-success fs-6">Đã Ghi Sổ</span>
+                    <span class="nt-badge nt-badge--posted">
+                        <i class="bi bi-check-circle me-1"></i>Đã Ghi Sổ
+                    </span>
                 }
                 else if (Model.TrangThai == TrangThaiButToan.ChuaGhiSo)
                 {
-                    <span class="badge bg-warning text-dark fs-6">Chưa Ghi Sổ</span>
+                    <span class="nt-badge nt-badge--draft">
+                        <i class="bi bi-pencil-square me-1"></i>Nháp
+                    </span>
                 }
                 else
                 {
