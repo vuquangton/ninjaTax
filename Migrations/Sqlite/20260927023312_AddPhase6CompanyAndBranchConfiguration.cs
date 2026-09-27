@@ -501,6 +501,8 @@ namespace ninjaTax.Migrations.Sqlite
 
             migrationBuilder.DropTable(
                 name: "QuyetToanThueTndn");
+
+            migrationBuilder.DropTable(
                 name: "CauHinhKeToan");
 
             migrationBuilder.DropTable(

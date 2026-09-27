@@ -587,4 +587,130 @@ public class FinancialReportService : IFinancialReportService
             .Where(bal => bal > 0)
             .Sum();
     }
+
+    public async Task<BaoCaoBoPhanViewModel> LapBaoCaoBoPhanAsync(int namTaiChinh, long? branchId = null)
+    {
+        var tuNgay = new DateTime(namTaiChinh, 1, 1);
+        var denNgay = new DateTime(namTaiChinh, 12, 31, 23, 59, 59);
+
+        // 1. Lấy thông tin các phòng ban
+        var deptQuery = _context.PhongBans
+            .Include(p => p.ChiNhanh)
+            .AsNoTracking()
+            .AsQueryable();
+
+        if (branchId.HasValue && branchId.Value > 0)
+        {
+            deptQuery = deptQuery.Where(p => p.ChiNhanhId == branchId.Value);
+        }
+
+        var departments = await deptQuery.OrderBy(p => p.MaPhongBan).ToListAsync();
+        var deptMap = departments.ToDictionary(p => p.Id);
+
+        // 2. Lấy đối chiếu tổng Doanh thu & Chi phí toàn công ty từ B02-DN
+        var b02 = await LapBaoCaoB02Async(namTaiChinh);
+        var tongDoanhThuB02 = b02.DoanhThuThuan;
+        var giaVonB02 = b02.ChiTiets.FirstOrDefault(c => c.MaSo == "11")?.NamNay ?? 0m;
+        var cpQuanLyBanHangB02 = b02.ChiTiets.FirstOrDefault(c => c.MaSo == "25")?.NamNay ?? 0m;
+        var tongChiPhiB02 = giaVonB02 + cpQuanLyBanHangB02;
+
+        // 3. Truy vấn các dòng bút toán đã ghi sổ trong năm tài chính
+        var voucherDetails = await _context.ChiTietButToans
+            .Where(c => c.ButToan != null &&
+                        c.ButToan.TrangThai == TrangThaiButToan.DaGhiSo &&
+                        c.ButToan.NgayHachToan >= tuNgay &&
+                        c.ButToan.NgayHachToan <= denNgay)
+            .Select(c => new
+            {
+                c.PhongBanId,
+                TkNo = c.TaiKhoanNo != null ? c.TaiKhoanNo.MaTaiKhoan : string.Empty,
+                TkCo = c.TaiKhoanCo != null ? c.TaiKhoanCo.MaTaiKhoan : string.Empty,
+                c.SoTien
+            })
+            .ToListAsync();
+
+        // 4. Nhóm phát sinh theo PhongBanId
+        var grpByDept = voucherDetails.ToLookup(v => v.PhongBanId);
+
+        var segmentList = new List<SegmentPLItemViewModel>();
+
+        foreach (var dept in departments)
+        {
+            var lines = grpByDept[dept.Id].ToList();
+
+            var dt = lines.Where(l => l.TkCo.StartsWith("511")).Sum(l => l.SoTien);
+            var gv = lines.Where(l => l.TkNo.StartsWith("632") || l.TkNo.StartsWith("154")).Sum(l => l.SoTien);
+            var bh = lines.Where(l => l.TkNo.StartsWith("6421") || l.TkNo.StartsWith("641")).Sum(l => l.SoTien);
+            var ql = lines.Where(l => l.TkNo.StartsWith("6422") || l.TkNo == "642").Sum(l => l.SoTien);
+
+            segmentList.Add(new SegmentPLItemViewModel
+            {
+                PhongBanId = dept.Id,
+                MaPhongBan = dept.MaPhongBan,
+                TenPhongBan = dept.TenPhongBan,
+                TenChiNhanh = dept.ChiNhanh?.TenChiNhanh ?? "Mặc định",
+                LoaiPhongBan = dept.LoaiPhongBan,
+                LaTrungTamLoiNhuan = dept.LaTrungTamLoiNhuan,
+                DoanhThuBanHang = dt,
+                GiaVonBanHang = gv,
+                ChiPhiBanHang = bh,
+                ChiPhiQuanLy = ql
+            });
+        }
+
+        // 5. Khoản chi phí / doanh thu dùng chung chưa gán phòng ban (Unallocated)
+        var unallocatedLines = grpByDept[null].ToList();
+        if (unallocatedLines.Any())
+        {
+            var dtUn = unallocatedLines.Where(l => l.TkCo.StartsWith("511")).Sum(l => l.SoTien);
+            var gvUn = unallocatedLines.Where(l => l.TkNo.StartsWith("632") || l.TkNo.StartsWith("154")).Sum(l => l.SoTien);
+            var bhUn = unallocatedLines.Where(l => l.TkNo.StartsWith("6421") || l.TkNo.StartsWith("641")).Sum(l => l.SoTien);
+            var qlUn = unallocatedLines.Where(l => l.TkNo.StartsWith("6422") || l.TkNo == "642").Sum(l => l.SoTien);
+
+            segmentList.Add(new SegmentPLItemViewModel
+            {
+                PhongBanId = null,
+                MaPhongBan = "CHUNG",
+                TenPhongBan = "Khối Dùng Chung / Chưa Phân Bổ",
+                TenChiNhanh = "Toàn công ty",
+                LoaiPhongBan = LoaiPhongBan.Khac,
+                LaTrungTamLoiNhuan = false,
+                DoanhThuBanHang = dtUn,
+                GiaVonBanHang = gvUn,
+                ChiPhiBanHang = bhUn,
+                ChiPhiQuanLy = qlUn
+            });
+        }
+
+        // 6. Tổng hợp toàn công ty
+        var tongHop = new SegmentPLItemViewModel
+        {
+            MaPhongBan = "TOTAL",
+            TenPhongBan = "Tổng Cộng Toàn Doanh Nghiệp",
+            DoanhThuBanHang = segmentList.Sum(s => s.DoanhThuBanHang),
+            GiaVonBanHang = segmentList.Sum(s => s.GiaVonBanHang),
+            ChiPhiBanHang = segmentList.Sum(s => s.ChiPhiBanHang),
+            ChiPhiQuanLy = segmentList.Sum(s => s.ChiPhiQuanLy)
+        };
+
+        string tenChiNhanh = "Toàn công ty";
+        if (branchId.HasValue && branchId.Value > 0)
+        {
+            var br = await _context.ChiNhanhs.FindAsync(branchId.Value);
+            if (br != null) tenChiNhanh = br.TenChiNhanh;
+        }
+
+        return new BaoCaoBoPhanViewModel
+        {
+            NamTaiChinh = namTaiChinh,
+            SelectedBranchId = branchId,
+            TenChiNhanh = tenChiNhanh,
+            NgayLap = DateTime.Today,
+            Segments = segmentList,
+            TongCongToanCongTy = tongHop,
+            TongDoanhThuB02 = tongDoanhThuB02,
+            TongChiPhiB02 = tongChiPhiB02
+        };
+    }
 }
+

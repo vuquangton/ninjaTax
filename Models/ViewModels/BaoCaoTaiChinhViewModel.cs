@@ -140,3 +140,39 @@ public class ThuyetMinhBctcViewModel
     public decimal TongBaoHiemDaTrichNop { get; set; }
     public decimal TongThueDaNopTrongNam { get; set; }
 }
+
+public class BaoCaoBoPhanViewModel
+{
+    public int NamTaiChinh { get; set; }
+    public long? SelectedBranchId { get; set; }
+    public string TenChiNhanh { get; set; } = "Toàn công ty";
+    public DateTime NgayLap { get; set; } = DateTime.Today;
+    public List<SegmentPLItemViewModel> Segments { get; set; } = new();
+    public SegmentPLItemViewModel TongCongToanCongTy { get; set; } = new();
+    public decimal TongDoanhThuB02 { get; set; }
+    public decimal TongChiPhiB02 { get; set; }
+    public bool IsKhopDoanhThuB02 => Math.Abs(TongCongToanCongTy.DoanhThuBanHang - TongDoanhThuB02) < 0.01m;
+    public bool IsKhopChiPhiB02 => Math.Abs(TongCongToanCongTy.TongChiPhiHoatDong - TongChiPhiB02) < 0.01m;
+}
+
+public class SegmentPLItemViewModel
+{
+    public long? PhongBanId { get; set; }
+    public string MaPhongBan { get; set; } = string.Empty;
+    public string TenPhongBan { get; set; } = string.Empty;
+    public string TenChiNhanh { get; set; } = string.Empty;
+    public LoaiPhongBan? LoaiPhongBan { get; set; }
+    public bool LaTrungTamLoiNhuan { get; set; }
+
+    public decimal DoanhThuBanHang { get; set; }    // Có 511
+    public decimal GiaVonBanHang { get; set; }      // Nợ 632 hoặc 154
+    public decimal LoiNhuanGop => DoanhThuBanHang - GiaVonBanHang;
+
+    public decimal ChiPhiBanHang { get; set; }      // Nợ 6421 / 641
+    public decimal ChiPhiQuanLy { get; set; }       // Nợ 6422 / 642
+    public decimal TongChiPhiHoatDong => GiaVonBanHang + ChiPhiBanHang + ChiPhiQuanLy;
+
+    public decimal LoiNhuanThuanBoPhan => DoanhThuBanHang - TongChiPhiHoatDong;
+    public decimal TySuatLoiNhuan => DoanhThuBanHang > 0 ? Math.Round((LoiNhuanThuanBoPhan / DoanhThuBanHang) * 100m, 2) : 0m;
+}
+

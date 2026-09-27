@@ -58,6 +58,9 @@ public class AppDbContext : DbContext
     public DbSet<CauHinhKeToan> CauHinhKeToans => Set<CauHinhKeToan>();
     public DbSet<CauHinhHoaDonDienTu> CauHinhHoaDonDienTus => Set<CauHinhHoaDonDienTu>();
 
+    // Phase 7: Phòng Ban & Trung tâm Chi phí
+    public DbSet<PhongBan> PhongBans => Set<PhongBan>();
+
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         base.ConfigureConventions(configurationBuilder);
@@ -204,6 +207,12 @@ public class AppDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.DoiTuongId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Ràng buộc khóa ngoại phòng ban / cost center (Phase 7)
+            entity.HasOne(e => e.PhongBan)
+                .WithMany(p => p.ChiTietButToans)
+                .HasForeignKey(e => e.PhongBanId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         // ========================================================
@@ -735,6 +744,11 @@ public class AppDbContext : DbContext
                 entity.Property(e => e.PhuCapDienThoai).HasColumnType("TEXT");
                 entity.Property(e => e.PhuCapTrangPhuc).HasColumnType("TEXT");
             }
+
+            entity.HasOne(e => e.PhongBanEntity)
+                .WithMany(p => p.NhanViens)
+                .HasForeignKey(e => e.PhongBanId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         // ========================================================
@@ -972,6 +986,30 @@ public class AppDbContext : DbContext
                 .WithOne(c => c.CauHinhHddt)
                 .HasForeignKey<CauHinhHoaDonDienTu>(e => e.ChiNhanhId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ========================================================
+        // 22. Cấu hình Phòng Ban & Trung tâm Chi phí (Phase 7)
+        // ========================================================
+        modelBuilder.Entity<PhongBan>(entity =>
+        {
+            entity.ToTable("PhongBan");
+            entity.HasIndex(e => new { e.ChiNhanhId, e.MaPhongBan }).IsUnique();
+
+            entity.HasOne(e => e.ChiNhanh)
+                .WithMany()
+                .HasForeignKey(e => e.ChiNhanhId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.PhongBanCha)
+                .WithMany(p => p.PhongBanCons)
+                .HasForeignKey(e => e.PhongBanChaId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.TruongPhong)
+                .WithMany()
+                .HasForeignKey(e => e.TruongPhongId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
     }
 }

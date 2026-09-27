@@ -1,4 +1,4 @@
-﻿@model ninjaTax.Models.ViewModels.BctcDashboardViewModel
+@model ninjaTax.Models.ViewModels.BctcDashboardViewModel
 @{
     ViewData["Title"] = $"Báo Cáo Tài Chính Năm {Model.NamTaiChinh}";
 }
@@ -196,11 +196,14 @@
                         </div>
                     </div>
                     <div class="d-grid gap-2">
+                        <a asp-action="BaoCaoBoPhan" asp-route-nam="@Model.NamTaiChinh" class="btn btn-outline-success">
+                            <i class="bi bi-pie-chart-fill me-1"></i> Báo Cáo Bộ Phận (Segment P&L - IFRS 8 / VAS 28)
+                        </a>
                         <a asp-controller="QuyetToanThue" asp-action="Index" asp-route-nam="@Model.NamTaiChinh" class="btn btn-outline-primary">
-                            <i class="bi bi-file-earmark-spreadsheet"></i> Quyết Toán Thuế (TNDN 03 & TNCN 05)
+                            <i class="bi bi-file-earmark-spreadsheet me-1"></i> Quyết Toán Thuế (TNDN 03 & TNCN 05)
                         </a>
                         <a asp-controller="TaxAuditShield" asp-action="Index" asp-route-nam="@Model.NamTaiChinh" class="btn btn-outline-danger">
-                            <i class="bi bi-shield-shaded"></i> Quét 8 Bẫy Thuế Tử Thần (Tax Audit Risk Shield)
+                            <i class="bi bi-shield-shaded me-1"></i> Quét 8 Bẫy Thuế Tử Thần (Tax Audit Risk Shield)
                         </a>
                     </div>
                 </div>

@@ -68,4 +68,14 @@ public class ChiTietButToan
     /// Thực thể đối tượng công nợ
     /// </summary>
     public DoiTuong? DoiTuong { get; set; }
+
+    /// <summary>
+    /// Khóa ngoại bộ phận / phòng ban / trung tâm chi phí (Cost Center) phục vụ báo cáo quản trị và TT99
+    /// </summary>
+    public long? PhongBanId { get; set; }
+
+    /// <summary>
+    /// Thực thể phòng ban / trung tâm chi phí
+    /// </summary>
+    public virtual PhongBan? PhongBan { get; set; }
 }

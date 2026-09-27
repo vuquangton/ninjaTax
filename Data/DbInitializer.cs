@@ -48,6 +48,7 @@ public static class DbInitializer
             new() { MaTaiKhoan = "152", TenTaiKhoan = "Nguyên liệu, vật liệu", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuNo, LaTaiKhoanSoCai = false },
             new() { MaTaiKhoan = "156", TenTaiKhoan = "Hàng hóa", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuNo, LaTaiKhoanSoCai = true },
             new() { MaTaiKhoan = "1561", TenTaiKhoan = "Giá mua hàng hóa", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuNo, LaTaiKhoanSoCai = false },
+            new() { MaTaiKhoan = "154", TenTaiKhoan = "Chi phí sản xuất, kinh doanh dở dang", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuNo, LaTaiKhoanSoCai = false },
 
             // Nhóm 2: Tài sản dài hạn
             new() { MaTaiKhoan = "211", TenTaiKhoan = "Tài sản cố định hữu hình", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuNo, LaTaiKhoanSoCai = false },
@@ -90,6 +91,7 @@ public static class DbInitializer
             new() { MaTaiKhoan = "635", TenTaiKhoan = "Chi phí tài chính", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.ChiPhi, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = false },
             new() { MaTaiKhoan = "641", TenTaiKhoan = "Chi phí bán hàng", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.ChiPhi, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = false },
             new() { MaTaiKhoan = "642", TenTaiKhoan = "Chi phí quản lý doanh nghiệp", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.ChiPhi, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = true },
+            new() { MaTaiKhoan = "6421", TenTaiKhoan = "Chi phí bán hàng", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.ChiPhi, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = false },
             new() { MaTaiKhoan = "6422", TenTaiKhoan = "Chi phí quản lý doanh nghiệp", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.ChiPhi, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = false },
 
             // Nhóm 7 & 8: Thu nhập khác và Chi phí khác
@@ -246,6 +248,103 @@ public static class DbInitializer
 
             await context.ThongTinDoanhNghieps.AddAsync(company);
             await context.SaveChangesAsync();
+        }
+
+        // Khởi tạo Cơ cấu Phòng Ban / Khoa chuyên môn mặc định (Phase 7)
+        if (!await context.PhongBans.AnyAsync())
+        {
+            var hoBranch = await context.ChiNhanhs.FirstOrDefaultAsync(b => b.LoaiChiNhanh == LoaiChiNhanh.TruSoChinh)
+                           ?? await context.ChiNhanhs.FirstOrDefaultAsync();
+
+            if (hoBranch != null)
+            {
+                var bod = new PhongBan
+                {
+                    ChiNhanhId = hoBranch.Id,
+                    MaPhongBan = "BOD",
+                    TenPhongBan = "Ban Giám Đốc",
+                    LoaiPhongBan = LoaiPhongBan.QuanLy,
+                    MaTaiKhoanChiPhi = "6422",
+                    LaTrungTamLoiNhuan = false,
+                    DangHoatDong = true,
+                    GhiChu = "Cơ quan điều hành cao nhất toàn công ty"
+                };
+                await context.PhongBans.AddAsync(bod);
+                await context.SaveChangesAsync();
+
+                var departments = new List<PhongBan>
+                {
+                    new()
+                    {
+                        ChiNhanhId = hoBranch.Id,
+                        PhongBanChaId = bod.Id,
+                        MaPhongBan = "PB-KTTC",
+                        TenPhongBan = "Phòng Kế Toán & Tài Chính",
+                        LoaiPhongBan = LoaiPhongBan.QuanLy,
+                        MaTaiKhoanChiPhi = "6422",
+                        DangHoatDong = true
+                    },
+                    new()
+                    {
+                        ChiNhanhId = hoBranch.Id,
+                        PhongBanChaId = bod.Id,
+                        MaPhongBan = "PB-KD",
+                        TenPhongBan = "Phòng Kinh Doanh & Tiếp Thị",
+                        LoaiPhongBan = LoaiPhongBan.BanHang,
+                        MaTaiKhoanChiPhi = "6421",
+                        LaTrungTamLoiNhuan = true,
+                        DangHoatDong = true
+                    },
+                    new()
+                    {
+                        ChiNhanhId = hoBranch.Id,
+                        PhongBanChaId = bod.Id,
+                        MaPhongBan = "PX-SX",
+                        TenPhongBan = "Phân Xưởng Sản Xuất & Kỹ Thuật",
+                        LoaiPhongBan = LoaiPhongBan.SanXuat,
+                        MaTaiKhoanChiPhi = "154",
+                        DangHoatDong = true
+                    },
+                    new()
+                    {
+                        ChiNhanhId = hoBranch.Id,
+                        PhongBanChaId = bod.Id,
+                        MaPhongBan = "KHOA-CNTT",
+                        TenPhongBan = "Khoa Công Nghệ Thông Tin & Đào Tạo",
+                        LoaiPhongBan = LoaiPhongBan.KhoaChuyenMon,
+                        MaTaiKhoanChiPhi = "154",
+                        LaTrungTamLoiNhuan = true,
+                        DangHoatDong = true
+                    }
+                };
+
+                await context.PhongBans.AddRangeAsync(departments);
+                await context.SaveChangesAsync();
+
+                // Cập nhật gán phòng ban cho nhân viên mẫu nếu có
+                var nhanViens = await context.NhanViens.ToListAsync();
+                if (nhanViens.Any())
+                {
+                    var pbKt = departments.First(d => d.MaPhongBan == "PB-KTTC");
+                    var pbKd = departments.First(d => d.MaPhongBan == "PB-KD");
+
+                    for (int i = 0; i < nhanViens.Count; i++)
+                    {
+                        var nv = nhanViens[i];
+                        if (i % 2 == 0)
+                        {
+                            nv.PhongBanId = pbKt.Id;
+                            nv.PhongBan = pbKt.TenPhongBan;
+                        }
+                        else
+                        {
+                            nv.PhongBanId = pbKd.Id;
+                            nv.PhongBan = pbKd.TenPhongBan;
+                        }
+                    }
+                    await context.SaveChangesAsync();
+                }
+            }
         }
     }
 }

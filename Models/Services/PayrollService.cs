@@ -343,6 +343,7 @@ public class PayrollService : IPayrollService
         var bangLuong = await _context.BangLuongThangs
             .Include(bl => bl.ChiTiets)
             .ThenInclude(ct => ct.NhanVien)
+                .ThenInclude(nv => nv!.PhongBanEntity)
             .FirstOrDefaultAsync(bl => bl.Id == bangLuongId);
 
         if (bangLuong == null)
@@ -357,6 +358,9 @@ public class PayrollService : IPayrollService
 
         // Lấy danh mục tài khoản TT99
         var tk642 = await _context.TaiKhoans.FirstOrDefaultAsync(t => t.MaTaiKhoan == "642");
+        var tk6421 = await _context.TaiKhoans.FirstOrDefaultAsync(t => t.MaTaiKhoan == "6421");
+        var tk6422 = await _context.TaiKhoans.FirstOrDefaultAsync(t => t.MaTaiKhoan == "6422");
+        var tk154 = await _context.TaiKhoans.FirstOrDefaultAsync(t => t.MaTaiKhoan == "154");
         var tk334 = await _context.TaiKhoans.FirstOrDefaultAsync(t => t.MaTaiKhoan == "334");
         var tk3383 = await _context.TaiKhoans.FirstOrDefaultAsync(t => t.MaTaiKhoan == "3383");
         var tk3384 = await _context.TaiKhoans.FirstOrDefaultAsync(t => t.MaTaiKhoan == "3384");
@@ -374,7 +378,68 @@ public class PayrollService : IPayrollService
         var month = int.Parse(parts[1]);
         var ngayCuoiThang = new DateTime(year, month, DateTime.DaysInMonth(year, month));
 
-        // 1. Bút toán 1: Chi phí tiền lương toàn công ty (Nợ 642 / Có 334)
+        var phongBans = await _context.PhongBans.ToDictionaryAsync(p => p.Id);
+
+        // Nhóm chi tiết bảng lương theo phòng ban để phân bổ chi phí theo bộ phận
+        var chiTietGroups = bangLuong.ChiTiets
+            .GroupBy(c =>
+            {
+                var pbId = c.NhanVien?.PhongBanId ?? c.NhanVien?.PhongBanEntity?.Id;
+                PhongBan? pb = null;
+                if (pbId.HasValue && phongBans.TryGetValue(pbId.Value, out var foundPb))
+                {
+                    pb = foundPb;
+                }
+                else
+                {
+                    pb = c.NhanVien?.PhongBanEntity;
+                }
+
+                return new
+                {
+                    PhongBanId = pbId,
+                    TenPhongBan = pb?.TenPhongBan ?? (string.IsNullOrWhiteSpace(c.NhanVien?.PhongBan) ? "Bộ phận chung" : c.NhanVien.PhongBan),
+                    LoaiPhongBan = pb?.LoaiPhongBan ?? LoaiPhongBan.QuanLy
+                };
+            })
+            .OrderBy(g => g.Key.PhongBanId ?? 0)
+            .ToList();
+
+        // 1. Bút toán 1: Chi phí tiền lương theo phòng ban/bộ phận (Nợ 154 / 6421 / 6422 / 642 - Có 334)
+        var chiTietsBtLuong = new List<ChiTietButToan>();
+        foreach (var grp in chiTietGroups)
+        {
+            var tongLuongNhom = grp.Sum(x => x.TongThuNhap);
+            if (tongLuongNhom <= 0) continue;
+
+            var tkChiPhi = grp.Key.LoaiPhongBan switch
+            {
+                LoaiPhongBan.SanXuat or LoaiPhongBan.KhoaChuyenMon => tk154 ?? tk6422 ?? tk642,
+                LoaiPhongBan.BanHang => tk6421 ?? tk642,
+                _ => tk6422 ?? tk642
+            };
+
+            chiTietsBtLuong.Add(new ChiTietButToan
+            {
+                DienGiai = $"Chi phí tiền lương - {grp.Key.TenPhongBan} kỳ {bangLuong.KyKeToan}",
+                TaiKhoanNoId = tkChiPhi.Id,
+                TaiKhoanCoId = tk334.Id,
+                SoTien = tongLuongNhom,
+                PhongBanId = grp.Key.PhongBanId
+            });
+        }
+
+        if (!chiTietsBtLuong.Any())
+        {
+            chiTietsBtLuong.Add(new ChiTietButToan
+            {
+                DienGiai = $"Chi phí tiền lương nhân viên kỳ {bangLuong.KyKeToan}",
+                TaiKhoanNoId = (tk6422 ?? tk642).Id,
+                TaiKhoanCoId = tk334.Id,
+                SoTien = bangLuong.TongQuyLuong
+            });
+        }
+
         var btLuong = new ButToan
         {
             SoChungTu = $"PKT-L-{bangLuong.KyKeToan.Replace("-", "")}",
@@ -384,16 +449,7 @@ public class PayrollService : IPayrollService
             DienGiai = $"Hạch toán chi phí tiền lương kỳ {bangLuong.KyKeToan}",
             TongTien = bangLuong.TongQuyLuong,
             TrangThai = TrangThaiButToan.ChuaGhiSo,
-            ChiTietButToans = new List<ChiTietButToan>
-            {
-                new()
-                {
-                    DienGiai = $"Chi phí tiền lương nhân viên kỳ {bangLuong.KyKeToan}",
-                    TaiKhoanNoId = tk642.Id,
-                    TaiKhoanCoId = tk334.Id,
-                    SoTien = bangLuong.TongQuyLuong
-                }
-            }
+            ChiTietButToans = chiTietsBtLuong
         };
 
         var (ok1, err1, bt1) = await _butToanService.TaoMoiAsync(btLuong);
@@ -401,7 +457,7 @@ public class PayrollService : IPayrollService
         var (gso1, errGso1) = await _butToanService.GhiSoAsync(bt1.Id);
         if (!gso1) throw new InvalidOperationException($"Lỗi ghi sổ bút toán chi phí lương: {errGso1}");
 
-        // 2. Bút toán 2: Bảo hiểm & KPCĐ Doanh nghiệp gánh 23.5% (Nợ 642 / Có 3383, 3384, 3386, 3382)
+        // 2. Bút toán 2: Bảo hiểm & KPCĐ Doanh nghiệp gánh 23.5% phân bổ theo phòng ban
         var tongBhxhDn = bangLuong.ChiTiets.Sum(c => c.BhxhDn);
         var tongBhytDn = bangLuong.ChiTiets.Sum(c => c.BhytDn);
         var tongBhtnDn = bangLuong.ChiTiets.Sum(c => c.BhtnDn);
@@ -412,14 +468,29 @@ public class PayrollService : IPayrollService
         if (tongBhDn > 0)
         {
             var chiTietsBt2 = new List<ChiTietButToan>();
-            if (tongBhxhDn > 0)
-                chiTietsBt2.Add(new() { DienGiai = $"Trích BHXH DN gánh (17.5%) kỳ {bangLuong.KyKeToan}", TaiKhoanNoId = tk642.Id, TaiKhoanCoId = tk3383.Id, SoTien = tongBhxhDn });
-            if (tongBhytDn > 0)
-                chiTietsBt2.Add(new() { DienGiai = $"Trích BHYT DN gánh (3.0%) kỳ {bangLuong.KyKeToan}", TaiKhoanNoId = tk642.Id, TaiKhoanCoId = tk3384.Id, SoTien = tongBhytDn });
-            if (tongBhtnDn > 0)
-                chiTietsBt2.Add(new() { DienGiai = $"Trích BHTN DN gánh (1.0%) kỳ {bangLuong.KyKeToan}", TaiKhoanNoId = tk642.Id, TaiKhoanCoId = tk3386.Id, SoTien = tongBhtnDn });
-            if (tongKpcdDn > 0)
-                chiTietsBt2.Add(new() { DienGiai = $"Trích KPCĐ DN gánh (2.0%) kỳ {bangLuong.KyKeToan}", TaiKhoanNoId = tk642.Id, TaiKhoanCoId = tk3382.Id, SoTien = tongKpcdDn });
+            foreach (var grp in chiTietGroups)
+            {
+                var tkChiPhi = grp.Key.LoaiPhongBan switch
+                {
+                    LoaiPhongBan.SanXuat or LoaiPhongBan.KhoaChuyenMon => tk154 ?? tk6422 ?? tk642,
+                    LoaiPhongBan.BanHang => tk6421 ?? tk642,
+                    _ => tk6422 ?? tk642
+                };
+
+                var bhxhNhom = grp.Sum(c => c.BhxhDn);
+                var bhytNhom = grp.Sum(c => c.BhytDn);
+                var bhtnNhom = grp.Sum(c => c.BhtnDn);
+                var kpcdNhom = grp.Sum(c => c.KpcdDn);
+
+                if (bhxhNhom > 0)
+                    chiTietsBt2.Add(new() { DienGiai = $"Trích BHXH DN gánh (17.5%) - {grp.Key.TenPhongBan} kỳ {bangLuong.KyKeToan}", TaiKhoanNoId = tkChiPhi.Id, TaiKhoanCoId = tk3383.Id, SoTien = bhxhNhom, PhongBanId = grp.Key.PhongBanId });
+                if (bhytNhom > 0)
+                    chiTietsBt2.Add(new() { DienGiai = $"Trích BHYT DN gánh (3.0%) - {grp.Key.TenPhongBan} kỳ {bangLuong.KyKeToan}", TaiKhoanNoId = tkChiPhi.Id, TaiKhoanCoId = tk3384.Id, SoTien = bhytNhom, PhongBanId = grp.Key.PhongBanId });
+                if (bhtnNhom > 0)
+                    chiTietsBt2.Add(new() { DienGiai = $"Trích BHTN DN gánh (1.0%) - {grp.Key.TenPhongBan} kỳ {bangLuong.KyKeToan}", TaiKhoanNoId = tkChiPhi.Id, TaiKhoanCoId = tk3386.Id, SoTien = bhtnNhom, PhongBanId = grp.Key.PhongBanId });
+                if (kpcdNhom > 0)
+                    chiTietsBt2.Add(new() { DienGiai = $"Trích KPCĐ DN gánh (2.0%) - {grp.Key.TenPhongBan} kỳ {bangLuong.KyKeToan}", TaiKhoanNoId = tkChiPhi.Id, TaiKhoanCoId = tk3382.Id, SoTien = kpcdNhom, PhongBanId = grp.Key.PhongBanId });
+            }
 
             var btBhdn = new ButToan
             {
@@ -574,6 +645,7 @@ public class PayrollService : IPayrollService
             .Include(b => b.ButToanKhauTruLuong)
             .Include(b => b.ChiTiets)
             .ThenInclude(ct => ct.NhanVien)
+                .ThenInclude(nv => nv!.PhongBanEntity)
             .FirstAsync(b => b.Id == bangLuongId);
 
         return MapToViewModel(bl);
@@ -602,7 +674,7 @@ public class PayrollService : IPayrollService
                 NhanVienId = ct.NhanVienId,
                 MaNhanVien = ct.NhanVien?.MaNhanVien ?? string.Empty,
                 HoTen = ct.NhanVien?.HoTen ?? string.Empty,
-                PhongBan = ct.NhanVien?.PhongBan,
+                PhongBan = ct.NhanVien?.PhongBanEntity?.TenPhongBan ?? ct.NhanVien?.PhongBan,
                 ChucVu = ct.NhanVien?.ChucVu,
                 LoaiHopDong = ct.NhanVien?.LoaiHopDong ?? LoaiHopDongLaoDong.HopDongDaiHan,
                 LuongCoBan = ct.NhanVien?.LuongCoBan ?? 0m,

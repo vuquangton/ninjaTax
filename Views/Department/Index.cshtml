@@ -1,0 +1,256 @@
+@model ninjaTax.Models.ViewModels.DepartmentIndexViewModel
+@{
+    ViewData["Title"] = "Cơ Cấu Phòng Ban & Trung Tâm Chi Phí";
+    var costCentersCount = Model.Departments.Count(d => !d.LaTrungTamLoiNhuan);
+    var profitCentersCount = Model.Departments.Count(d => d.LaTrungTamLoiNhuan);
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1 text-primary"><i class="bi bi-diagram-3-fill me-2"></i>Phòng Ban & Trung Tâm Chi Phí</h2>
+        <span class="text-muted">Quản trị cơ cấu tổ chức, phân bổ chi phí lương (TT99) và báo cáo bộ phận (IFRS 8 / VAS 28)</span>
+    </div>
+    <div>
+        <a asp-action="Create" asp-route-branchId="@Model.SelectedBranchId" class="btn btn-primary shadow-sm">
+            <i class="bi bi-plus-circle me-1"></i>Thêm Phòng Ban / Bộ Phận
+        </a>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<!-- KPI Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm bg-primary text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-white-50 small text-uppercase fw-semibold">Tổng Phòng Ban</div>
+                        <div class="fs-3 fw-bold">@Model.TotalDepartments</div>
+                    </div>
+                    <i class="bi bi-diagram-3 fs-1 text-white-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm bg-success text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-white-50 small text-uppercase fw-semibold">Nhân Sự Đã Gán</div>
+                        <div class="fs-3 fw-bold">@Model.TotalEmployees <span class="fs-6 fw-normal">người</span></div>
+                    </div>
+                    <i class="bi bi-people-fill fs-1 text-white-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm bg-info text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-white-50 small text-uppercase fw-semibold">Trung Tâm Chi Phí (Cost Center)</div>
+                        <div class="fs-3 fw-bold">@costCentersCount</div>
+                    </div>
+                    <i class="bi bi-receipt-cutoff fs-1 text-white-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm bg-warning text-dark h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small text-uppercase fw-semibold">Trung Tâm Lợi Nhuận (Profit Center)</div>
+                        <div class="fs-3 fw-bold">@profitCentersCount</div>
+                    </div>
+                    <i class="bi bi-cash-stack fs-1 text-black-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lọc theo Chi nhánh -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body py-3">
+        <form method="get" asp-action="Index" class="row g-3 align-items-center">
+            <div class="col-auto">
+                <label class="col-form-label fw-semibold"><i class="bi bi-funnel me-1"></i>Lọc theo Chi nhánh:</label>
+            </div>
+            <div class="col-md-4">
+                <select name="branchId" class="form-select" onchange="this.form.submit()">
+                    <option value="">-- Tất cả chi nhánh công ty --</option>
+                    @foreach (var b in Model.BranchList)
+                    {
+                        <option value="@b.Value" selected="@b.Selected">@b.Text</option>
+                    }
+                </select>
+            </div>
+            <div class="col-auto">
+                <a asp-action="Index" class="btn btn-outline-secondary">Xóa lọc</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Bảng Cây Cơ Cấu Tổ Chức -->
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 text-dark fw-bold">
+            <i class="bi bi-list-nested text-primary me-2"></i>Cơ Cấu Cây Phân Cấp Phòng Ban / Bộ Phận
+        </h5>
+        <span class="badge bg-secondary-subtle text-secondary border px-3 py-2">
+            Định tuyến chi phí tự động: 6422 / 6421 / 154
+        </span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="min-width: 280px;">Mã & Tên Phòng Ban / Bộ Phận</th>
+                        <th>Loại Bộ Phận</th>
+                        <th>TK Chi Phí</th>
+                        <th>Loại Trung Tâm</th>
+                        <th>Chi Nhánh</th>
+                        <th>Trưởng Phòng</th>
+                        <th class="text-center">Nhân Sự</th>
+                        <th class="text-center">Trạng Thái</th>
+                        <th class="text-end" style="min-width: 160px;">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Departments.Any())
+                    {
+                        <tr>
+                            <td colspan="9" class="text-center text-muted py-5">
+                                <i class="bi bi-inbox fs-2 d-block mb-2 text-muted"></i>
+                                Chưa có phòng ban hoặc bộ phận nào được khởi tạo.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var dept in Model.Departments)
+                        {
+                            var indentPx = dept.Level * 24;
+                            <tr>
+                                <td>
+                                    <div style="padding-left: @(indentPx)px;" class="d-flex align-items-center">
+                                        @if (dept.Level > 0)
+                                        {
+                                            <span class="text-muted me-2">└─</span>
+                                        }
+                                        <div>
+                                            <div class="fw-bold text-dark">
+                                                <span class="badge bg-light text-dark border me-1">@dept.MaPhongBan</span>
+                                                @dept.TenPhongBan
+                                            </div>
+                                            @if (!string.IsNullOrEmpty(dept.TenTiengAnh))
+                                            {
+                                                <small class="text-muted fst-italic">@dept.TenTiengAnh</small>
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">@dept.TenLoaiPhongBan</span>
+                                </td>
+                                <td>
+                                    <code class="fw-bold text-primary">@(dept.MaTaiKhoanChiPhi ?? "6422")</code>
+                                </td>
+                                <td>
+                                    @if (dept.LaTrungTamLoiNhuan)
+                                    {
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                            <i class="bi bi-arrow-up-right-circle me-1"></i>Profit Center
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-info-subtle text-info border border-info-subtle">
+                                            <i class="bi bi-arrow-down-circle me-1"></i>Cost Center
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="small text-muted">@dept.TenChiNhanh</span>
+                                </td>
+                                <td>
+                                    @(dept.TenTruongPhong ?? "-")
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge rounded-pill bg-light text-dark border">
+                                        @dept.SoNhanVien người
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    @if (dept.DangHoatDong)
+                                    {
+                                        <span class="badge bg-success">Hoạt động</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Ngừng</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <div class="btn-group btn-group-sm">
+                                        <a asp-action="Create" asp-route-branchId="@dept.ChiNhanhId" asp-route-parentId="@dept.Id"
+                                           class="btn btn-outline-success" title="Thêm bộ phận con">
+                                            <i class="bi bi-plus-lg"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@dept.Id" class="btn btn-outline-primary" title="Sửa">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-outline-danger" title="Xóa"
+                                                onclick="confirmDelete('@dept.Id', '@dept.TenPhongBan')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal xác nhận xóa -->
+<form id="deleteForm" method="post" asp-action="Delete">
+    @Html.AntiForgeryToken()
+    <input type="hidden" id="deleteDeptId" name="id" value="" />
+</form>
+
+@section Scripts {
+    <script>
+        function confirmDelete(id, name) {
+            if (confirm(`Bạn có chắc chắn muốn xóa phòng ban/bộ phận "${name}"?\n(Lưu ý: Hệ thống sẽ chặn xóa nếu đang có bộ phận con, nhân viên trực thuộc hoặc chứng từ Sổ Cái đã phát sinh).`)) {
+                document.getElementById('deleteDeptId').value = id;
+                document.getElementById('deleteForm').submit();
+            }
+        }
+    </script>
+}
+

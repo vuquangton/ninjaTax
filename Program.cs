@@ -27,6 +27,7 @@ builder.Services.AddScoped<IFinancialReportService, FinancialReportService>();
 builder.Services.AddScoped<ITaxFinalizationService, TaxFinalizationService>();
 builder.Services.AddScoped<ITaxAuditShieldService, TaxAuditShieldService>();
 builder.Services.AddScoped<ICompanyService, CompanyService>();
+builder.Services.AddScoped<IDepartmentService, DepartmentService>();
 
 var app = builder.Build();
 

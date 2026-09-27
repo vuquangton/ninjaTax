@@ -19,9 +19,9 @@ public class CompanyController : Controller
     // GET: /Company
     public async Task<IActionResult> Index()
     {
-        var company = await _companyService.LayThongTinDoanhNghiepAsync();
-        var config = await _companyService.LayCauHinhKeToanAsync();
-        var branches = await _companyService.LayDanhSachChiNhanhAsync();
+        var company = await _companyService.GetCompanyProfileAsync();
+        var config = await _companyService.GetAccountingConfigAsync();
+        var branches = await _companyService.GetBranchesAsync();
 
         var vm = new CompanyDashboardViewModel
         {
@@ -36,7 +36,7 @@ public class CompanyController : Controller
     // GET: /Company/Edit
     public async Task<IActionResult> Edit()
     {
-        var c = await _companyService.LayThongTinDoanhNghiepAsync();
+        var c = await _companyService.GetCompanyProfileAsync();
         var vm = new CompanyEditViewModel
         {
             Id = c.Id,
@@ -104,7 +104,7 @@ public class CompanyController : Controller
                 NgayThanhLap = vm.NgayThanhLap
             };
 
-            await _companyService.CapNhatThongTinDoanhNghiepAsync(entity);
+            await _companyService.UpdateCompanyProfileAsync(entity);
             TempData["SuccessMessage"] = "Cập nhật hồ sơ doanh nghiệp thành công!";
             return RedirectToAction(nameof(Index));
         }
@@ -124,7 +124,7 @@ public class CompanyController : Controller
     // GET: /Company/AccountingConfig
     public async Task<IActionResult> AccountingConfig()
     {
-        var config = await _companyService.LayCauHinhKeToanAsync();
+        var config = await _companyService.GetAccountingConfigAsync();
         var vm = new AccountingConfigEditViewModel
         {
             DoanhNghiepId = config.DoanhNghiepId,
@@ -172,7 +172,7 @@ public class CompanyController : Controller
                 CanhBaoHoaDonTren20TrTienMat = vm.CanhBaoHoaDonTren20TrTienMat
             };
 
-            await _companyService.CapNhatCauHinhKeToanAsync(config);
+            await _companyService.UpdateAccountingConfigAsync(config);
             TempData["SuccessMessage"] = "Cập nhật thiết lập kế toán thành công!";
             return RedirectToAction(nameof(AccountingConfig));
         }
@@ -196,7 +196,7 @@ public class CompanyController : Controller
     {
         try
         {
-            await _companyService.KhoaSoKeToanAsync(ngayKhoaSo);
+            await _companyService.LockBookToDateAsync(ngayKhoaSo);
             TempData["SuccessMessage"] = $"Đã khóa sổ kế toán đến hết ngày {ngayKhoaSo:dd/MM/yyyy}. Mọi thao tác thêm/sửa/xóa chứng từ trước và trong ngày này đều bị chặn!";
         }
         catch (Exception ex)
@@ -215,7 +215,7 @@ public class CompanyController : Controller
     {
         try
         {
-            await _companyService.MoKhoaSoKeToanAsync();
+            await _companyService.UnlockBookAsync();
             TempData["SuccessMessage"] = "Đã mở khóa sổ kế toán toàn bộ!";
         }
         catch (Exception ex)
@@ -230,7 +230,7 @@ public class CompanyController : Controller
     // GET: /Company/Branches
     public async Task<IActionResult> Branches()
     {
-        var branches = await _companyService.LayDanhSachChiNhanhAsync();
+        var branches = await _companyService.GetBranchesAsync();
         return View(branches);
     }
 
@@ -269,7 +269,7 @@ public class CompanyController : Controller
                 DangHoatDong = vm.DangHoatDong
             };
 
-            await _companyService.ThemChiNhanhAsync(branch);
+            await _companyService.SaveBranchAsync(branch);
             TempData["SuccessMessage"] = $"Thêm chi nhánh '{branch.TenChiNhanh}' thành công!";
             return RedirectToAction(nameof(Branches));
         }
@@ -294,8 +294,7 @@ public class CompanyController : Controller
     // GET: /Company/EditBranch/5
     public async Task<IActionResult> EditBranch(long id)
     {
-        var branches = await _companyService.LayDanhSachChiNhanhAsync();
-        var branch = branches.FirstOrDefault(b => b.Id == id);
+        var branch = await _companyService.GetBranchByIdAsync(id);
         if (branch == null)
         {
             return NotFound();
@@ -359,7 +358,7 @@ public class CompanyController : Controller
                 DangHoatDong = vm.DangHoatDong
             };
 
-            await _companyService.CapNhatChiNhanhAsync(branch);
+            await _companyService.SaveBranchAsync(branch);
             TempData["SuccessMessage"] = $"Cập nhật chi nhánh '{branch.TenChiNhanh}' thành công!";
             return RedirectToAction(nameof(Branches));
         }
@@ -388,7 +387,7 @@ public class CompanyController : Controller
     {
         try
         {
-            await _companyService.XoaChiNhanhAsync(id);
+            await _companyService.DeleteBranchAsync(id);
             TempData["SuccessMessage"] = "Đã xóa chi nhánh thành công!";
         }
         catch (InvalidOperationException ex)

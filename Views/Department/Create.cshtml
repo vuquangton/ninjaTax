@@ -1,0 +1,139 @@
+@model ninjaTax.Models.ViewModels.DepartmentEditViewModel
+@{
+    ViewData["Title"] = "Thêm Mới Phòng Ban / Bộ Phận";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-1 text-primary"><i class="bi bi-plus-circle me-2"></i>Thêm Mới Phòng Ban / Bộ Phận</h2>
+                <span class="text-muted">Định nghĩa cơ cấu phòng ban và thiết lập trung tâm chi phí / lợi nhuận</span>
+            </div>
+            <a asp-action="Index" asp-route-branchId="@Model.ChiNhanhId" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Quay lại danh sách
+            </a>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h5 class="mb-0 text-dark fw-bold"><i class="bi bi-sliders text-primary me-2"></i>Thông Tin Cấu Hình Bộ Phận</h5>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4" role="alert"></div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="ChiNhanhId" class="form-label fw-semibold"></label> <span class="text-danger">*</span>
+                            <select asp-for="ChiNhanhId" asp-items="Model.BranchList" class="form-select"></select>
+                            <span asp-validation-for="ChiNhanhId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="PhongBanChaId" class="form-label fw-semibold"></label>
+                            <select asp-for="PhongBanChaId" asp-items="Model.ParentDepartmentList" class="form-select"></select>
+                            <span asp-validation-for="PhongBanChaId" class="text-danger small"></span>
+                            <div class="form-text">Bộ phận cấp trên trực tiếp trong cây cơ cấu.</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="MaPhongBan" class="form-label fw-semibold"></label> <span class="text-danger">*</span>
+                            <input asp-for="MaPhongBan" class="form-control text-uppercase" placeholder="vd: PB-KD, PX-SX01" />
+                            <span asp-validation-for="MaPhongBan" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="TenPhongBan" class="form-label fw-semibold"></label> <span class="text-danger">*</span>
+                            <input asp-for="TenPhongBan" class="form-control" placeholder="vd: Phòng Kinh Doanh, Phân Xưởng 1" />
+                            <span asp-validation-for="TenPhongBan" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="TenTiengAnh" class="form-label fw-semibold"></label>
+                            <input asp-for="TenTiengAnh" class="form-control" placeholder="vd: Sales Department" />
+                            <span asp-validation-for="TenTiengAnh" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="TruongPhongId" class="form-label fw-semibold"></label>
+                            <select asp-for="TruongPhongId" asp-items="Model.EmployeeList" class="form-select"></select>
+                            <span asp-validation-for="TruongPhongId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="LoaiPhongBan" class="form-label fw-semibold"></label> <span class="text-danger">*</span>
+                            <select asp-for="LoaiPhongBan" class="form-select" id="loaiPhongBanSelect" onchange="autoSuggestAccount()">
+                                <option value="1">Quản lý (Khối Giám đốc, Kế toán, HCNS - TK 6422)</option>
+                                <option value="2">Bán hàng (Kinh doanh, Tiếp thị, CSKH - TK 6421)</option>
+                                <option value="3">Sản xuất (Phân xưởng sản xuất, Chế tạo, Kho vận - TK 154)</option>
+                                <option value="4">Khoa chuyên môn (Đào tạo, Nghiên cứu, Khám chữa bệnh - TK 154)</option>
+                                <option value="5">Khác (Chi phí chung - TK 6422)</option>
+                            </select>
+                            <span asp-validation-for="LoaiPhongBan" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="MaTaiKhoanChiPhi" class="form-label fw-semibold"></label>
+                            <input asp-for="MaTaiKhoanChiPhi" class="form-control" id="maTaiKhoanChiPhiInput" placeholder="vd: 6422, 6421, 154" />
+                            <span asp-validation-for="MaTaiKhoanChiPhi" class="text-danger small"></span>
+                            <div class="form-text">TK chi phí tự động hạch toán khi tính lương tháng.</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mt-3">
+                                <input asp-for="LaTrungTamLoiNhuan" class="form-check-input" type="checkbox" role="switch" id="profitCenterSwitch">
+                                <label class="form-check-label fw-semibold" for="profitCenterSwitch">
+                                    Trung tâm lợi nhuận (Profit Center)
+                                </label>
+                                <div class="form-text">Bật nếu bộ phận này trực tiếp tạo ra doanh thu bán hàng (TK 511).</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mt-3">
+                                <input asp-for="DangHoatDong" class="form-check-input" type="checkbox" role="switch" id="activeSwitch" checked>
+                                <label class="form-check-label fw-semibold" for="activeSwitch">
+                                    Đang hoạt động
+                                </label>
+                                <div class="form-text">Tắt nếu phòng ban đã giải thể hoặc sáp nhập.</div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="GhiChu" class="form-label fw-semibold"></label>
+                            <textarea asp-for="GhiChu" class="form-control" rows="3" placeholder="Mô tả chức năng nhiệm vụ hoặc ghi chú bàn giao..."></textarea>
+                            <span asp-validation-for="GhiChu" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a asp-action="Index" asp-route-branchId="@Model.ChiNhanhId" class="btn btn-outline-secondary">Hủy bỏ</a>
+                        <button type="submit" class="btn btn-primary px-4"><i class="bi bi-check-lg me-1"></i>Lưu Phòng Ban</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function autoSuggestAccount() {
+            const type = document.getElementById('loaiPhongBanSelect').value;
+            const input = document.getElementById('maTaiKhoanChiPhiInput');
+            if (type === '1' || type === '5') {
+                input.value = '6422';
+            } else if (type === '2') {
+                input.value = '6421';
+            } else if (type === '3' || type === '4') {
+                input.value = '154';
+            }
+        }
+    </script>
+}
+

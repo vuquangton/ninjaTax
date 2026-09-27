@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using ninjaTax.Models.Services;
 
 namespace ninjaTax.Controllers;
@@ -49,6 +49,13 @@ public class BaoCaoTaiChinhController : Controller
         int targetYear = nam ?? (DateTime.Today.Month < 4 ? DateTime.Today.Year - 1 : DateTime.Today.Year);
         var thuyetMinh = await _financialReportService.LapThuyetMinhB09Async(targetYear);
         return View(thuyetMinh);
+    }
+
+    public async Task<IActionResult> BaoCaoBoPhan(int? nam, long? branchId)
+    {
+        int targetYear = nam ?? (DateTime.Today.Month < 4 ? DateTime.Today.Year - 1 : DateTime.Today.Year);
+        var report = await _financialReportService.LapBaoCaoBoPhanAsync(targetYear, branchId);
+        return View(report);
     }
 
     [HttpPost]

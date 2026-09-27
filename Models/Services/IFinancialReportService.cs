@@ -1,4 +1,4 @@
-﻿using ninjaTax.Models.ViewModels;
+using ninjaTax.Models.ViewModels;
 
 namespace ninjaTax.Models.Services;
 
@@ -9,5 +9,6 @@ public interface IFinancialReportService
     Task<BaoCaoKetQuaKinhDoanhViewModel> LapBaoCaoB02Async(int namTaiChinh);
     Task<BaoCaoLuuChuyenTienTeViewModel> LapBaoCaoB03Async(int namTaiChinh);
     Task<ThuyetMinhBctcViewModel> LapThuyetMinhB09Async(int namTaiChinh);
+    Task<BaoCaoBoPhanViewModel> LapBaoCaoBoPhanAsync(int namTaiChinh, long? branchId = null);
     Task KhoaSoBctcNamAsync(int namTaiChinh);
 }

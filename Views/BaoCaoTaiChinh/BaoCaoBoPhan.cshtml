@@ -1,0 +1,152 @@
+@model ninjaTax.Models.ViewModels.BaoCaoBoPhanViewModel
+@{
+    ViewData["Title"] = $"Báo Cáo Kết Quả Kinh Doanh Theo Bộ Phận - Năm {Model.NamTaiChinh}";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="h3 mb-0 text-gray-800">
+                <i class="bi bi-pie-chart-fill text-primary me-2"></i>Báo Cáo Kết Quả Kinh Doanh Theo Bộ Phận (Segment P&L)
+            </h2>
+            <small class="text-muted">Theo chuẩn mực kế toán IFRS 8 / VAS 28 (Operating Segments) & Thông tư 99/2025/TT-BTC - Năm @Model.NamTaiChinh - @Model.TenChiNhanh</small>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Index" asp-route-nam="@Model.NamTaiChinh" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i>Quay lại BCTC
+            </a>
+            <button onclick="window.print()" class="btn btn-secondary btn-sm">
+                <i class="bi bi-printer me-1"></i>In Báo Cáo
+            </button>
+        </div>
+    </div>
+
+    <!-- Kiểm soát đối soát số liệu với Báo cáo KQKD (B02-DN) -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-6">
+            <div class="alert @(Model.IsKhopDoanhThuB02 ? "alert-success" : "alert-warning") mb-0 d-flex justify-content-between align-items-center">
+                <div>
+                    <strong><i class="bi @(Model.IsKhopDoanhThuB02 ? "bi-check-circle" : "bi-exclamation-triangle") me-1"></i>Doanh thu bộ phận vs B02-DN: </strong>
+                    @(Model.IsKhopDoanhThuB02 ? "Khớp 100% Doanh thu thuần B02" : "Có chênh lệch doanh thu chưa phân bổ")
+                </div>
+                <div class="fw-bold">@Model.TongCongToanCongTy.DoanhThuBanHang.ToString("N0") đ / @Model.TongDoanhThuB02.ToString("N0") đ</div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="alert @(Model.IsKhopChiPhiB02 ? "alert-success" : "alert-warning") mb-0 d-flex justify-content-between align-items-center">
+                <div>
+                    <strong><i class="bi @(Model.IsKhopChiPhiB02 ? "bi-check-circle" : "bi-exclamation-triangle") me-1"></i>Chi phí hoạt động vs B02-DN: </strong>
+                    @(Model.IsKhopChiPhiB02 ? "Khớp 100% Chi phí hoạt động B02" : "Có chi phí chung chưa phân bổ")
+                </div>
+                <div class="fw-bold">@Model.TongCongToanCongTy.TongChiPhiHoatDong.ToString("N0") đ / @Model.TongChiPhiB02.ToString("N0") đ</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bảng Báo Cáo Bộ Phận -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 text-dark fw-bold">
+                <i class="bi bi-table text-primary me-2"></i>Bảng Phân Bổ Doanh Thu & Chi Phí Từng Bộ Phận / Cost Center
+            </h5>
+            <span class="badge bg-light text-dark border">
+                Số lượng bộ phận: @Model.Segments.Count
+            </span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0 align-middle">
+                    <thead class="table-light text-center">
+                        <tr>
+                            <th style="min-width: 180px;">Phòng Ban / Bộ Phận</th>
+                            <th>Loại</th>
+                            <th>Mô Hình</th>
+                            <th style="min-width: 120px;">Doanh Thu (511)</th>
+                            <th style="min-width: 120px;">Giá Vốn (632/154)</th>
+                            <th style="min-width: 120px;">Lợi Nhuận Gộp</th>
+                            <th style="min-width: 120px;">CP Bán Hàng (6421)</th>
+                            <th style="min-width: 120px;">CP Quản Lý (6422)</th>
+                            <th style="min-width: 130px;">Tổng CP Hoạt Động</th>
+                            <th style="min-width: 130px;">LN Thuần Bộ Phận</th>
+                            <th>Tỷ Suất (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Segments.Any())
+                        {
+                            <tr>
+                                <td colspan="11" class="text-center text-muted py-4">Chưa có phát sinh số liệu bộ phận trong năm @Model.NamTaiChinh.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var s in Model.Segments)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold text-dark">@s.TenPhongBan</div>
+                                        <small class="text-muted"><span class="badge bg-light text-dark border">@s.MaPhongBan</span> @s.TenChiNhanh</small>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-secondary-subtle text-secondary border small">
+                                            @(s.LoaiPhongBan?.ToString() ?? "Chung")
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        @if (s.LaTrungTamLoiNhuan)
+                                        {
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle">Profit Center</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-info-subtle text-info border border-info-subtle">Cost Center</span>
+                                        }
+                                    </td>
+                                    <td class="text-end fw-semibold @(s.DoanhThuBanHang > 0 ? "text-success" : "text-muted")">
+                                        @s.DoanhThuBanHang.ToString("N0")
+                                    </td>
+                                    <td class="text-end text-muted">
+                                        @s.GiaVonBanHang.ToString("N0")
+                                    </td>
+                                    <td class="text-end fw-semibold @(s.LoiNhuanGop < 0 ? "text-danger" : "text-dark")">
+                                        @s.LoiNhuanGop.ToString("N0")
+                                    </td>
+                                    <td class="text-end text-muted">
+                                        @s.ChiPhiBanHang.ToString("N0")
+                                    </td>
+                                    <td class="text-end text-muted">
+                                        @s.ChiPhiQuanLy.ToString("N0")
+                                    </td>
+                                    <td class="text-end fw-semibold text-danger">
+                                        @s.TongChiPhiHoatDong.ToString("N0")
+                                    </td>
+                                    <td class="text-end fw-bold @(s.LoiNhuanThuanBoPhan < 0 ? "text-danger" : "text-primary")">
+                                        @s.LoiNhuanThuanBoPhan.ToString("N0")
+                                    </td>
+                                    <td class="text-center small @(s.TySuatLoiNhuan < 0 ? "text-danger" : "text-success")">
+                                        @(s.DoanhThuBanHang > 0 ? $"{s.TySuatLoiNhuan}%" : "-")
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                    <tfoot class="table-dark fw-bold">
+                        <tr>
+                            <td colspan="3" class="text-uppercase text-center">TỔNG CỘNG TOÀN CÔNG TY</td>
+                            <td class="text-end">@Model.TongCongToanCongTy.DoanhThuBanHang.ToString("N0")</td>
+                            <td class="text-end">@Model.TongCongToanCongTy.GiaVonBanHang.ToString("N0")</td>
+                            <td class="text-end">@Model.TongCongToanCongTy.LoiNhuanGop.ToString("N0")</td>
+                            <td class="text-end">@Model.TongCongToanCongTy.ChiPhiBanHang.ToString("N0")</td>
+                            <td class="text-end">@Model.TongCongToanCongTy.ChiPhiQuanLy.ToString("N0")</td>
+                            <td class="text-end">@Model.TongCongToanCongTy.TongChiPhiHoatDong.ToString("N0")</td>
+                            <td class="text-end text-warning">@Model.TongCongToanCongTy.LoiNhuanThuanBoPhan.ToString("N0")</td>
+                            <td class="text-center">
+                                @(Model.TongCongToanCongTy.DoanhThuBanHang > 0 ? $"{Model.TongCongToanCongTy.TySuatLoiNhuan}%" : "-")
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

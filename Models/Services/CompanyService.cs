@@ -91,7 +91,8 @@ public class CompanyService : ICompanyService
             throw new ArgumentException($"Mã số thuế '{profile.MaSoThue}' không hợp lệ theo thuật toán Modulo 11 của Tổng cục Thuế.");
         }
 
-        var existing = await _context.ThongTinDoanhNghieps.FirstOrDefaultAsync(c => c.Id == profile.Id);
+        var existing = await _context.ThongTinDoanhNghieps.FirstOrDefaultAsync(c => c.Id == profile.Id)
+                       ?? await _context.ThongTinDoanhNghieps.FirstOrDefaultAsync();
         if (existing == null)
         {
             throw new KeyNotFoundException("Không tìm thấy hồ sơ doanh nghiệp.");
@@ -148,6 +149,15 @@ public class CompanyService : ICompanyService
             if (!ChiNhanh.KiemTraMstChiNhanhHopLe(branch.MaSoThueChiNhanh, company.MaSoThue))
             {
                 throw new ArgumentException($"Mã số thuế chi nhánh '{branch.MaSoThueChiNhanh}' không hợp lệ (Phải là 13 số XXXXXXXXXX-YYY khớp với MST công ty mẹ {company.MaSoThue}).");
+            }
+        }
+
+        if (branch.LoaiChiNhanh == LoaiChiNhanh.TruSoChinh)
+        {
+            var hasHo = await _context.ChiNhanhs.AnyAsync(b => b.LoaiChiNhanh == LoaiChiNhanh.TruSoChinh && b.Id != branch.Id);
+            if (hasHo)
+            {
+                throw new InvalidOperationException("Doanh nghiệp đã có Trụ sở chính. Không thể tạo thêm Trụ sở chính thứ hai.");
             }
         }
 
@@ -230,7 +240,8 @@ public class CompanyService : ICompanyService
 
     public async Task UpdateAccountingConfigAsync(CauHinhKeToan config)
     {
-        var existing = await _context.CauHinhKeToans.FirstOrDefaultAsync(c => c.Id == config.Id);
+        var existing = await _context.CauHinhKeToans.FirstOrDefaultAsync(c => c.Id == config.Id || (config.DoanhNghiepId > 0 && c.DoanhNghiepId == config.DoanhNghiepId))
+                       ?? await _context.CauHinhKeToans.FirstOrDefaultAsync();
         if (existing == null) throw new KeyNotFoundException("Không tìm thấy cấu hình kế toán.");
 
         existing.CheDoKeToan = config.CheDoKeToan;

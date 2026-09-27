@@ -35,6 +35,9 @@ public class NhanVien
     [StringLength(100)]
     public string? PhongBan { get; set; }
 
+    public long? PhongBanId { get; set; }
+    public virtual PhongBan? PhongBanEntity { get; set; }
+
     [StringLength(100)]
     public string? ChucVu { get; set; }
 
