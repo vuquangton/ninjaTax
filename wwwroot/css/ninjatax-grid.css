@@ -1,0 +1,38 @@
+/* =============================================================
+   AG Grid Community — ninjaTax Theme Overrides
+   ============================================================= */
+
+.ag-theme-alpine.nt-grid {
+  --ag-font-family: var(--nt-font-family);
+  --ag-font-size: var(--nt-font-size-sm);
+  --ag-background-color: var(--nt-bg-card);
+  --ag-foreground-color: var(--nt-text);
+  --ag-header-background-color: var(--nt-bg);
+  --ag-header-foreground-color: var(--nt-text-muted);
+  --ag-border-color: var(--nt-border);
+  --ag-row-hover-color: var(--nt-primary-light);
+  --ag-selected-row-background-color: #E0E7FF;
+  --ag-odd-row-background-color: var(--nt-bg);
+  --ag-row-height: var(--nt-table-row-height);
+  --ag-header-height: var(--nt-table-header-height);
+  border: 1px solid var(--nt-border);
+  border-radius: var(--nt-radius);
+}
+
+.ag-theme-alpine.nt-grid .ag-header-cell-label {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: var(--nt-font-size-xs);
+}
+
+.ag-theme-alpine.nt-grid .ag-cell {
+  display: flex;
+  align-items: center;
+}
+
+.ag-theme-alpine.nt-grid .nt-grid-cell-number {
+  justify-content: flex-end;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}

@@ -1,0 +1,17 @@
+@{
+    var gridId = ViewData["GridId"] as string ?? "grid" + Guid.NewGuid().ToString("N");
+    var dataUrl = ViewData["DataUrl"] as string ?? "";
+    var columnDefsJson = ViewData["ColumnDefsJson"] as string ?? "[]";
+    var height = ViewData["Height"] as string ?? "550px";
+}
+
+<div id="@gridId" class="ag-theme-alpine nt-grid w-100" style="height: @height;"></div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var colDefs = @Html.Raw(columnDefsJson);
+        if (window.NtGrid) {
+            window.NtGrid.create("@gridId", colDefs, "@dataUrl", "@gridId");
+        }
+    });
+</script>

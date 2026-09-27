@@ -42,6 +42,46 @@ public class ButToanController : Controller
     }
 
     /// <summary>
+    /// API trả về danh sách bút toán phân trang, sắp xếp dạng JSON cho AG Grid
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> ListJson(int page = 1, int pageSize = 50, string? sort = null, string? dir = null)
+    {
+        var danhSach = await _butToanService.LayDanhSachAsync();
+        var query = danhSach.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(sort))
+        {
+            bool isDesc = string.Equals(dir, "desc", StringComparison.OrdinalIgnoreCase);
+            query = sort.ToLowerInvariant() switch
+            {
+                "sochungtu" => isDesc ? query.OrderByDescending(b => b.SoChungTu) : query.OrderBy(b => b.SoChungTu),
+                "ngayhachtoan" => isDesc ? query.OrderByDescending(b => b.NgayHachToan) : query.OrderBy(b => b.NgayHachToan),
+                "tongtien" => isDesc ? query.OrderByDescending(b => b.TongTien) : query.OrderBy(b => b.TongTien),
+                _ => query
+            };
+        }
+
+        var totalCount = query.Count();
+        var rows = query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(b => new
+            {
+                id = b.Id,
+                soChungTu = b.SoChungTu,
+                ngayHachToan = b.NgayHachToan.ToString("yyyy-MM-dd"),
+                dienGiai = b.DienGiai,
+                tongTien = b.TongTien,
+                trangThai = (int)b.TrangThai,
+                trangThaiText = b.TrangThai == TrangThaiButToan.DaGhiSo ? "Đã ghi sổ" : "Chưa ghi sổ"
+            })
+            .ToList();
+
+        return Json(new { rows, totalCount });
+    }
+
+    /// <summary>
     /// Hiển thị chi tiết chứng từ bút toán
     /// </summary>
     [HttpGet]
