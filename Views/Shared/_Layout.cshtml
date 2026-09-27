@@ -73,8 +73,19 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-controller="ButToan" asp-action="Index"><i class="bi bi-journal-text me-1"></i>Sổ Nhật Ký Chung</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="VatTuHangHoa" asp-action="Index"><i class="bi bi-box-seam me-1"></i>Hàng Hóa</a>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="inventoryDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-boxes me-1"></i>Kho & Hàng Hóa
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="inventoryDropdown">
+                                <li><a class="dropdown-item" asp-controller="Inventory" asp-action="Index"><i class="bi bi-card-checklist me-2"></i>Nhập - Xuất - Tồn kho</a></li>
+                                <li><a class="dropdown-item" asp-controller="Inventory" asp-action="CreateInward"><i class="bi bi-box-arrow-in-down me-2"></i>Lập phiếu nhập kho</a></li>
+                                <li><a class="dropdown-item" asp-controller="Inventory" asp-action="CreateOutward"><i class="bi bi-box-arrow-up-right me-2"></i>Lập phiếu xuất kho</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" asp-controller="Inventory" asp-action="BaoCaoNhapXuatTon"><i class="bi bi-file-earmark-spreadsheet me-2"></i>Báo cáo NXT (S10-DN)</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" asp-controller="VatTuHangHoa" asp-action="Index"><i class="bi bi-box-seam me-2"></i>Danh mục vật tư hàng hóa</a></li>
+                            </ul>
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="companyDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">

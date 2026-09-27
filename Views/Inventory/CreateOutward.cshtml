@@ -1,0 +1,237 @@
+@model ninjaTax.Models.ViewModels.PhieuXuatKhoEditViewModel
+@{
+    ViewData["Title"] = "Lập Phiếu Xuất Kho (Mẫu 02-VT)";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="h3 mb-0 text-gray-800">
+                <i class="bi bi-box-arrow-up-right text-primary me-2"></i>Lập Phiếu Xuất Kho
+            </h2>
+            <small class="text-muted">Xuất kho bán hàng, sản xuất, tiêu dùng nội bộ - Kiểm soát chống xuất âm kho tự động</small>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Quay lại danh sách
+        </a>
+    </div>
+
+    @if (!ViewData.ModelState.IsValid && ViewData.ModelState[string.Empty]?.Errors.Count > 0)
+    {
+        <div class="alert alert-danger">
+            @foreach (var err in ViewData.ModelState[string.Empty]!.Errors)
+            {
+                <div><i class="bi bi-exclamation-triangle me-1"></i>@err.ErrorMessage</div>
+            }
+        </div>
+    }
+
+    <form asp-action="CreateOutward" method="post">
+        @Html.AntiForgeryToken()
+
+        <div class="card shadow-sm border-0 mb-3">
+            <div class="card-header bg-white py-2">
+                <h6 class="mb-0 fw-bold text-dark">Thông Tin Chung Phiếu Xuất Kho</h6>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label asp-for="ChiNhanhId" class="form-label small fw-semibold"></label>
+                        <select asp-for="ChiNhanhId" class="form-select" asp-items="Model.BranchList" id="selectBranch"></select>
+                        <span asp-validation-for="ChiNhanhId" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="KhoId" class="form-label small fw-semibold"></label>
+                        <select asp-for="KhoId" class="form-select" asp-items="Model.WarehouseList" id="selectWarehouse" onchange="checkAllStocks()"></select>
+                        <span asp-validation-for="KhoId" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="SoPhieu" class="form-label small fw-semibold"></label>
+                        <input asp-for="SoPhieu" class="form-control" />
+                        <span asp-validation-for="SoPhieu" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="LoaiXuatKho" class="form-label small fw-semibold"></label>
+                        <select asp-for="LoaiXuatKho" class="form-select" asp-items="Html.GetEnumSelectList<ninjaTax.Models.Entities.LoaiXuatKho>()"></select>
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="NgayXuat" class="form-label small fw-semibold"></label>
+                        <input asp-for="NgayXuat" class="form-control" />
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="NgayHachToan" class="form-label small fw-semibold"></label>
+                        <input asp-for="NgayHachToan" class="form-control" />
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="KhachHangId" class="form-label small fw-semibold"></label>
+                        <select asp-for="KhachHangId" class="form-select" asp-items="Model.CustomerList">
+                            <option value="">-- Chọn Khách hàng (nếu có) --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="PhongBanId" class="form-label small fw-semibold"></label>
+                        <select asp-for="PhongBanId" class="form-select" asp-items="Model.DepartmentList">
+                            <option value="">-- Chọn Phòng ban chịu chi phí --</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="DienGiai" class="form-label small fw-semibold"></label>
+                        <input asp-for="DienGiai" class="form-control" placeholder="Diễn giải nội dung xuất kho..." />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 mb-3">
+            <div class="card-header bg-white py-2 d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold text-dark">Chi Tiết Mặt Hàng Xuất Kho</h6>
+                <button type="button" class="btn btn-outline-primary btn-sm" onclick="addRow()">
+                    <i class="bi bi-plus-circle me-1"></i>Thêm Dòng
+                </button>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-bordered mb-0 align-middle" id="tableChiTiet">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 35%;">Mặt Hàng Xuất</th>
+                                <th style="width: 15%;" class="text-end">Tồn Khả Dụng</th>
+                                <th style="width: 15%;" class="text-end">Số Lượng Xuất</th>
+                                <th style="width: 15%;" class="text-end">Đơn Giá Vốn</th>
+                                <th style="width: 15%;" class="text-end">Tiền Giá Vốn</th>
+                                <th style="width: 5%;" class="text-center">Xóa</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr id="row-0">
+                                <td>
+                                    <select name="ChiTiets[0].VatTuHangHoaId" class="form-select select-item" asp-items="Model.ItemList" required onchange="onItemChange(this, 0)"></select>
+                                    <input type="hidden" name="ChiTiets[0].TaiKhoanNoId" value="11" />
+                                    <input type="hidden" name="ChiTiets[0].TaiKhoanCoId" value="10" />
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control text-end input-stock bg-light fw-semibold" readonly value="0" />
+                                </td>
+                                <td>
+                                    <input type="number" step="0.01" name="ChiTiets[0].SoLuong" class="form-control text-end input-qty" value="1" required oninput="calcTotal()" />
+                                </td>
+                                <td>
+                                    <input type="number" step="1000" name="ChiTiets[0].DonGiaVon" class="form-control text-end input-price" value="0" oninput="calcTotal()" placeholder="Tự tính BQGQ" />
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control text-end text-primary fw-bold input-subtotal" readonly value="0 đ" />
+                                </td>
+                                <td class="text-center">
+                                    <button type="button" class="btn btn-sm btn-outline-danger py-0" onclick="removeRow(0)"><i class="bi bi-trash"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <td colspan="4" class="text-end fw-bold">Tổng Cộng Giá Vốn:</td>
+                                <td class="text-end fw-bold text-primary fs-6" id="labelTotal">0 đ</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" asp-for="GhiSoNgay" checked>
+                <label class="form-check-label fw-semibold" asp-for="GhiSoNgay">Tự động ghi sổ kho và hạch toán Sổ cái GL ngay</label>
+            </div>
+            <div class="d-flex gap-2">
+                <a asp-action="Index" class="btn btn-outline-secondary">Hủy Bỏ</a>
+                <button type="submit" class="btn btn-primary px-4">
+                    <i class="bi bi-check2-circle me-1"></i>Lưu Phiếu Xuất
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        let rowIdx = 1;
+        function addRow() {
+            const table = document.getElementById('tableChiTiet').getElementsByTagName('tbody')[0];
+            const firstRow = document.getElementById('row-0');
+            const clone = firstRow.cloneNode(true);
+            clone.id = 'row-' + rowIdx;
+            clone.innerHTML = clone.innerHTML.replaceAll('[0]', '[' + rowIdx + ']');
+            const removeBtn = clone.querySelector('button');
+            const curIdx = rowIdx;
+            removeBtn.onclick = function() { removeRow(curIdx); };
+            const sel = clone.querySelector('.select-item');
+            sel.onchange = function() { onItemChange(sel, curIdx); };
+            table.appendChild(clone);
+            onItemChange(sel, curIdx);
+            rowIdx++;
+            calcTotal();
+        }
+
+        function removeRow(idx) {
+            const rows = document.getElementById('tableChiTiet').getElementsByTagName('tbody')[0].rows;
+            if (rows.length <= 1) {
+                alert('Phiếu xuất kho phải có ít nhất 1 dòng mặt hàng.');
+                return;
+            }
+            const r = document.getElementById('row-' + idx);
+            if (r) r.remove();
+            calcTotal();
+        }
+
+        async function onItemChange(selectElem, idx) {
+            const vatTuId = selectElem.value;
+            const khoId = document.getElementById('selectWarehouse').value;
+            if (!vatTuId || !khoId) return;
+
+            try {
+                const res = await fetch(`/Inventory/GetStockBalanceJson?khoId=${khoId}&vatTuId=${vatTuId}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    const row = document.getElementById('row-' + idx);
+                    if (row) {
+                        row.querySelector('.input-stock').value = data.stockBalance.toLocaleString('vi-VN');
+                        if (data.averageCost > 0) {
+                            row.querySelector('.input-price').value = data.averageCost;
+                        }
+                        calcTotal();
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function checkAllStocks() {
+            const rows = document.getElementById('tableChiTiet').getElementsByTagName('tbody')[0].rows;
+            for (let i = 0; i < rows.length; i++) {
+                const sel = rows[i].querySelector('.select-item');
+                const idxStr = rows[i].id.replace('row-', '');
+                onItemChange(sel, parseInt(idxStr));
+            }
+        }
+
+        function calcTotal() {
+            let total = 0;
+            const rows = document.getElementById('tableChiTiet').getElementsByTagName('tbody')[0].rows;
+            for (let i = 0; i < rows.length; i++) {
+                const qty = parseFloat(rows[i].querySelector('.input-qty').value) || 0;
+                const price = parseFloat(rows[i].querySelector('.input-price').value) || 0;
+                const sub = qty * price;
+                rows[i].querySelector('.input-subtotal').value = sub.toLocaleString('vi-VN') + ' đ';
+                total += sub;
+            }
+            document.getElementById('labelTotal').innerText = total.toLocaleString('vi-VN') + ' đ';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const firstSel = document.querySelector('#row-0 .select-item');
+            if (firstSel) onItemChange(firstSel, 0);
+        });
+    </script>
+}

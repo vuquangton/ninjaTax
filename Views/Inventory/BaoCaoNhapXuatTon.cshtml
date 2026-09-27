@@ -1,0 +1,267 @@
+@model ninjaTax.Models.ViewModels.BaoCaoNhapXuatTonViewModel
+@{
+    ViewData["Title"] = "Báo Cáo Nhập Xuất Tồn (Mẫu S10-DN)";
+    var diff = Model.TongTonCuoiThanhTien - Model.SoDuSoCaiTkKho;
+}
+
+<div class="d-print-none mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="mb-1 text-primary"><i class="bi bi-journal-text me-2"></i>Báo Cáo Nhập - Xuất - Tồn Kho (S10-DN)</h2>
+            <span class="text-muted">Theo dõi biến động và số dư vật tư, hàng hóa theo quy định TT 200 & TT 99/VAS 02</span>
+        </div>
+        <div class="d-flex gap-2">
+            <button onclick="window.print()" class="btn btn-outline-secondary shadow-sm">
+                <i class="bi bi-printer me-1"></i>In Báo Cáo
+            </button>
+            <a asp-action="Index" class="btn btn-outline-primary shadow-sm">
+                <i class="bi bi-arrow-left me-1"></i>Về Quản Lý Kho
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" asp-action="BaoCaoNhapXuatTon" class="row g-3 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Từ ngày</label>
+                    <input type="date" name="tuNgay" class="form-control" value="@Model.TuNgay.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Đến ngày</label>
+                    <input type="date" name="denNgay" class="form-control" value="@Model.DenNgay.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Chi nhánh</label>
+                    <select name="branchId" class="form-select">
+                        <option value="">-- Toàn công ty --</option>
+                        @foreach (var b in Model.BranchList)
+                        {
+                            <option value="@b.Value" selected="@b.Selected">@b.Text</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Kho hàng</label>
+                    <select name="khoId" class="form-select">
+                        <option value="">-- Tất cả kho --</option>
+                        @foreach (var w in Model.WarehouseList)
+                        {
+                            <option value="@w.Value" selected="@w.Selected">@w.Text</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2 d-grid">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-filter me-1"></i>Xem Báo Cáo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Reconciliation Banner -->
+    @if (Model.IsKhopSoCai)
+    {
+        <div class="alert alert-success d-flex align-items-center shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill fs-4 me-3"></i>
+            <div>
+                <strong class="d-block">Đối Soát Sổ Cái: KHỚP 100% (Hoàn Hảo)</strong>
+                <span>Tổng giá trị tồn cuối kho: <strong>@Model.TongTonCuoiThanhTien.ToString("N0") VNĐ</strong> bằng đúng số dư Nợ Sổ Cái các TK Kho (152, 155, 1561): <strong>@Model.SoDuSoCaiTkKho.ToString("N0") VNĐ</strong>. Không có sai lệch hạch toán.</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning d-flex align-items-center shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+            <div>
+                <strong class="d-block">Cảnh Báo Đối Soát: Có Chênh Lệch Giữa Kho Và Sổ Cái</strong>
+                <span>Tổng giá trị kho: <strong>@Model.TongTonCuoiThanhTien.ToString("N0") VNĐ</strong> | Sổ Cái TK 152/155/156: <strong>@Model.SoDuSoCaiTkKho.ToString("N0") VNĐ</strong> | Chênh lệch: <strong class="text-danger">@diff.ToString("N0") VNĐ</strong>. Vui lòng kiểm tra các bút toán kho chưa ghi sổ hoặc bút toán thủ công ngoài phân hệ kho.</span>
+            </div>
+        </div>
+    }
+
+    <!-- KPI Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-light h-100">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-semibold">Tồn Đầu Kỳ</div>
+                    <div class="fs-4 fw-bold text-dark">@Model.TongTonDauThanhTien.ToString("N0") <span class="fs-6 fw-normal">VNĐ</span></div>
+                    <div class="small text-secondary mt-1">Số lượng: <strong>@Model.TongTonDauSoLuong.ToString("N2")</strong></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-light h-100">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-semibold">Nhập Trong Kỳ</div>
+                    <div class="fs-4 fw-bold text-success">@Model.TongNhapThanhTien.ToString("N0") <span class="fs-6 fw-normal">VNĐ</span></div>
+                    <div class="small text-secondary mt-1">Số lượng: <strong>@Model.TongNhapSoLuong.ToString("N2")</strong></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-light h-100">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-semibold">Xuất Trong Kỳ</div>
+                    <div class="fs-4 fw-bold text-danger">@Model.TongXuatThanhTien.ToString("N0") <span class="fs-6 fw-normal">VNĐ</span></div>
+                    <div class="small text-secondary mt-1">Số lượng: <strong>@Model.TongXuatSoLuong.ToString("N2")</strong></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-primary text-white h-100">
+                <div class="card-body">
+                    <div class="text-white-50 small text-uppercase fw-semibold">Tồn Cuối Kỳ</div>
+                    <div class="fs-4 fw-bold">@Model.TongTonCuoiThanhTien.ToString("N0") <span class="fs-6 fw-normal">VNĐ</span></div>
+                    <div class="small text-white-50 mt-1">Số lượng: <strong class="text-white">@Model.TongTonCuoiSoLuong.ToString("N2")</strong></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Printable S10-DN Report Sheet -->
+<div class="card border-0 shadow-sm p-4 print-container">
+    <!-- Header -->
+    <div class="row mb-3">
+        <div class="col-6">
+            <div class="fw-bold text-uppercase">Đơn vị: @Model.TenChiNhanh</div>
+            <div class="text-muted small">Kho hàng: @Model.TenKho</div>
+        </div>
+        <div class="col-6 text-end">
+            <div class="fw-bold">Mẫu số S10-DN</div>
+            <div class="text-muted small">(Ban hành theo TT 200/2014/TT-BTC & TT 99)</div>
+        </div>
+    </div>
+
+    <div class="text-center my-3">
+        <h3 class="fw-bold text-uppercase mb-1">BÁO CÁO NHẬP - XUẤT - TỒN KHO</h3>
+        <div class="fst-italic text-secondary">Từ ngày @Model.TuNgay.ToString("dd/MM/yyyy") đến ngày @Model.DenNgay.ToString("dd/MM/yyyy")</div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle mb-0" style="font-size: 0.9rem;">
+            <thead class="table-light text-center align-middle">
+                <tr>
+                    <th rowspan="2" style="width: 40px;">STT</th>
+                    <th rowspan="2" style="width: 100px;">Mã VT</th>
+                    <th rowspan="2">Tên Vật Tư, Hàng Hóa</th>
+                    <th rowspan="2" style="width: 60px;">ĐVT</th>
+                    <th colspan="2" class="bg-light">Tồn Đầu Kỳ</th>
+                    <th colspan="2" class="bg-light">Nhập Trong Kỳ</th>
+                    <th colspan="2" class="bg-light">Xuất Trong Kỳ</th>
+                    <th colspan="2" class="bg-light">Tồn Cuối Kỳ</th>
+                    <th rowspan="2" style="width: 100px;">Đơn Giá BQ</th>
+                </tr>
+                <tr>
+                    <th>Số Lượng</th>
+                    <th>Thành Tiền</th>
+                    <th>Số Lượng</th>
+                    <th>Thành Tiền</th>
+                    <th>Số Lượng</th>
+                    <th>Thành Tiền</th>
+                    <th>Số Lượng</th>
+                    <th>Thành Tiền</th>
+                </tr>
+                <tr class="text-muted" style="font-size: 0.8rem;">
+                    <td>(A)</td>
+                    <td>(B)</td>
+                    <td>(C)</td>
+                    <td>(D)</td>
+                    <td>(1)</td>
+                    <td>(2)</td>
+                    <td>(3)</td>
+                    <td>(4)</td>
+                    <td>(5)</td>
+                    <td>(6)</td>
+                    <td>(7)</td>
+                    <td>(8)</td>
+                    <td>(9)</td>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Items.Any())
+                {
+                    <tr>
+                        <td colspan="13" class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                            Không có phát sinh nhập xuất tồn trong khoảng thời gian này
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    int stt = 1;
+                    foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td class="text-center text-muted">@(stt++)</td>
+                            <td class="fw-semibold">@item.MaVatTu</td>
+                            <td>@item.TenVatTu</td>
+                            <td class="text-center">@item.DonViTinh</td>
+                            <td class="text-end">@item.TonDauSoLuong.ToString("N2")</td>
+                            <td class="text-end">@item.TonDauThanhTien.ToString("N0")</td>
+                            <td class="text-end text-success">@item.NhapSoLuong.ToString("N2")</td>
+                            <td class="text-end text-success">@item.NhapThanhTien.ToString("N0")</td>
+                            <td class="text-end text-danger">@item.XuatSoLuong.ToString("N2")</td>
+                            <td class="text-end text-danger">@item.XuatThanhTien.ToString("N0")</td>
+                            <td class="text-end fw-bold">@item.TonCuoiSoLuong.ToString("N2")</td>
+                            <td class="text-end fw-bold">@item.TonCuoiThanhTien.ToString("N0")</td>
+                            <td class="text-end text-muted">@item.DonGiaBinhQuan.ToString("N2")</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+            <tfoot class="table-secondary fw-bold">
+                <tr>
+                    <td colspan="4" class="text-center">TỔNG CỘNG</td>
+                    <td class="text-end">@Model.TongTonDauSoLuong.ToString("N2")</td>
+                    <td class="text-end">@Model.TongTonDauThanhTien.ToString("N0")</td>
+                    <td class="text-end text-success">@Model.TongNhapSoLuong.ToString("N2")</td>
+                    <td class="text-end text-success">@Model.TongNhapThanhTien.ToString("N0")</td>
+                    <td class="text-end text-danger">@Model.TongXuatSoLuong.ToString("N2")</td>
+                    <td class="text-end text-danger">@Model.TongXuatThanhTien.ToString("N0")</td>
+                    <td class="text-end">@Model.TongTonCuoiSoLuong.ToString("N2")</td>
+                    <td class="text-end">@Model.TongTonCuoiThanhTien.ToString("N0")</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <!-- Signatures -->
+    <div class="row text-center mt-5 d-none d-print-flex">
+        <div class="col-3">
+            <div class="fw-bold">Người Lập Biểu</div>
+            <div class="small fst-italic text-muted mb-5">(Ký, họ tên)</div>
+        </div>
+        <div class="col-3">
+            <div class="fw-bold">Thủ Kho</div>
+            <div class="small fst-italic text-muted mb-5">(Ký, họ tên)</div>
+        </div>
+        <div class="col-3">
+            <div class="fw-bold">Kế Toán Trưởng</div>
+            <div class="small fst-italic text-muted mb-5">(Ký, họ tên)</div>
+        </div>
+        <div class="col-3">
+            <div class="fw-bold">Giám Đốc</div>
+            <div class="small fst-italic text-muted mb-5">(Ký, họ tên, đóng dấu)</div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @@media print {
+        .d-print-none { display: none !important; }
+        .d-print-flex { display: flex !important; }
+        .print-container { box-shadow: none !important; padding: 0 !important; }
+        body { font-size: 11pt; color: #000; }
+        .table { border-color: #000 !important; }
+        .table th, .table td { border-color: #000 !important; }
+    }
+</style>

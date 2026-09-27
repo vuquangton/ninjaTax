@@ -356,5 +356,46 @@ public static class DbInitializer
                 }
             }
         }
+
+        // Khởi tạo Danh mục Kho hàng mặc định (Phase 8 - VAS 02 / TT99)
+        if (!await context.Khos.AnyAsync())
+        {
+            var hoBranch = await context.ChiNhanhs.FirstOrDefaultAsync(b => b.LoaiChiNhanh == LoaiChiNhanh.TruSoChinh)
+                           ?? await context.ChiNhanhs.FirstOrDefaultAsync();
+
+            if (hoBranch != null)
+            {
+                var tk1561 = await context.TaiKhoans.FirstOrDefaultAsync(t => t.MaTaiKhoan == "1561")
+                             ?? await context.TaiKhoans.FirstOrDefaultAsync(t => t.MaTaiKhoan == "156");
+                var tk152 = await context.TaiKhoans.FirstOrDefaultAsync(t => t.MaTaiKhoan == "152");
+
+                var khos = new List<Kho>
+                {
+                    new()
+                    {
+                        ChiNhanhId = hoBranch.Id,
+                        MaKho = "KHO-TONG",
+                        TenKho = "Kho Tổng Hàng Hóa & Thiết Bị",
+                        DiaChi = "Tầng 1, Tòa nhà Trụ sở chính",
+                        TaiKhoanKhoMacDinhId = tk1561?.Id,
+                        DangHoatDong = true,
+                        GhiChu = "Kho trung tâm lưu trữ hàng hóa kinh doanh"
+                    },
+                    new()
+                    {
+                        ChiNhanhId = hoBranch.Id,
+                        MaKho = "KHO-NVL",
+                        TenKho = "Kho Nguyên Vật Liệu & Phụ Kiện",
+                        DiaChi = "Khu sản xuất, Phân xưởng kỹ thuật",
+                        TaiKhoanKhoMacDinhId = tk152?.Id,
+                        DangHoatDong = true,
+                        GhiChu = "Kho nguyên vật liệu phục vụ sản xuất gia công"
+                    }
+                };
+
+                await context.Khos.AddRangeAsync(khos);
+                await context.SaveChangesAsync();
+            }
+        }
     }
 }
