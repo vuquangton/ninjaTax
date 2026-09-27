@@ -1,8 +1,81 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    ViewData["Title"] = "Bảng Điều Khiển Quản Trị & Kế Toán";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="nt-page-header">
+    <div>
+        <h4 class="nt-page-header__title"><i class="bi bi-speedometer2 me-2"></i>Bảng Điều Khiển Quản Trị</h4>
+        <p class="nt-page-header__breadcrumb">Tổng quan sức khỏe tài chính &amp; dòng tiền doanh nghiệp</p>
+    </div>
+    <div class="nt-page-header__actions">
+        <a asp-controller="BaoCaoTaiChinh" asp-action="Index" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-file-earmark-bar-graph me-1"></i>Báo Cáo Tài Chính TT99
+        </a>
+    </div>
 </div>
+
+<!-- Row 1: KPI Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <a asp-controller="BanHang" asp-action="Index" class="nt-kpi-card border-primary">
+            <div class="nt-kpi-card__label text-primary"><i class="bi bi-graph-up-arrow me-1"></i>Doanh Thu</div>
+            <div class="nt-kpi-card__value text-primary" id="kpiDoanhThu">0 đ</div>
+            <div class="nt-kpi-card__trend text-muted"><small>Xem sổ bán hàng &rarr;</small></div>
+        </a>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <a asp-controller="ChiTien" asp-action="Index" class="nt-kpi-card border-danger">
+            <div class="nt-kpi-card__label text-danger"><i class="bi bi-graph-down-arrow me-1"></i>Chi Phí</div>
+            <div class="nt-kpi-card__value text-danger" id="kpiChiPhi">0 đ</div>
+            <div class="nt-kpi-card__trend text-muted"><small>Xem sổ chi phí &rarr;</small></div>
+        </a>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <a asp-controller="CongNo" asp-action="Index" asp-route-taikhoan="131" class="nt-kpi-card border-info">
+            <div class="nt-kpi-card__label text-info"><i class="bi bi-wallet2 me-1"></i>Phải Thu (TK 131)</div>
+            <div class="nt-kpi-card__value text-info" id="kpiPhaiThu">0 đ</div>
+            <div class="nt-kpi-card__trend text-muted"><small>Chi tiết công nợ KH &rarr;</small></div>
+        </a>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <a asp-controller="CongNo" asp-action="Index" asp-route-taikhoan="331" class="nt-kpi-card border-warning">
+            <div class="nt-kpi-card__label text-warning"><i class="bi bi-credit-card me-1"></i>Phải Trả (TK 331)</div>
+            <div class="nt-kpi-card__value text-warning" id="kpiPhaiTra">0 đ</div>
+            <div class="nt-kpi-card__trend text-muted"><small>Chi tiết công nợ NCC &rarr;</small></div>
+        </a>
+    </div>
+</div>
+
+<!-- Row 2: Charts -->
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="nt-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-water me-2 text-primary"></i>Biến Động Dòng Tiền (12 Tháng)</h6>
+                <small class="text-muted">Thu (Nợ 111/112) vs Chi (Có 111/112)</small>
+            </div>
+            <div id="chartCashFlow" style="min-height: 320px;"></div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="nt-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-people-fill me-2 text-primary"></i>Top Khách Hàng Nợ (TK 131)</h6>
+                <small class="text-muted">Bấm vào cột để Drill-down</small>
+            </div>
+            <div id="chartTopDebtors" style="min-height: 320px;"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="~/js/ninjatax-charts.js" asp-append-version="true"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            if (window.NtCharts) {
+                window.NtCharts.initDashboard();
+            }
+        });
+    </script>
+}
