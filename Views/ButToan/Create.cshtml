@@ -30,39 +30,44 @@
         <!-- Phần 1: Thông tin chung chứng từ -->
         <div class="card shadow mb-4">
             <div class="card-header py-3 bg-light">
-                <h6 class="m-0 font-weight-bold text-primary">1. Thông Tin Chung & Chứng Từ Gốc (TT99)</h6>
+                <h6 class="m-0 font-weight-bold text-primary">1. Thông Tin Chung &amp; Chứng Từ Gốc (TT99)</h6>
             </div>
             <div class="card-body">
                 <div class="row g-3">
                     <div class="col-md-3">
                         <label asp-for="SoChungTu" class="form-label fw-bold">Số Chứng Từ</label>
-                        <input asp-for="SoChungTu" class="form-control" placeholder="Tự động sinh nếu để trống" />
+                        <input asp-for="SoChungTu" class="form-control" placeholder="Tự động sinh nếu để trống"
+                               data-field-order="1" data-autofocus />
                         <span asp-validation-for="SoChungTu" class="text-danger small"></span>
                     </div>
                     <div class="col-md-3">
                         <label asp-for="NgayHachToan" class="form-label fw-bold">Ngày Hạch Toán</label>
-                        <input asp-for="NgayHachToan" type="date" class="form-control" />
+                        <input asp-for="NgayHachToan" type="date" class="form-control" data-field-order="2" />
                         <span asp-validation-for="NgayHachToan" class="text-danger small"></span>
                     </div>
                     <div class="col-md-3">
                         <label asp-for="NgayChungTu" class="form-label fw-bold">Ngày Chứng Từ</label>
-                        <input asp-for="NgayChungTu" type="date" class="form-control" />
+                        <input asp-for="NgayChungTu" type="date" class="form-control" data-field-order="3" />
                         <span asp-validation-for="NgayChungTu" class="text-danger small"></span>
                     </div>
                     <div class="col-md-3">
                         <label asp-for="SoChungTuGoc" class="form-label fw-bold text-danger">Số Chứng Từ Gốc *</label>
-                        <input asp-for="SoChungTuGoc" class="form-control border-danger-subtle" placeholder="VD: HĐ-0012938, UNC-882" required />
+                        <input asp-for="SoChungTuGoc" class="form-control border-danger-subtle"
+                               placeholder="VD: HĐ-0012938, UNC-882" required data-field-order="4" />
                         <small class="text-muted d-block">Bắt buộc theo TT99</small>
                         <span asp-validation-for="SoChungTuGoc" class="text-danger small"></span>
                     </div>
                     <div class="col-md-3">
                         <label asp-for="NgayChungTuGoc" class="form-label fw-bold text-danger">Ngày Chứng Từ Gốc *</label>
-                        <input asp-for="NgayChungTuGoc" type="date" class="form-control border-danger-subtle" required />
+                        <input asp-for="NgayChungTuGoc" type="date" class="form-control border-danger-subtle"
+                               required data-field-order="5" />
                         <span asp-validation-for="NgayChungTuGoc" class="text-danger small"></span>
                     </div>
                     <div class="col-md-9">
                         <label asp-for="DienGiai" class="form-label fw-bold">Diễn Giải Nghiệp Vụ *</label>
-                        <input asp-for="DienGiai" class="form-control" placeholder="VD: Rút tiền gửi ngân hàng nhập quỹ tiền mặt..." required />
+                        <input asp-for="DienGiai" class="form-control"
+                               placeholder="VD: Rút tiền gửi ngân hàng nhập quỹ tiền mặt..." required
+                               data-field-order="6" />
                         <span asp-validation-for="DienGiai" class="text-danger small"></span>
                     </div>
                 </div>
@@ -151,14 +156,19 @@
                 <small class="text-muted">
                     * Lưu ý: Hệ thống kiểm tra nghiêm ngặt quy tắc định khoản kép. Không chấp nhận dòng có số tiền &le; 0 hoặc TK Nợ trùng TK Có.
                 </small>
-                <div>
-                    <button type="submit" class="btn btn-primary px-4">
-                        Lưu Chứng Từ (Chưa Ghi Sổ)
+                <div class="nt-action-bar__primary">
+                    <a asp-action="Index" class="btn btn-outline-secondary" data-action="cancel">
+                        Hủy <small class="shortcut-hint">(Esc)</small>
+                    </a>
+                    <button type="submit" class="btn btn-primary px-4" data-action="save">
+                        <i class="bi bi-save me-1"></i>Lưu Nháp
+                        <small class="shortcut-hint">(Ctrl+S)</small>
                     </button>
                 </div>
             </div>
         </div>
     </form>
+
 </div>
 
 <!-- Template HTML cho dòng định khoản mới (Javascript) -->
