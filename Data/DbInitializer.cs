@@ -14,6 +14,16 @@ public static class DbInitializer
     {
         if (context.Database.IsRelational())
         {
+            try
+            {
+                await context.Database.ExecuteSqlRawAsync(
+                    "DELETE FROM \"__EFMigrationsHistory\" WHERE \"MigrationId\" = '20260927051037_AddDepartmentAndCostCenter' AND NOT EXISTS (SELECT 1 FROM \"sqlite_master\" WHERE \"type\"='table' AND \"name\"='PhongBan');");
+            }
+            catch
+            {
+                // Bỏ qua nếu bảng quản lý migration chưa tồn tại
+            }
+
             await context.Database.MigrateAsync();
         }
         else
