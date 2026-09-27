@@ -75,6 +75,16 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-controller="VatTuHangHoa" asp-action="Index"><i class="bi bi-box-seam me-1"></i>Hàng Hóa</a>
                         </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="companyDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-gear me-1"></i>Hệ Thống
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="companyDropdown">
+                                <li><a class="dropdown-item" asp-controller="Company" asp-action="Index"><i class="bi bi-building me-2"></i>Hồ sơ doanh nghiệp</a></li>
+                                <li><a class="dropdown-item" asp-controller="Company" asp-action="Branches"><i class="bi bi-diagram-3 me-2"></i>Cơ cấu chi nhánh</a></li>
+                                <li><a class="dropdown-item" asp-controller="Company" asp-action="AccountingConfig"><i class="bi bi-sliders me-2"></i>Thiết lập kế toán & Khóa sổ</a></li>
+                            </ul>
+                        </li>
                     </ul>
                 </div>
             </div>

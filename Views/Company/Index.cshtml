@@ -1,0 +1,283 @@
+@model ninjaTax.Models.ViewModels.CompanyDashboardViewModel
+@{
+    ViewData["Title"] = "Hồ Sơ Doanh Nghiệp & Thiết Lập Hệ Thống";
+    var c = Model.DoanhNghiep;
+    var cfg = Model.CauHinhKeToan;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1 text-primary"><i class="bi bi-building me-2"></i>Hồ Sơ Doanh Nghiệp & Thiết Lập</h2>
+        <span class="text-muted">Quản trị pháp nhân, cơ cấu chi nhánh và chuẩn mực kế toán TT99/2025/TT-BTC</span>
+    </div>
+    <div>
+        <a asp-action="Edit" class="btn btn-outline-primary"><i class="bi bi-pencil-square me-1"></i>Sửa thông tin pháp lý</a>
+        <a asp-action="AccountingConfig" class="btn btn-outline-secondary ms-1"><i class="bi bi-sliders me-1"></i>Thiết lập kế toán</a>
+        <a asp-action="Branches" class="btn btn-outline-success ms-1"><i class="bi bi-diagram-3 me-1"></i>Quản lý chi nhánh (@Model.ChiNhanhs.Count)</a>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row g-4">
+    <!-- Cột 1: Thông tin pháp lý chính -->
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 text-dark fw-bold"><i class="bi bi-shield-check text-primary me-2"></i>Thông Tin Pháp Lý Doanh Nghiệp</h5>
+                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2">
+                    <i class="bi bi-check2-circle me-1"></i>MST Hợp Lệ (Modulo 11)
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="text-muted small">Tên Doanh Nghiệp</label>
+                        <div class="fw-bold fs-6 text-dark">@c.TenDoanhNghiep</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">Mã Số Thuế (MST)</label>
+                        <div class="fw-bold fs-5 text-primary">@c.MaSoThue</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">Tên Giao Dịch (Viết tắt)</label>
+                        <div class="fw-semibold">@(c.TenGiaoDich ?? "-")</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">Tên Tiếng Anh</label>
+                        <div class="text-muted">@(c.TenTiengAnh ?? "-")</div>
+                    </div>
+                    <div class="col-12">
+                        <label class="text-muted small">Địa Chỉ Trụ Sở Chính</label>
+                        <div class="fw-semibold"><i class="bi bi-geo-alt text-danger me-1"></i>@c.DiaChiTruSo</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">Cơ Quan Thuế Quản Lý</label>
+                        <div class="fw-semibold">@(c.TenCoQuanThueQuanLy ?? "-") (Mã: @(c.MaCoQuanThueQuanLy ?? "-"))</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">Vốn Điều Lệ</label>
+                        <div class="fw-bold text-success">@c.VonDieuLe.ToString("N0") VND</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-muted small">Điện Thoại</label>
+                        <div>@(c.SoDienThoai ?? "-")</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-muted small">Email</label>
+                        <div>@(c.Email ?? "-")</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-muted small">Website</label>
+                        <div>@(c.Website ?? "-")</div>
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+
+                <h6 class="text-secondary fw-bold mb-3"><i class="bi bi-people me-2"></i>Ban Lãnh Đạo & Ký Duyệt Báo Cáo</h6>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded bg-light">
+                            <span class="text-muted small d-block">Đại Diện Pháp Luật / Giám Đốc</span>
+                            <strong class="text-dark">@(c.NguoiDaiDienPhapLuat ?? c.GiamDoc ?? "-")</strong>
+                            <div class="small text-muted">@(c.ChucDanhNguoiDaiDien ?? "Giám đốc")</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded bg-light">
+                            <span class="text-muted small d-block">Kế Toán Trưởng</span>
+                            <strong class="text-dark">@(c.KeToanTruong ?? "-")</strong>
+                            <div class="small text-muted">Kế toán trưởng</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded bg-light">
+                            <span class="text-muted small d-block">Người Lập Biểu / Thủ Quỹ</span>
+                            <strong class="text-dark">@(c.NguoiLapBieu ?? "-")</strong>
+                            <div class="small text-muted">Thủ quỹ: @(c.ThuQuy ?? "-")</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Danh sách chi nhánh tóm tắt -->
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 text-dark fw-bold"><i class="bi bi-diagram-3 text-success me-2"></i>Chi Nhánh & Đơn Vị Trực Thuộc</h5>
+                <a asp-action="CreateBranch" class="btn btn-sm btn-success"><i class="bi bi-plus-circle me-1"></i>Thêm chi nhánh</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Mã</th>
+                                <th>Tên Chi Nhánh</th>
+                                <th>Loại Hình</th>
+                                <th>MST 13 Số</th>
+                                <th>Kê Khai Riêng</th>
+                                <th>Trạng Thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var b in Model.ChiNhanhs)
+                            {
+                                <tr>
+                                    <td class="fw-bold">@b.MaChiNhanh</td>
+                                    <td>
+                                        <div class="fw-semibold">@b.TenChiNhanh</div>
+                                        <div class="small text-muted">@(b.DiaChi ?? "-")</div>
+                                    </td>
+                                    <td>
+                                        @switch (b.LoaiChiNhanh)
+                                        {
+                                            case ninjaTax.Models.Entities.LoaiChiNhanh.TruSoChinh:
+                                                <span class="badge bg-primary">Trụ sở chính</span>
+                                                break;
+                                            case ninjaTax.Models.Entities.LoaiChiNhanh.DocLap:
+                                                <span class="badge bg-warning text-dark">Độc lập</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-secondary">Phụ thuộc</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td><code>@(b.MaSoThueChiNhanh ?? "-")</code></td>
+                                    <td>
+                                        @if (b.KeKhaiThueGtgtRieng) { <span class="badge bg-info-subtle text-info border border-info-subtle me-1">GTGT</span> }
+                                        @if (b.KeKhaiThueTncnRieng) { <span class="badge bg-warning-subtle text-warning border border-warning-subtle">TNCN</span> }
+                                        @if (!b.KeKhaiThueGtgtRieng && !b.KeKhaiThueTncnRieng) { <span class="text-muted small">Kê khai tập trung</span> }
+                                    </td>
+                                    <td>
+                                        @if (b.DangHoatDong)
+                                        {
+                                            <span class="badge bg-success">Hoạt động</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Ngừng</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cột 2: Cấu hình kế toán & Trạng thái Khóa sổ -->
+    <div class="col-lg-4">
+        <!-- Khóa sổ kế toán -->
+        <div class="card shadow-sm border-0 mb-4 @(cfg.NgayKhoaSo.HasValue ? "border-danger border-2" : "")">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-lock-fill text-danger me-2"></i>Khóa Sổ Kế Toán</h5>
+            </div>
+            <div class="card-body">
+                @if (cfg.NgayKhoaSo.HasValue)
+                {
+                    <div class="alert alert-danger mb-3 d-flex align-items-center">
+                        <i class="bi bi-shield-lock-fill fs-3 me-3 text-danger"></i>
+                        <div>
+                            <div class="fw-bold">Đã Khóa Sổ</div>
+                            <div class="small">Đến hết ngày: <strong class="fs-6">@cfg.NgayKhoaSo.Value.ToString("dd/MM/yyyy")</strong></div>
+                        </div>
+                    </div>
+                    <p class="small text-muted">
+                        Mọi chứng từ phát sinh vào hoặc trước ngày này tuyệt đối không thể thêm mới, sửa đổi hoặc xóa để bảo vệ số liệu báo cáo đã phát hành.
+                    </p>
+                    <form asp-action="UnlockBook" method="post" onsubmit="return confirm('CẢNH BÁO: Mở khóa sổ cho phép thay đổi dữ liệu đã chốt. Bạn có chắc chắn muốn mở khóa sổ?');">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-outline-danger w-100">
+                            <i class="bi bi-unlock-fill me-1"></i>Mở khóa sổ kế toán
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <div class="alert alert-warning mb-3 d-flex align-items-center">
+                        <i class="bi bi-unlock fs-3 me-3 text-warning"></i>
+                        <div>
+                            <div class="fw-bold">Sổ Đang Mở</div>
+                            <div class="small">Chưa áp dụng ngày chặn ghi sổ.</div>
+                        </div>
+                    </div>
+                    <form asp-action="LockBook" method="post">
+                        @Html.AntiForgeryToken()
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Khóa sổ đến hết ngày:</label>
+                            <input type="date" name="ngayKhoaSo" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                        </div>
+                        <button type="submit" class="btn btn-danger w-100" onclick="return confirm('Khóa sổ sẽ ngăn chặn mọi thay đổi chứng từ đến ngày đã chọn. Tiếp tục?');">
+                            <i class="bi bi-lock-fill me-1"></i>Thực hiện khóa sổ
+                        </button>
+                    </form>
+                }
+            </div>
+        </div>
+
+        <!-- Thông số kế toán TT99 -->
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-sliders text-info me-2"></i>Thiết Lập TT99</h5>
+                <a asp-action="AccountingConfig" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush small">
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <span>Chế độ kế toán:</span>
+                        <strong class="text-primary">TT 99/2025/TT-BTC</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <span>Tài khoản 911:</span>
+                        <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Bị loại trừ triệt để</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <span>Đơn vị tiền tệ:</span>
+                        <span class="fw-bold">@cfg.DonViTienTe</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <span>Bắt đầu niên độ:</span>
+                        <span>Ngày @cfg.NgayBatDauNienDo/@cfg.ThangBatDauNienDo</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <span>Phương pháp thuế GTGT:</span>
+                        <span class="fw-semibold">@cfg.PhuongPhapThueGtgt</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <span>Phương pháp xuất kho:</span>
+                        <span class="fw-semibold">@cfg.PhuongPhapXuatKho</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <span>Phương pháp trích KH:</span>
+                        <span class="fw-semibold">@cfg.PhuongPhapKhauHaoTscd</span>
+                    </li>
+                    <li class="list-group-item px-0 pt-3">
+                        <div class="fw-semibold mb-2">Hệ thống cảnh báo bẫy thuế:</div>
+                        <div><i class="bi @(cfg.CanhBaoChiVuotQuy ? "bi-check-circle-fill text-success" : "bi-x-circle text-muted") me-1"></i>Cảnh báo chi vượt quỹ tiền mặt</div>
+                        <div><i class="bi @(cfg.CanhBaoXuatAmKho ? "bi-check-circle-fill text-success" : "bi-x-circle text-muted") me-1"></i>Cảnh báo xuất âm kho</div>
+                        <div><i class="bi @(cfg.CanhBaoHoaDonTren20TrTienMat ? "bi-check-circle-fill text-success" : "bi-x-circle text-muted") me-1"></i>Cảnh báo HĐ &ge; 20 triệu trả tiền mặt</div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,180 @@
+@model ninjaTax.Models.ViewModels.AccountingConfigEditViewModel
+@{
+    ViewData["Title"] = "Thiết Lập Chế Độ Kế Toán & Khóa Sổ";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1 text-primary"><i class="bi bi-sliders me-2"></i>Thiết Lập Chế Độ Kế Toán & Khóa Sổ</h2>
+        <span class="text-muted">Cấu hình chế độ TT99/2025/TT-BTC, niên độ kế toán, phương pháp tính thuế & quản trị khóa sổ</span>
+    </div>
+    <div>
+        <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Quay lại</a>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row g-4">
+    <!-- Form cấu hình tham số -->
+    <div class="col-lg-8">
+        <form asp-action="AccountingConfig" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="DoanhNghiepId" />
+
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="mb-0 text-dark fw-bold"><i class="bi bi-gear-wide-connected text-primary me-2"></i>Chế Độ & Niên Độ Kế Toán</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="CheDoKeToan" class="form-label fw-semibold"></label>
+                            <select asp-for="CheDoKeToan" class="form-select" asp-items="Html.GetEnumSelectList<ninjaTax.Models.Entities.CheDoKeToanDoanhNghiep>()"></select>
+                            <div class="form-text text-danger fw-semibold">Lưu ý: Theo TT99/2025/TT-BTC, nghiêm cấm tuyệt đối TK 911 trong toàn bộ hệ thống.</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="DonViTienTe" class="form-label fw-semibold"></label>
+                            <input asp-for="DonViTienTe" class="form-control" />
+                            <span asp-validation-for="DonViTienTe" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="NgayBatDauNienDo" class="form-label fw-semibold"></label>
+                            <input asp-for="NgayBatDauNienDo" class="form-control" type="number" min="1" max="31" />
+                            <span asp-validation-for="NgayBatDauNienDo" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="ThangBatDauNienDo" class="form-label fw-semibold"></label>
+                            <select asp-for="ThangBatDauNienDo" class="form-select">
+                                <option value="1">Tháng 01 (Niên độ theo năm dương lịch: 01/01 - 31/12)</option>
+                                <option value="4">Tháng 04 (01/04 - 31/03 năm sau)</option>
+                                <option value="7">Tháng 07 (01/07 - 30/06 năm sau)</option>
+                                <option value="10">Tháng 10 (01/10 - 30/09 năm sau)</option>
+                            </select>
+                            <span asp-validation-for="ThangBatDauNienDo" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="mb-0 text-dark fw-bold"><i class="bi bi-calculator text-success me-2"></i>Phương Pháp Kế Toán & Tính Thuế</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label asp-for="PhuongPhapThueGtgt" class="form-label fw-semibold"></label>
+                            <select asp-for="PhuongPhapThueGtgt" class="form-select" asp-items="Html.GetEnumSelectList<ninjaTax.Models.Entities.PhuongPhapTinhThueGtgt>()"></select>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="PhuongPhapXuatKho" class="form-label fw-semibold"></label>
+                            <select asp-for="PhuongPhapXuatKho" class="form-select" asp-items="Html.GetEnumSelectList<ninjaTax.Models.Entities.PhuongPhapGiaXuatKho>()"></select>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="PhuongPhapKhauHaoTscd" class="form-label fw-semibold"></label>
+                            <select asp-for="PhuongPhapKhauHaoTscd" class="form-select" asp-items="Html.GetEnumSelectList<ninjaTax.Models.Entities.PhuongPhapKhauHao>()"></select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="mb-0 text-dark fw-bold"><i class="bi bi-shield-exclamation text-warning me-2"></i>Cảnh Báo Kiểm Soát & Rủi Ro Kế Toán</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" asp-for="CanhBaoChiVuotQuy">
+                        <label class="form-check-label fw-semibold" asp-for="CanhBaoChiVuotQuy"></label>
+                        <div class="form-text small">Ngăn chặn hoặc cảnh báo khi phiếu chi tiền mặt vượt quá số tồn quỹ thực tế (tránh bẫy âm quỹ 111).</div>
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" asp-for="CanhBaoXuatAmKho">
+                        <label class="form-check-label fw-semibold" asp-for="CanhBaoXuatAmKho"></label>
+                        <div class="form-text small">Cảnh báo khi xuất kho vật tư, hàng hóa vượt quá số lượng tồn khả dụng (tránh bẫy âm kho 156/152).</div>
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" asp-for="CanhBaoHoaDonTren20TrTienMat">
+                        <label class="form-check-label fw-semibold" asp-for="CanhBaoHoaDonTren20TrTienMat"></label>
+                        <div class="form-text small">Cảnh báo khi thanh toán bằng tiền mặt hóa đơn &ge; 20 triệu đồng (không đủ điều kiện khấu trừ thuế GTGT và tính chi phí hợp lý TNDN).</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary px-4 py-2 fw-bold">
+                    <i class="bi bi-save me-1"></i>Lưu Thiết Lập Kế Toán
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary px-4 py-2">Hủy</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Cột Quản Lý Khóa Sổ Sâu -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0 border-top border-4 border-danger">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h5 class="mb-0 fw-bold text-danger"><i class="bi bi-lock-fill me-2"></i>Chốt & Khóa Sổ Kế Toán</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.NgayKhoaSo.HasValue)
+                {
+                    <div class="p-3 bg-danger-subtle text-danger rounded mb-3">
+                        <div class="fw-bold mb-1"><i class="bi bi-shield-lock-fill me-1"></i>TRẠNG THÁI: ĐÃ KHÓA SỔ</div>
+                        <div>Khóa đến ngày: <strong>@Model.NgayKhoaSo.Value.ToString("dd/MM/yyyy")</strong></div>
+                    </div>
+                    <p class="small text-muted mb-3">
+                        Khi đã khóa sổ, bất kỳ hành vi ghi sổ, sửa chứng từ, hoặc xóa bút toán trước và trong ngày trên đều bị chặn đứng ở tầng Domain Service (`ChoPhepGhiSo`).
+                    </p>
+                    <form asp-action="UnlockBook" method="post" onsubmit="return confirm('Mở khóa sổ sẽ hủy bỏ ngày khóa sổ hiện tại. Tiếp tục?');">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-danger w-100">
+                            <i class="bi bi-unlock-fill me-1"></i>Mở Khóa Sổ Kế Toán
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <div class="p-3 bg-warning-subtle text-warning-emphasis rounded mb-3">
+                        <div class="fw-bold mb-1"><i class="bi bi-unlock me-1"></i>TRẠNG THÁI: ĐANG MỞ SỔ</div>
+                        <div>Chưa thiết lập ngày khóa sổ.</div>
+                    </div>
+                    <p class="small text-muted mb-3">
+                        Chọn ngày cuối kỳ (tháng, quý hoặc năm) đã hoàn tất quyết toán để khóa sổ, bảo vệ tính toàn vẹn của Báo cáo tài chính.
+                    </p>
+                    <form asp-action="LockBook" method="post">
+                        @Html.AntiForgeryToken()
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Chọn ngày khóa sổ:</label>
+                            <input type="date" name="ngayKhoaSo" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                        </div>
+                        <button type="submit" class="btn btn-danger w-100" onclick="return confirm('Bạn có chắc chắn muốn khóa sổ đến ngày này?');">
+                            <i class="bi bi-lock-fill me-1"></i>Tiến Hành Khóa Sổ
+                        </button>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,113 @@
+@model ninjaTax.Models.ViewModels.BranchEditViewModel
+@{
+    ViewData["Title"] = "Thêm Chi Nhánh Mới";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1 text-primary"><i class="bi bi-plus-circle me-2"></i>Thêm Chi Nhánh / Đơn Vị Mới</h2>
+        <span class="text-muted">Khai báo chi nhánh hạch toán phụ thuộc, độc lập hoặc địa điểm kinh doanh</span>
+    </div>
+    <div>
+        <a asp-action="Branches" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Quay lại</a>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-4">
+        <form asp-action="CreateBranch" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <label asp-for="MaChiNhanh" class="form-label fw-semibold"></label>
+                    <input asp-for="MaChiNhanh" class="form-control" placeholder="CN-HCM-01" />
+                    <span asp-validation-for="MaChiNhanh" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="TenChiNhanh" class="form-label fw-semibold"></label>
+                    <input asp-for="TenChiNhanh" class="form-control" placeholder="Chi nhánh Hồ Chí Minh" />
+                    <span asp-validation-for="TenChiNhanh" class="text-danger small"></span>
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="LoaiChiNhanh" class="form-label fw-semibold"></label>
+                    <select asp-for="LoaiChiNhanh" class="form-select" asp-items="Html.GetEnumSelectList<ninjaTax.Models.Entities.LoaiChiNhanh>()"></select>
+                    <span asp-validation-for="LoaiChiNhanh" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-4">
+                    <label asp-for="MaSoThueChiNhanh" class="form-label fw-semibold"></label>
+                    <input asp-for="MaSoThueChiNhanh" class="form-control font-monospace" placeholder="XXXXXXXXXX-YYY (13 số)" />
+                    <div class="form-text small">Mã số thuế chi nhánh theo chuẩn 13 số (10 số công ty + gạch nối + 3 số định danh chi nhánh).</div>
+                    <span asp-validation-for="MaSoThueChiNhanh" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="NguoiDungDau" class="form-label fw-semibold"></label>
+                    <input asp-for="NguoiDungDau" class="form-control" placeholder="Giám đốc chi nhánh" />
+                    <span asp-validation-for="NguoiDungDau" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="SoDienThoai" class="form-label fw-semibold"></label>
+                    <input asp-for="SoDienThoai" class="form-control" />
+                    <span asp-validation-for="SoDienThoai" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-8">
+                    <label asp-for="DiaChi" class="form-label fw-semibold"></label>
+                    <input asp-for="DiaChi" class="form-control" />
+                    <span asp-validation-for="DiaChi" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="TinhThanhPho" class="form-label fw-semibold"></label>
+                    <input asp-for="TinhThanhPho" class="form-control" placeholder="Vd: TP. Hồ Chí Minh" />
+                    <span asp-validation-for="TinhThanhPho" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-4">
+                    <label asp-for="MaCoQuanThueQuanLyRieng" class="form-label fw-semibold"></label>
+                    <input asp-for="MaCoQuanThueQuanLyRieng" class="form-control" placeholder="Để trống nếu cùng CQT trụ sở" />
+                </div>
+                <div class="col-md-8">
+                    <label asp-for="TenCoQuanThueQuanLyRieng" class="form-label fw-semibold"></label>
+                    <input asp-for="TenCoQuanThueQuanLyRieng" class="form-control" placeholder="Vd: Chi cục Thuế Quận 1" />
+                </div>
+            </div>
+
+            <div class="card bg-light border-0 p-3 mb-4">
+                <h6 class="fw-bold mb-3 text-secondary"><i class="bi bi-shield-check me-2"></i>Quy Chế Kê Khai Thuế Của Chi Nhánh</h6>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" asp-for="KeKhaiThueGtgtRieng">
+                            <label class="form-check-label fw-semibold" asp-for="KeKhaiThueGtgtRieng"></label>
+                            <div class="form-text small">Chi nhánh độc lập hoặc chi nhánh phụ thuộc khác tỉnh kê khai mẫu 01/GTGT riêng.</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" asp-for="KeKhaiThueTncnRieng">
+                            <label class="form-check-label fw-semibold" asp-for="KeKhaiThueTncnRieng"></label>
+                            <div class="form-text small">Chi nhánh trả lương trực tiếp và kê khai quyết toán thuế TNCN riêng cho người lao động tại chi nhánh.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-check form-switch mb-4">
+                <input class="form-check-input" type="checkbox" asp-for="DangHoatDong">
+                <label class="form-check-label fw-semibold" asp-for="DangHoatDong"></label>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary px-4 fw-bold"><i class="bi bi-check-lg me-1"></i>Thêm Chi Nhánh</button>
+                <a asp-action="Branches" class="btn btn-outline-secondary px-4">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

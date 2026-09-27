@@ -436,9 +436,16 @@ public class FinancialReportService : IFinancialReportService
                       await TinhPhatSinhCoAsync("3386", new DateTime(namTaiChinh, 1, 1), denNgay);
         var thue = await TinhPhatSinhNoAsync("333", new DateTime(namTaiChinh, 1, 1), denNgay);
 
+        var company = await _context.ThongTinDoanhNghieps.FirstOrDefaultAsync();
+
         return new ThuyetMinhBctcViewModel
         {
             NamTaiChinh = namTaiChinh,
+            TenDoanhNghiep = company?.TenDoanhNghiep ?? "CÔNG TY CỔ PHẦN CÔNG NGHỆ NINJATAX VIỆT NAM",
+            MaSoThue = company?.MaSoThue ?? "0109998883",
+            DiaChi = company?.DiaChiTruSo ?? "Hà Nội, Việt Nam",
+            CheDoKeToan = "Thông tư 99/2025/TT-BTC",
+            DonViTienTe = "VND",
             NguyenGiaTscd = nguyenGia,
             HaoMonLuyKeTscd = haoMon,
             GiaTriConLaiTscd = nguyenGia - haoMon,

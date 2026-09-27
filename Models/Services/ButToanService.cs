@@ -113,6 +113,13 @@ public class ButToanService : IButToanService
             return (false, loi, null);
         }
 
+        // Kiểm tra Khóa sổ kế toán (Phase 6)
+        var cauHinhKeToan = await _context.CauHinhKeToans.FirstOrDefaultAsync();
+        if (cauHinhKeToan != null && !cauHinhKeToan.ChoPhepGhiSo(butToan.NgayHachToan))
+        {
+            return (false, $"Vi phạm khóa sổ kế toán: Kỳ kế toán đã khóa sổ đến hết ngày {cauHinhKeToan.NgayKhoaSo:dd/MM/yyyy}. Không thể lập chứng từ hạch toán ngày {butToan.NgayHachToan:dd/MM/yyyy}.", null);
+        }
+
         // Kiểm tra tài khoản trong CSDL: cấm TK 911 và kiểm tra trạng thái hoạt động
         var taiKhoanIds = butToan.ChiTietButToans
             .SelectMany(c => new[] { c.TaiKhoanNoId, c.TaiKhoanCoId })
@@ -181,6 +188,13 @@ public class ButToanService : IButToanService
             return (false, "Chứng từ đã ở trạng thái Ghi sổ.");
         }
 
+        // Kiểm tra Khóa sổ kế toán (Phase 6)
+        var cauHinhKeToan = await _context.CauHinhKeToans.FirstOrDefaultAsync();
+        if (cauHinhKeToan != null && !cauHinhKeToan.ChoPhepGhiSo(butToan.NgayHachToan))
+        {
+            return (false, $"Vi phạm khóa sổ kế toán: Kỳ kế toán đã khóa sổ đến hết ngày {cauHinhKeToan.NgayKhoaSo:dd/MM/yyyy}. Không thể ghi sổ chứng từ ngày {butToan.NgayHachToan:dd/MM/yyyy}.");
+        }
+
         var (hopLe, loi) = KiemTraHopLe(butToan);
         if (!hopLe)
         {
@@ -207,6 +221,13 @@ public class ButToanService : IButToanService
             return (false, "Chứng từ chưa được ghi sổ.");
         }
 
+        // Kiểm tra Khóa sổ kế toán (Phase 6)
+        var cauHinhKeToan = await _context.CauHinhKeToans.FirstOrDefaultAsync();
+        if (cauHinhKeToan != null && !cauHinhKeToan.ChoPhepGhiSo(butToan.NgayHachToan))
+        {
+            return (false, $"Vi phạm khóa sổ kế toán: Kỳ kế toán đã khóa sổ đến hết ngày {cauHinhKeToan.NgayKhoaSo:dd/MM/yyyy}. Không thể bỏ ghi sổ chứng từ ngày {butToan.NgayHachToan:dd/MM/yyyy}.");
+        }
+
         butToan.TrangThai = TrangThaiButToan.ChuaGhiSo;
         await _context.SaveChangesAsync();
 
@@ -220,6 +241,13 @@ public class ButToanService : IButToanService
         if (butToan == null)
         {
             return (false, "Không tìm thấy chứng từ cần xóa.");
+        }
+
+        // Kiểm tra Khóa sổ kế toán (Phase 6)
+        var cauHinhKeToan = await _context.CauHinhKeToans.FirstOrDefaultAsync();
+        if (cauHinhKeToan != null && !cauHinhKeToan.ChoPhepGhiSo(butToan.NgayHachToan))
+        {
+            return (false, $"Vi phạm khóa sổ kế toán: Kỳ kế toán đã khóa sổ đến hết ngày {cauHinhKeToan.NgayKhoaSo:dd/MM/yyyy}. Không thể xóa chứng từ ngày {butToan.NgayHachToan:dd/MM/yyyy}.");
         }
 
         if (butToan.TrangThai == TrangThaiButToan.DaGhiSo)

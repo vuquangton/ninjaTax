@@ -1,0 +1,151 @@
+@model List<ninjaTax.Models.Entities.ChiNhanh>
+@{
+    ViewData["Title"] = "Quản Lý Danh Sách Chi Nhánh";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1 text-primary"><i class="bi bi-diagram-3 me-2"></i>Cơ Cấu Chi Nhánh & Đơn Vị Trực Thuộc</h2>
+        <span class="text-muted">Quản lý trụ sở chính, chi nhánh phụ thuộc, độc lập và thiết lập kê khai thuế phân tán</span>
+    </div>
+    <div>
+        <a asp-action="CreateBranch" class="btn btn-success"><i class="bi bi-plus-circle me-1"></i>Thêm Chi Nhánh Mới</a>
+        <a asp-action="Index" class="btn btn-outline-secondary ms-1"><i class="bi bi-arrow-left me-1"></i>Hồ sơ công ty</a>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 120px;">Mã Đơn Vị</th>
+                        <th>Tên Chi Nhánh & Địa Chỉ</th>
+                        <th>Loại Hình</th>
+                        <th>Mã Số Thuế 13 Số</th>
+                        <th>Cơ Chế Kê Khai Thuế</th>
+                        <th>Cơ Quan Thuế Riêng</th>
+                        <th>Trạng Thái</th>
+                        <th style="width: 140px;" class="text-end pe-3">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model == null || !Model.Any())
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-4 text-muted">Chưa có chi nhánh nào được khai báo.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var b in Model)
+                        {
+                            <tr>
+                                <td class="fw-bold text-primary">@b.MaChiNhanh</td>
+                                <td>
+                                    <div class="fw-bold">@b.TenChiNhanh</div>
+                                    <div class="small text-muted"><i class="bi bi-geo-alt me-1"></i>@(b.DiaChi ?? "-")</div>
+                                    @if (!string.IsNullOrEmpty(b.NguoiDungDau))
+                                    {
+                                        <div class="small text-secondary"><i class="bi bi-person me-1"></i>Người đứng đầu: @b.NguoiDungDau</div>
+                                    }
+                                </td>
+                                <td>
+                                    @switch (b.LoaiChiNhanh)
+                                    {
+                                        case ninjaTax.Models.Entities.LoaiChiNhanh.TruSoChinh:
+                                            <span class="badge bg-primary px-2 py-1"><i class="bi bi-building me-1"></i>Trụ sở chính</span>
+                                            break;
+                                        case ninjaTax.Models.Entities.LoaiChiNhanh.DocLap:
+                                            <span class="badge bg-warning text-dark px-2 py-1"><i class="bi bi-bank me-1"></i>Hạch toán độc lập</span>
+                                            break;
+                                        default:
+                                            <span class="badge bg-secondary px-2 py-1"><i class="bi bi-diagram-2 me-1"></i>Hạch toán phụ thuộc</span>
+                                            break;
+                                    }
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(b.MaSoThueChiNhanh))
+                                    {
+                                        <code class="fw-bold">@b.MaSoThueChiNhanh</code>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (b.KeKhaiThueGtgtRieng)
+                                    {
+                                        <span class="badge bg-info-subtle text-info border border-info-subtle me-1">Khai GTGT riêng</span>
+                                    }
+                                    @if (b.KeKhaiThueTncnRieng)
+                                    {
+                                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">Khai TNCN riêng</span>
+                                    }
+                                    @if (!b.KeKhaiThueGtgtRieng && !b.KeKhaiThueTncnRieng)
+                                    {
+                                        <span class="badge bg-light text-secondary border">Kê khai tập trung tại Trụ sở</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(b.TenCoQuanThueQuanLyRieng))
+                                    {
+                                        <div class="small fw-semibold">@b.TenCoQuanThueQuanLyRieng</div>
+                                        <div class="small text-muted">Mã: @b.MaCoQuanThueQuanLyRieng</div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">Cơ quan thuế Trụ sở</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (b.DangHoatDong)
+                                    {
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle">Đang hoạt động</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Tạm ngừng</span>
+                                    }
+                                </td>
+                                <td class="text-end pe-3">
+                                    <a asp-action="EditBranch" asp-route-id="@b.Id" class="btn btn-sm btn-outline-primary" title="Sửa chi nhánh">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    @if (b.LoaiChiNhanh != ninjaTax.Models.Entities.LoaiChiNhanh.TruSoChinh)
+                                    {
+                                        <form asp-action="DeleteBranch" asp-route-id="@b.Id" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa chi nhánh này?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa chi nhánh">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+

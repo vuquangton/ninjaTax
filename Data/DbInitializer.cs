@@ -31,13 +31,10 @@ public static class DbInitializer
 
     public static async Task SeedDataAsync(AppDbContext context)
     {
-        if (await context.TaiKhoans.AnyAsync())
+        if (!await context.TaiKhoans.AnyAsync())
         {
-            return; // Đã có dữ liệu, không nạp lại
-        }
-
-        // Danh mục tài khoản chuẩn TT99 (Nghiêm cấm TK 911)
-        var taiKhoans = new List<TaiKhoan>
+            // Danh mục tài khoản chuẩn TT99 (Nghiêm cấm TK 911)
+            var taiKhoans = new List<TaiKhoan>
         {
             // Nhóm 1: Tài sản ngắn hạn
             new() { MaTaiKhoan = "111", TenTaiKhoan = "Tiền mặt", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuNo, LaTaiKhoanSoCai = true },
@@ -130,6 +127,7 @@ public static class DbInitializer
 
         await context.DoiTuongs.AddRangeAsync(doiTuongs);
         await context.SaveChangesAsync();
+        }
 
         // Nạp danh mục Vật tư hàng hóa mẫu nếu chưa có
         if (!await context.VatTuHangHoas.AnyAsync())
@@ -189,6 +187,64 @@ public static class DbInitializer
             };
 
             await context.VatTuHangHoas.AddRangeAsync(items);
+            await context.SaveChangesAsync();
+        }
+
+        // Khởi tạo thông tin Doanh nghiệp & Chi nhánh Trụ sở chính ban đầu (Phase 6)
+        if (!await context.ThongTinDoanhNghieps.AnyAsync())
+        {
+            var company = new ThongTinDoanhNghiep
+            {
+                MaDoanhNghiep = "DN01",
+                TenDoanhNghiep = "CÔNG TY CỔ PHẦN CÔNG NGHỆ NINJATAX VIỆT NAM",
+                TenGiaoDich = "NINJATAX JSC",
+                TenTiengAnh = "NINJATAX VIETNAM TECHNOLOGY JOINT STOCK COMPANY",
+                MaSoThue = "0109998883",
+                DiaChiTruSo = "Tầng 10, Tòa nhà Keangnam Landmark 72, Đường Phạm Hùng, Q. Nam Từ Liêm, TP. Hà Nội",
+                TinhThanhPho = "TP. Hà Nội",
+                QuanHuyen = "Quận Nam Từ Liêm",
+                MaCoQuanThueQuanLy = "101",
+                TenCoQuanThueQuanLy = "Cục Thuế Thành phố Hà Nội",
+                NguoiDaiDienPhapLuat = "Nguyễn Văn Doanh",
+                ChucDanhNguoiDaiDien = "Tổng Giám Đốc",
+                GiamDoc = "Nguyễn Văn Doanh",
+                KeToanTruong = "Trần Thị Kế Toán",
+                NguoiLapBieu = "Lê Văn Lập Biểu",
+                ThuQuy = "Phạm Thị Thủ Quỹ",
+                SoDienThoai = "024.3999.8888",
+                Email = "ketoan@ninjatax.vn",
+                VonDieuLe = 20_000_000_000m,
+                NgayThanhLap = new DateTime(2020, 1, 1)
+            };
+
+            var hoBranch = new ChiNhanh
+            {
+                MaChiNhanh = "HO-01",
+                TenChiNhanh = "Trụ sở chính Hà Nội",
+                MaSoThueChiNhanh = company.MaSoThue,
+                LoaiChiNhanh = LoaiChiNhanh.TruSoChinh,
+                DiaChi = company.DiaChiTruSo,
+                TinhThanhPho = company.TinhThanhPho,
+                DangHoatDong = true
+            };
+            company.ChiNhanhs.Add(hoBranch);
+
+            var accountingConfig = new CauHinhKeToan
+            {
+                CheDoKeToan = CheDoKeToanDoanhNghiep.TT99_2025,
+                DonViTienTe = "VND",
+                NgayBatDauNienDo = 1,
+                ThangBatDauNienDo = 1,
+                PhuongPhapThueGtgt = PhuongPhapTinhThueGtgt.KhauTru,
+                PhuongPhapXuatKho = PhuongPhapGiaXuatKho.BinhQuanCuoiKy,
+                PhuongPhapKhauHaoTscd = PhuongPhapKhauHao.DuongThang,
+                CanhBaoChiVuotQuy = true,
+                CanhBaoXuatAmKho = true,
+                CanhBaoHoaDonTren20TrTienMat = true
+            };
+            company.CauHinhKeToan = accountingConfig;
+
+            await context.ThongTinDoanhNghieps.AddAsync(company);
             await context.SaveChangesAsync();
         }
     }

@@ -1,0 +1,189 @@
+@model ninjaTax.Models.ViewModels.CompanyEditViewModel
+@{
+    ViewData["Title"] = "Cập Nhật Hồ Sơ Doanh Nghiệp";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1 text-primary"><i class="bi bi-pencil-square me-2"></i>Cập Nhật Hồ Sơ Doanh Nghiệp</h2>
+        <span class="text-muted">Thông tin định danh pháp lý phục vụ in ấn hóa đơn và nộp BCTC TT99</span>
+    </div>
+    <div>
+        <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Quay lại</a>
+    </div>
+</div>
+
+<form asp-action="Edit" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="row g-4">
+        <!-- Thông tin định danh doanh nghiệp -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="mb-0 text-dark fw-bold"><i class="bi bi-card-text text-primary me-2"></i>Thông Tin Pháp Lý</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label asp-for="MaDoanhNghiep" class="form-label fw-semibold"></label>
+                            <input asp-for="MaDoanhNghiep" class="form-control" />
+                            <span asp-validation-for="MaDoanhNghiep" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-8">
+                            <label asp-for="TenDoanhNghiep" class="form-label fw-semibold"></label>
+                            <input asp-for="TenDoanhNghiep" class="form-control" />
+                            <span asp-validation-for="TenDoanhNghiep" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="TenGiaoDich" class="form-label fw-semibold"></label>
+                            <input asp-for="TenGiaoDich" class="form-control" placeholder="Tên viết tắt giao dịch" />
+                            <span asp-validation-for="TenGiaoDich" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="TenTiengAnh" class="form-label fw-semibold"></label>
+                            <input asp-for="TenTiengAnh" class="form-control" placeholder="Tên tiếng Anh quốc tế" />
+                            <span asp-validation-for="TenTiengAnh" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="MaSoThue" class="form-label fw-semibold"></label>
+                            <input asp-for="MaSoThue" class="form-control font-monospace" placeholder="10 chữ số (vd: 0109998883)" />
+                            <div class="form-text small">Mã số thuế doanh nghiệp phải tuân thủ thuật toán Modulo 11 theo quy định Bộ Tài chính.</div>
+                            <span asp-validation-for="MaSoThue" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="VonDieuLe" class="form-label fw-semibold"></label>
+                            <div class="input-group">
+                                <input asp-for="VonDieuLe" class="form-control" type="number" step="1000000" />
+                                <span class="input-group-text">VND</span>
+                            </div>
+                            <span asp-validation-for="VonDieuLe" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="DiaChiTruSo" class="form-label fw-semibold"></label>
+                            <input asp-for="DiaChiTruSo" class="form-control" />
+                            <span asp-validation-for="DiaChiTruSo" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="TinhThanhPho" class="form-label fw-semibold"></label>
+                            <input asp-for="TinhThanhPho" class="form-control" />
+                            <span asp-validation-for="TinhThanhPho" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="QuanHuyen" class="form-label fw-semibold"></label>
+                            <input asp-for="QuanHuyen" class="form-control" />
+                            <span asp-validation-for="QuanHuyen" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="MaCoQuanThueQuanLy" class="form-label fw-semibold"></label>
+                            <input asp-for="MaCoQuanThueQuanLy" class="form-control" placeholder="Vd: 101" />
+                            <span asp-validation-for="MaCoQuanThueQuanLy" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-8">
+                            <label asp-for="TenCoQuanThueQuanLy" class="form-label fw-semibold"></label>
+                            <input asp-for="TenCoQuanThueQuanLy" class="form-control" placeholder="Vd: Cục Thuế Thành phố Hà Nội" />
+                            <span asp-validation-for="TenCoQuanThueQuanLy" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="NgayThanhLap" class="form-label fw-semibold"></label>
+                            <input asp-for="NgayThanhLap" class="form-control" type="date" />
+                            <span asp-validation-for="NgayThanhLap" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nhân sự ký duyệt -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="mb-0 text-dark fw-bold"><i class="bi bi-person-badge text-success me-2"></i>Người Ký Duyệt Báo Cáo Tài Chính & Thuế</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="NguoiDaiDienPhapLuat" class="form-label fw-semibold"></label>
+                            <input asp-for="NguoiDaiDienPhapLuat" class="form-control" />
+                            <span asp-validation-for="NguoiDaiDienPhapLuat" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="ChucDanhNguoiDaiDien" class="form-label fw-semibold"></label>
+                            <input asp-for="ChucDanhNguoiDaiDien" class="form-control" placeholder="Tổng Giám Đốc / Giám Đốc" />
+                            <span asp-validation-for="ChucDanhNguoiDaiDien" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="GiamDoc" class="form-label fw-semibold"></label>
+                            <input asp-for="GiamDoc" class="form-control" />
+                            <span asp-validation-for="GiamDoc" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="KeToanTruong" class="form-label fw-semibold"></label>
+                            <input asp-for="KeToanTruong" class="form-control" />
+                            <span asp-validation-for="KeToanTruong" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="NguoiLapBieu" class="form-label fw-semibold"></label>
+                            <input asp-for="NguoiLapBieu" class="form-control" />
+                            <span asp-validation-for="NguoiLapBieu" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="ThuQuy" class="form-label fw-semibold"></label>
+                            <input asp-for="ThuQuy" class="form-control" />
+                            <span asp-validation-for="ThuQuy" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cột thông tin liên hệ & nút Lưu -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="mb-0 text-dark fw-bold"><i class="bi bi-telephone text-info me-2"></i>Liên Hệ & Kênh Số</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label asp-for="SoDienThoai" class="form-label fw-semibold"></label>
+                        <input asp-for="SoDienThoai" class="form-control" />
+                        <span asp-validation-for="SoDienThoai" class="text-danger small"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label fw-semibold"></label>
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Website" class="form-label fw-semibold"></label>
+                        <input asp-for="Website" class="form-control" />
+                        <span asp-validation-for="Website" class="text-danger small"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold mb-2">
+                        <i class="bi bi-check-lg me-1"></i>Lưu Thông Tin Doanh Nghiệp
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-secondary w-100">Hủy</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

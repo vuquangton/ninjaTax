@@ -1,0 +1,116 @@
+@model ninjaTax.Models.ViewModels.BranchEditViewModel
+@{
+    ViewData["Title"] = "Cập Nhật Chi Nhánh";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1 text-primary"><i class="bi bi-pencil me-2"></i>Cập Nhật Chi Nhánh: @Model.TenChiNhanh</h2>
+        <span class="text-muted">Chỉnh sửa thông tin đơn vị và quy chế kê khai thuế</span>
+    </div>
+    <div>
+        <a asp-action="Branches" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Quay lại danh sách</a>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-4">
+        <form asp-action="EditBranch" asp-route-id="@Model.Id" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="DoanhNghiepId" />
+
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <label asp-for="MaChiNhanh" class="form-label fw-semibold"></label>
+                    <input asp-for="MaChiNhanh" class="form-control" />
+                    <span asp-validation-for="MaChiNhanh" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="TenChiNhanh" class="form-label fw-semibold"></label>
+                    <input asp-for="TenChiNhanh" class="form-control" />
+                    <span asp-validation-for="TenChiNhanh" class="text-danger small"></span>
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="LoaiChiNhanh" class="form-label fw-semibold"></label>
+                    <select asp-for="LoaiChiNhanh" class="form-select" asp-items="Html.GetEnumSelectList<ninjaTax.Models.Entities.LoaiChiNhanh>()"></select>
+                    <span asp-validation-for="LoaiChiNhanh" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-4">
+                    <label asp-for="MaSoThueChiNhanh" class="form-label fw-semibold"></label>
+                    <input asp-for="MaSoThueChiNhanh" class="form-control font-monospace" placeholder="XXXXXXXXXX-YYY" />
+                    <div class="form-text small">Mã số thuế chi nhánh theo chuẩn 13 số.</div>
+                    <span asp-validation-for="MaSoThueChiNhanh" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="NguoiDungDau" class="form-label fw-semibold"></label>
+                    <input asp-for="NguoiDungDau" class="form-control" />
+                    <span asp-validation-for="NguoiDungDau" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="SoDienThoai" class="form-label fw-semibold"></label>
+                    <input asp-for="SoDienThoai" class="form-control" />
+                    <span asp-validation-for="SoDienThoai" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-8">
+                    <label asp-for="DiaChi" class="form-label fw-semibold"></label>
+                    <input asp-for="DiaChi" class="form-control" />
+                    <span asp-validation-for="DiaChi" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="TinhThanhPho" class="form-label fw-semibold"></label>
+                    <input asp-for="TinhThanhPho" class="form-control" />
+                    <span asp-validation-for="TinhThanhPho" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-4">
+                    <label asp-for="MaCoQuanThueQuanLyRieng" class="form-label fw-semibold"></label>
+                    <input asp-for="MaCoQuanThueQuanLyRieng" class="form-control" />
+                </div>
+                <div class="col-md-8">
+                    <label asp-for="TenCoQuanThueQuanLyRieng" class="form-label fw-semibold"></label>
+                    <input asp-for="TenCoQuanThueQuanLyRieng" class="form-control" />
+                </div>
+            </div>
+
+            <div class="card bg-light border-0 p-3 mb-4">
+                <h6 class="fw-bold mb-3 text-secondary"><i class="bi bi-shield-check me-2"></i>Quy Chế Kê Khai Thuế Của Chi Nhánh</h6>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" asp-for="KeKhaiThueGtgtRieng">
+                            <label class="form-check-label fw-semibold" asp-for="KeKhaiThueGtgtRieng"></label>
+                            <div class="form-text small">Chi nhánh độc lập hoặc chi nhánh phụ thuộc khác tỉnh kê khai mẫu 01/GTGT riêng.</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" asp-for="KeKhaiThueTncnRieng">
+                            <label class="form-check-label fw-semibold" asp-for="KeKhaiThueTncnRieng"></label>
+                            <div class="form-text small">Chi nhánh trả lương trực tiếp và kê khai quyết toán thuế TNCN riêng cho người lao động tại chi nhánh.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-check form-switch mb-4">
+                <input class="form-check-input" type="checkbox" asp-for="DangHoatDong">
+                <label class="form-check-label fw-semibold" asp-for="DangHoatDong"></label>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary px-4 fw-bold"><i class="bi bi-save me-1"></i>Lưu Thay Đổi</button>
+                <a asp-action="Branches" class="btn btn-outline-secondary px-4">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

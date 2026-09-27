@@ -52,6 +52,12 @@ public class AppDbContext : DbContext
     public DbSet<TaxAuditRiskShieldReport> TaxAuditRiskShieldReports => Set<TaxAuditRiskShieldReport>();
     public DbSet<TaxRiskFinding> TaxRiskFindings => Set<TaxRiskFinding>();
 
+    // Phase 6: Thông tin Doanh nghiệp, Đa chi nhánh & Cấu hình Kế toán
+    public DbSet<ThongTinDoanhNghiep> ThongTinDoanhNghieps => Set<ThongTinDoanhNghiep>();
+    public DbSet<ChiNhanh> ChiNhanhs => Set<ChiNhanh>();
+    public DbSet<CauHinhKeToan> CauHinhKeToans => Set<CauHinhKeToan>();
+    public DbSet<CauHinhHoaDonDienTu> CauHinhHoaDonDienTus => Set<CauHinhHoaDonDienTu>();
+
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         base.ConfigureConventions(configurationBuilder);
@@ -930,5 +936,42 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<BangKeQttTncn052>(entity => entity.ToTable("BangKeQttTncn052"));
         modelBuilder.Entity<TaxAuditRiskShieldReport>(entity => entity.ToTable("TaxAuditRiskShieldReport"));
         modelBuilder.Entity<TaxRiskFinding>(entity => entity.ToTable("TaxRiskFinding"));
+
+        // ========================================================
+        // 21. Thông tin Doanh nghiệp & Đa chi nhánh (Phase 6)
+        // ========================================================
+        modelBuilder.Entity<ThongTinDoanhNghiep>(entity =>
+        {
+            entity.ToTable("ThongTinDoanhNghiep");
+            entity.HasIndex(e => e.MaSoThue).IsUnique();
+        });
+
+        modelBuilder.Entity<ChiNhanh>(entity =>
+        {
+            entity.ToTable("ChiNhanh");
+            entity.HasIndex(e => new { e.DoanhNghiepId, e.MaChiNhanh }).IsUnique();
+            entity.HasOne(e => e.DoanhNghiep)
+                .WithMany(d => d.ChiNhanhs)
+                .HasForeignKey(e => e.DoanhNghiepId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<CauHinhKeToan>(entity =>
+        {
+            entity.ToTable("CauHinhKeToan");
+            entity.HasOne(e => e.DoanhNghiep)
+                .WithOne(d => d.CauHinhKeToan)
+                .HasForeignKey<CauHinhKeToan>(e => e.DoanhNghiepId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<CauHinhHoaDonDienTu>(entity =>
+        {
+            entity.ToTable("CauHinhHoaDonDienTu");
+            entity.HasOne(e => e.ChiNhanh)
+                .WithOne(c => c.CauHinhHddt)
+                .HasForeignKey<CauHinhHoaDonDienTu>(e => e.ChiNhanhId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
     }
 }
