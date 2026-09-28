@@ -33,6 +33,7 @@ builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IPeriodClosingService, PeriodClosingService>();
 builder.Services.AddScoped<IGeneralLedgerService, GeneralLedgerService>();
 builder.Services.AddScoped<ISubledgerReconciliationService, SubledgerReconciliationService>();
+builder.Services.AddScoped<ITaiKhoanService, TaiKhoanService>();
 
 var app = builder.Build();
 

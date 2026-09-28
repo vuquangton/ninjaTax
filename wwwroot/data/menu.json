@@ -171,6 +171,12 @@
           "icon": "bi bi-sliders",
           "controller": "Company",
           "action": "AccountingConfig"
+        },
+        {
+          "title": "Hệ thống tài khoản (COA)",
+          "icon": "bi bi-diagram-3",
+          "controller": "TaiKhoan",
+          "action": "Index"
         }
       ]
     }

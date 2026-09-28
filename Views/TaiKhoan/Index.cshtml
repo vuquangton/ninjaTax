@@ -1,0 +1,161 @@
+@model List<ninjaTax.Models.ViewModels.TaiKhoanViewModel>
+@{
+    ViewData["Title"] = "Hệ Thống Tài Khoản Kế Toán (TT99)";
+    var loaiTk = ViewBag.LoaiTaiKhoan as ninjaTax.Models.Entities.LoaiTaiKhoan?;
+    var timKiem = ViewBag.TimKiem as string;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h4 class="mb-1"><i class="bi bi-diagram-3 text-primary me-2"></i>Hệ Thống Tài Khoản Kế Toán (COA)</h4>
+        <p class="text-muted small mb-0">Danh mục chuẩn Thông tư 99/2025/TT-BTC & Phân cấp tài khoản doanh nghiệp</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Create" class="btn btn-primary btn-sm px-3"><i class="bi bi-plus-circle me-1"></i>Thêm tài khoản (F2)</a>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show py-2" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show py-2" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="card mb-3 shadow-sm border-0">
+    <div class="card-body py-2">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <input type="text" name="timKiem" class="form-control form-control-sm" placeholder="Tìm theo số hiệu hoặc tên tài khoản..." value="@timKiem" />
+            </div>
+            <div class="col-md-3">
+                <select name="loaiTaiKhoan" class="form-select form-select-sm">
+                    <option value="">-- Tất cả nhóm tài khoản --</option>
+                    @foreach (ninjaTax.Models.Entities.LoaiTaiKhoan l in Enum.GetValues(typeof(ninjaTax.Models.Entities.LoaiTaiKhoan)))
+                    {
+                        <option value="@l" selected="@(loaiTk == l)">Nhóm @((int)l): @l.ToString()</option>
+                    }
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-outline-primary btn-sm"><i class="bi bi-search me-1"></i>Lọc</button>
+                <a asp-action="Index" class="btn btn-outline-secondary btn-sm ms-1">Xóa lọc</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle mb-0 text-nowrap">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 140px;">Số hiệu TK</th>
+                        <th>Tên tài khoản kế toán</th>
+                        <th class="text-center" style="width: 80px;">Cấp bậc</th>
+                        <th>Nhóm phân loại</th>
+                        <th>Tính chất số dư</th>
+                        <th class="text-center" style="width: 130px;">Hạch toán?</th>
+                        <th class="text-center" style="width: 120px;">Trạng thái</th>
+                        <th class="text-end" style="width: 140px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-4 text-muted">
+                                Không tìm thấy tài khoản phù hợp với điều kiện lọc.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var row in Model)
+                        {
+                            var paddingLeft = (row.BacTaiKhoan - 1) * 24;
+                            <tr class="@(row.LaTaiKhoanSoCai ? "fw-bold table-light" : "")">
+                                <td>
+                                    <span class="badge @(row.BacTaiKhoan == 1 ? "bg-primary" : (row.BacTaiKhoan == 2 ? "bg-info text-dark" : "bg-secondary")) font-monospace fs-6">
+                                        @row.MaTaiKhoan
+                                    </span>
+                                </td>
+                                <td>
+                                    <span style="padding-left: @(paddingLeft)px;">
+                                        @if (row.BacTaiKhoan > 1)
+                                        {
+                                            <i class="bi bi-arrow-return-right text-muted me-1"></i>
+                                        }
+                                        @row.TenTaiKhoan
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-light text-dark border">Bậc @row.BacTaiKhoan</span>
+                                </td>
+                                <td><small class="text-muted">@row.LoaiTaiKhoanTen</small></td>
+                                <td>
+                                    <span class="badge @(row.TinhChat == ninjaTax.Models.Entities.TinhChatTaiKhoan.LuongTinh ? "bg-warning text-dark" : (row.TinhChat == ninjaTax.Models.Entities.TinhChatTaiKhoan.KhongCoSoDu ? "bg-light text-muted border" : "bg-light text-primary border"))">
+                                        @row.TinhChatTen
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    @if (row.LaTaiKhoanSoCai)
+                                    {
+                                        <span class="badge bg-secondary-subtle text-secondary" title="Tài khoản tổng hợp, không được hạch toán trực tiếp">
+                                            <i class="bi bi-lock me-1"></i>Sổ tổng hợp
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success-subtle text-success" title="Tài khoản chi tiết cho phép định khoản">
+                                            <i class="bi bi-check2-circle me-1"></i>Cho phép
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (row.DangHoatDong)
+                                    {
+                                        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Sử dụng</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Đã khóa</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <div class="btn-group btn-group-sm">
+                                        <a asp-action="Create" asp-route-parentId="@row.Id" class="btn btn-outline-success" title="Thêm tài khoản con trực thuộc">
+                                            <i class="bi bi-plus-lg"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@row.Id" class="btn btn-outline-primary" title="Chỉnh sửa">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        @if (!row.DaPhatSinhGiaoDich && row.SoLuongCon == 0)
+                                        {
+                                            <form asp-action="Delete" asp-route-id="@row.Id" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa tài khoản @row.MaTaiKhoan?');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-outline-danger" title="Xóa tài khoản">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

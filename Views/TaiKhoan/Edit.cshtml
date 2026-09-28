@@ -1,0 +1,93 @@
+@model ninjaTax.Models.ViewModels.TaiKhoanCreateEditViewModel
+@{
+    ViewData["Title"] = $"Chỉnh Sửa Tài Khoản {Model.MaTaiKhoan}";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h4 class="mb-1 text-primary"><i class="bi bi-pencil-square me-2"></i>Chỉnh Sửa Tài Khoản Kế Toán: @Model.MaTaiKhoan</h4>
+        <p class="text-muted small mb-0">Cập nhật thông tin chi tiết tài khoản theo chuẩn Thông tư 99/2025/TT-BTC</p>
+    </div>
+    <div>
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Quay lại danh mục</a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="DaPhatSinhGiaoDich" />
+
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>
+
+                    @if (Model.DaPhatSinhGiaoDich)
+                    {
+                        <div class="alert alert-warning py-2 mb-3">
+                            <i class="bi bi-shield-lock-fill me-2"></i>
+                            <strong>Tài khoản đã phát sinh giao dịch ghi sổ:</strong> Số hiệu tài khoản bị khóa chỉnh sửa để bảo đảm tính toàn vẹn của Sổ Cái.
+                        </div>
+                    }
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="TaiKhoanMeId" class="form-label fw-semibold"></label>
+                            <select asp-for="TaiKhoanMeId" class="form-select" asp-items="ViewBag.TaiKhoanMeList" disabled="@Model.DaPhatSinhGiaoDich">
+                                <option value="">-- Tài khoản cấp 1 (Không có mẹ) --</option>
+                            </select>
+                            @if (Model.DaPhatSinhGiaoDich)
+                            {
+                                <input type="hidden" asp-for="TaiKhoanMeId" />
+                            }
+                            <span asp-validation-for="TaiKhoanMeId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="MaTaiKhoan" class="form-label fw-semibold"></label>
+                            <input asp-for="MaTaiKhoan" class="form-control font-monospace fw-bold" readonly="@Model.DaPhatSinhGiaoDich" />
+                            <span asp-validation-for="MaTaiKhoan" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="TenTaiKhoan" class="form-label fw-semibold"></label>
+                            <input asp-for="TenTaiKhoan" class="form-control" />
+                            <span asp-validation-for="TenTaiKhoan" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="LoaiTaiKhoan" class="form-label fw-semibold"></label>
+                            <select asp-for="LoaiTaiKhoan" class="form-select" asp-items="Html.GetEnumSelectList<ninjaTax.Models.Entities.LoaiTaiKhoan>()" disabled></select>
+                            <input type="hidden" asp-for="LoaiTaiKhoan" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="TinhChat" class="form-label fw-semibold"></label>
+                            <select asp-for="TinhChat" class="form-select" asp-items="Html.GetEnumSelectList<ninjaTax.Models.Entities.TinhChatTaiKhoan>()"></select>
+                            <span asp-validation-for="TinhChat" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12 mt-3">
+                            <div class="form-check form-switch mb-2">
+                                <input asp-for="LaTaiKhoanSoCai" class="form-check-input" />
+                                <label asp-for="LaTaiKhoanSoCai" class="form-check-label fw-semibold">Đánh dấu là tài khoản tổng hợp (chỉ cộng dồn số liệu, không hạch toán trực tiếp)</label>
+                            </div>
+
+                            <div class="form-check form-switch mb-2">
+                                <input asp-for="DangHoatDong" class="form-check-input" />
+                                <label asp-for="DangHoatDong" class="form-check-label fw-semibold">Đang kích hoạt sử dụng</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4 pt-3 border-top">
+                        <button type="submit" class="btn btn-primary px-4"><i class="bi bi-save me-1"></i>Lưu thay đổi</button>
+                        <a asp-action="Index" class="btn btn-outline-secondary px-3">Hủy</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
