@@ -147,6 +147,12 @@
           "icon": "bi bi-box-seam",
           "controller": "VatTuHangHoa",
           "action": "Index"
+        },
+        {
+          "title": "Danh mục Kho hàng",
+          "icon": "bi bi-buildings",
+          "controller": "Kho",
+          "action": "Index"
         }
       ]
     },
