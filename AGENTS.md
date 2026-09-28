@@ -20,7 +20,13 @@ Repository guidelines for autonomous agents working in `ninjaTax`.
 - **Provider Switching**: Set `"DatabaseProvider": "MariaDb" | "Sqlite" | "PostgreSql" | "SqlServer"` in config.
 
 ## Core Accounting Invariants (Circular TT99 & VAS)
-- **Account 911 Standardization**: Circular TT99/2025/TT-BTC requires Account 911 as the clearing account for period-end closing. Closing balances for Account 911 must always clear to zero (`DuNo == 0 && DuCo == 0`).
+- **Account 911 Standardization (Phase 10)**:
+  - Circular TT99/2025/TT-BTC mandates Account 911 (`LoaiTaiKhoan = 9`) as the clearing account for period-end closing.
+  - Intermediate routing: Revenue/Income (5xx/7xx) credits 911; Expenses/COGS (6xx/8xx/8211) debits 911; Net profit/loss clears to 4212.
+  - Strict Closing Invariant: Account 911 is a non-balance clearing account (`TinhChat = KhongCoSoDu`). Post-closing closing balance must always clear to zero (`DuNo == 0 && DuCo == 0`).
+  - Operational Boundary: Operational vouchers (cash receipts, disbursements, payroll, invoices, depreciation) must never use Account 911; it is reserved exclusively for period closing vouchers (`PKT-KC-`).
+- **Two-Way Non-Offsetting Balances (Trial Balance 8 Columns)**:
+  - Accounts with dual nature (`TinhChat = LuongTinh`: 131, 331, 138, 338, etc.) must calculate debit and credit balances by individual counterparty (`DoiTuongId`). Gross debit and gross credit balances must appear simultaneously without contra netting.
 - **Double-Entry Equality**: Every journal voucher must satisfy `TongNo == TongCo`.
 - **Anti-Negative Stock (VAS 02)**: Outward warehouse vouchers and inward slip cancellations cannot cause warehouse balance to drop below zero.
 - **Cost Segmentation (Phase 7)**: Department `PhongBanId` attached to expense lines (TK 154, 6421, 6422) for segment P&L.
