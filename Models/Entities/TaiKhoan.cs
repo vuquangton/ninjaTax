@@ -11,7 +11,8 @@ public enum LoaiTaiKhoan
     DoanhThu = 4,
     ChiPhi = 5,
     ThuNhapKhac = 7,
-    ChiPhiKhac = 8
+    ChiPhiKhac = 8,
+    XacDinhKetQuaKinhDoanh = 9
 }
 
 /// <summary>

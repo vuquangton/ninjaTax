@@ -89,9 +89,8 @@ public class CashReceiptTests : IDisposable
         Assert.Equal(15000000m, bt.TongCo);
         Assert.Equal(bt.TongNo, bt.TongCo); // Invariant TT99
 
-        // Tuyệt đối không dùng TK 911
-        var coTk911 = await context.TaiKhoans.AnyAsync(t => t.MaTaiKhoan == "911");
-        Assert.False(coTk911);
+        // Tuyệt đối không dùng TK 911 cho phiếu thu thông thường
+        Assert.DoesNotContain(bt.ChiTietButToans, c => c.TaiKhoanNo?.MaTaiKhoan == "911" || c.TaiKhoanCo?.MaTaiKhoan == "911");
 
         // 4. Kiểm tra tồn quỹ tiền mặt đã tăng lên 15.000.000 VNĐ
         var tonQuy = await thuChiService.TinhTonQuyKhaDungAsync(new DateTime(2026, 9, 10));

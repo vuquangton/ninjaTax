@@ -50,7 +50,17 @@ public class PeriodClosingService : IPeriodClosingService
             };
         }
 
-        // 2. Tìm tài khoản 4212 (Lợi nhuận sau thuế chưa phân phối năm nay)
+        // 2. Tìm tài khoản 911 và tài khoản 4212 (Chuẩn Thông tư 99/2025/TT-BTC)
+        var tk911 = await _context.TaiKhoans.FirstOrDefaultAsync(t => t.MaTaiKhoan == "911");
+        if (tk911 == null)
+        {
+            return new KetChuyenCuoiKyResult
+            {
+                ThanhCong = false,
+                ThongBao = "Không tìm thấy Tài khoản 911 (Xác định kết quả kinh doanh) trong danh mục hệ thống tài khoản."
+            };
+        }
+
         var tk4212 = await _context.TaiKhoans.FirstOrDefaultAsync(t => t.MaTaiKhoan == "4212");
         if (tk4212 == null)
         {
@@ -74,7 +84,6 @@ public class PeriodClosingService : IPeriodClosingService
             .ToListAsync();
 
         // 4. Tính toán số dư chưa kết chuyển của các tài khoản Doanh thu (5xx, 7xx) và Chi phí (6xx, 8xx)
-        // Lấy tất cả tài khoản loại 5, 6, 7, 8
         var danhSachTkKetChuyen = await _context.TaiKhoans
             .Where(t => t.DangHoatDong &&
                         (t.MaTaiKhoan.StartsWith("5") ||
@@ -89,47 +98,47 @@ public class PeriodClosingService : IPeriodClosingService
         decimal tongChiPhi = 0m;
         var nhatKy = new List<string>();
 
-        foreach (var tk in danhSachTkKetChuyen.Where(t => !t.LaTaiKhoanSoCai))
+        // CHẶNG 1: Kết chuyển Doanh thu & Thu nhập khác sang Có TK 911 (Nợ 5xx, 7xx / Có 911)
+        foreach (var tk in danhSachTkKetChuyen.Where(t => !t.LaTaiKhoanSoCai && (t.MaTaiKhoan.StartsWith("5") || t.MaTaiKhoan.StartsWith("7"))))
         {
-            // Số phát sinh Có và Nợ
             var psCo = postedDetails.Where(c => c.TaiKhoanCoId == tk.Id).Sum(c => c.SoTien);
             var psNo = postedDetails.Where(c => c.TaiKhoanNoId == tk.Id).Sum(c => c.SoTien);
+            var duCo = psCo - psNo;
 
-            if (tk.MaTaiKhoan.StartsWith("5") || tk.MaTaiKhoan.StartsWith("7"))
+            if (duCo > 0)
             {
-                // Doanh thu / Thu nhập khác: Phát sinh Có lớn hơn Nợ -> Kết chuyển Nợ 5xx,7xx / Có 4212
-                var duCo = psCo - psNo;
-                if (duCo > 0)
+                chiTietMoi.Add(new ChiTietButToan
                 {
-                    chiTietMoi.Add(new ChiTietButToan
-                    {
-                        DongSo = dongSo++,
-                        TaiKhoanNoId = tk.Id,
-                        TaiKhoanCoId = tk4212.Id,
-                        SoTien = duCo,
-                        DienGiai = $"Kết chuyển doanh thu {tk.MaTaiKhoan} sang TK 4212"
-                    });
-                    tongDoanhThu += duCo;
-                    nhatKy.Add($"Kết chuyển DT {tk.MaTaiKhoan} ({tk.TenTaiKhoan}): {duCo:N0} đ");
-                }
+                    DongSo = dongSo++,
+                    TaiKhoanNoId = tk.Id,
+                    TaiKhoanCoId = tk911.Id,
+                    SoTien = duCo,
+                    DienGiai = $"Kết chuyển doanh thu {tk.MaTaiKhoan} sang TK 911"
+                });
+                tongDoanhThu += duCo;
+                nhatKy.Add($"Kết chuyển DT {tk.MaTaiKhoan} ({tk.TenTaiKhoan}) -> Có 911: {duCo:N0} đ");
             }
-            else if (tk.MaTaiKhoan.StartsWith("6") || tk.MaTaiKhoan.StartsWith("8"))
+        }
+
+        // CHẶNG 2: Kết chuyển Chi phí & Thuế TNDN sang Nợ TK 911 (Nợ 911 / Có 6xx, 8xx)
+        foreach (var tk in danhSachTkKetChuyen.Where(t => !t.LaTaiKhoanSoCai && (t.MaTaiKhoan.StartsWith("6") || t.MaTaiKhoan.StartsWith("8"))))
+        {
+            var psNo = postedDetails.Where(c => c.TaiKhoanNoId == tk.Id).Sum(c => c.SoTien);
+            var psCo = postedDetails.Where(c => c.TaiKhoanCoId == tk.Id).Sum(c => c.SoTien);
+            var duNo = psNo - psCo;
+
+            if (duNo > 0)
             {
-                // Chi phí: Phát sinh Nợ lớn hơn Có -> Kết chuyển Nợ 4212 / Có 6xx,8xx
-                var duNo = psNo - psCo;
-                if (duNo > 0)
+                chiTietMoi.Add(new ChiTietButToan
                 {
-                    chiTietMoi.Add(new ChiTietButToan
-                    {
-                        DongSo = dongSo++,
-                        TaiKhoanNoId = tk4212.Id,
-                        TaiKhoanCoId = tk.Id,
-                        SoTien = duNo,
-                        DienGiai = $"Kết chuyển chi phí {tk.MaTaiKhoan} sang TK 4212"
-                    });
-                    tongChiPhi += duNo;
-                    nhatKy.Add($"Kết chuyển CP {tk.MaTaiKhoan} ({tk.TenTaiKhoan}): {duNo:N0} đ");
-                }
+                    DongSo = dongSo++,
+                    TaiKhoanNoId = tk911.Id,
+                    TaiKhoanCoId = tk.Id,
+                    SoTien = duNo,
+                    DienGiai = $"Kết chuyển chi phí {tk.MaTaiKhoan} từ TK 911"
+                });
+                tongChiPhi += duNo;
+                nhatKy.Add($"Kết chuyển CP {tk.MaTaiKhoan} ({tk.TenTaiKhoan}) -> Nợ 911: {duNo:N0} đ");
             }
         }
 
@@ -140,6 +149,36 @@ public class PeriodClosingService : IPeriodClosingService
                 ThanhCong = false,
                 ThongBao = "Không có số dư doanh thu hoặc chi phí cần kết chuyển trong kỳ đã chọn."
             };
+        }
+
+        // CHẶNG 3: Kết chuyển Lãi/Lỗ ròng từ TK 911 sang TK 4212 để TK 911 sạch số dư về 0
+        decimal loiNhuanRong = tongDoanhThu - tongChiPhi;
+        if (loiNhuanRong > 0)
+        {
+            // Doanh nghiệp LÃI: Nợ 911 / Có 4212
+            chiTietMoi.Add(new ChiTietButToan
+            {
+                DongSo = dongSo++,
+                TaiKhoanNoId = tk911.Id,
+                TaiKhoanCoId = tk4212.Id,
+                SoTien = loiNhuanRong,
+                DienGiai = "Kết chuyển lãi sau thuế sang TK 4212"
+            });
+            nhatKy.Add($"Kết chuyển LÃI sau thuế: Nợ 911 / Có 4212: {loiNhuanRong:N0} đ");
+        }
+        else if (loiNhuanRong < 0)
+        {
+            // Doanh nghiệp LỖ: Nợ 4212 / Có 911
+            decimal soTienLo = -loiNhuanRong;
+            chiTietMoi.Add(new ChiTietButToan
+            {
+                DongSo = dongSo++,
+                TaiKhoanNoId = tk4212.Id,
+                TaiKhoanCoId = tk911.Id,
+                SoTien = soTienLo,
+                DienGiai = "Kết chuyển lỗ sau thuế sang TK 4212"
+            });
+            nhatKy.Add($"Kết chuyển LỖ sau thuế: Nợ 4212 / Có 911: {soTienLo:N0} đ");
         }
 
         // 5. Tạo chứng từ Bút toán kết chuyển

@@ -190,6 +190,7 @@ public class GeneralLedgerService : IGeneralLedgerService
             {
                 c.TaiKhoanNoId,
                 c.TaiKhoanCoId,
+                c.DoiTuongId,
                 c.SoTien,
                 Ngay = c.ButToan!.NgayHachToan
             })
@@ -202,23 +203,59 @@ public class GeneralLedgerService : IGeneralLedgerService
 
         foreach (var tk in taiKhoans)
         {
-            // Đầu kỳ
-            var noDauKy = linesDauKy.Where(l => l.TaiKhoanNoId == tk.Id).Sum(l => l.SoTien);
-            var coDauKy = linesDauKy.Where(l => l.TaiKhoanCoId == tk.Id).Sum(l => l.SoTien);
-
             decimal duNoDau = 0m;
             decimal duCoDau = 0m;
-            if (noDauKy >= coDauKy) duNoDau = noDauKy - coDauKy;
-            else duCoDau = coDauKy - noDauKy;
+            decimal duNoCuoi = 0m;
+            decimal duCoCuoi = 0m;
 
-            // Trong kỳ
+            // Số phát sinh trong kỳ
             var psNo = linesTrongKy.Where(l => l.TaiKhoanNoId == tk.Id).Sum(l => l.SoTien);
             var psCo = linesTrongKy.Where(l => l.TaiKhoanCoId == tk.Id).Sum(l => l.SoTien);
 
-            // Cuối kỳ
-            decimal finalNet = (duNoDau - duCoDau) + (psNo - psCo);
-            decimal duNoCuoi = finalNet > 0 ? finalNet : 0m;
-            decimal duCoCuoi = finalNet < 0 ? -finalNet : 0m;
+            if (tk.TinhChat == TinhChatTaiKhoan.LuongTinh)
+            {
+                // NGUYÊN TẮC BẤT BIẾN TT99: BÓC TÁCH THEO ĐỐI TƯỢNG (NON-OFFSETTING RULE)
+                // Đầu kỳ theo từng đối tượng
+                var doiTuongDauKy = linesDauKy
+                    .Where(l => l.TaiKhoanNoId == tk.Id || l.TaiKhoanCoId == tk.Id)
+                    .GroupBy(l => l.DoiTuongId)
+                    .Select(g => new
+                    {
+                        Net = g.Where(x => x.TaiKhoanNoId == tk.Id).Sum(x => x.SoTien) -
+                              g.Where(x => x.TaiKhoanCoId == tk.Id).Sum(x => x.SoTien)
+                    })
+                    .ToList();
+
+                duNoDau = doiTuongDauKy.Where(d => d.Net > 0).Sum(d => d.Net);
+                duCoDau = doiTuongDauKy.Where(d => d.Net < 0).Sum(d => -d.Net);
+
+                // Cuối kỳ theo từng đối tượng (toàn bộ dòng đến hết kỳ)
+                var doiTuongCuoiKy = allLines
+                    .Where(l => l.TaiKhoanNoId == tk.Id || l.TaiKhoanCoId == tk.Id)
+                    .GroupBy(l => l.DoiTuongId)
+                    .Select(g => new
+                    {
+                        Net = g.Where(x => x.TaiKhoanNoId == tk.Id).Sum(x => x.SoTien) -
+                              g.Where(x => x.TaiKhoanCoId == tk.Id).Sum(x => x.SoTien)
+                    })
+                    .ToList();
+
+                duNoCuoi = doiTuongCuoiKy.Where(d => d.Net > 0).Sum(d => d.Net);
+                duCoCuoi = doiTuongCuoiKy.Where(d => d.Net < 0).Sum(d => -d.Net);
+            }
+            else
+            {
+                // Tài khoản thông thường (Dư Nợ, Dư Có hoặc Không có số dư)
+                var noDauKy = linesDauKy.Where(l => l.TaiKhoanNoId == tk.Id).Sum(l => l.SoTien);
+                var coDauKy = linesDauKy.Where(l => l.TaiKhoanCoId == tk.Id).Sum(l => l.SoTien);
+
+                if (noDauKy >= coDauKy) duNoDau = noDauKy - coDauKy;
+                else duCoDau = coDauKy - noDauKy;
+
+                decimal finalNet = (duNoDau - duCoDau) + (psNo - psCo);
+                duNoCuoi = finalNet > 0 ? finalNet : 0m;
+                duCoCuoi = finalNet < 0 ? -finalNet : 0m;
+            }
 
             // Chỉ thêm các tài khoản có số dư hoặc có phát sinh
             if (duNoDau > 0 || duCoDau > 0 || psNo > 0 || psCo > 0 || duNoCuoi > 0 || duCoCuoi > 0)

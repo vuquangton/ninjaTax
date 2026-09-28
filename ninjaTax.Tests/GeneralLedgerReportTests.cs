@@ -157,4 +157,82 @@ public class GeneralLedgerReportTests : IDisposable
         Assert.Equal(140_000_000m, tb.TongPhatSinhNoTrongKy);
         Assert.Equal(140_000_000m, tb.TongPhatSinhCoTrongKy);
     }
+
+    [Fact]
+    public async Task LayBangCanDoiTaiKhoanAsync_TwoWayAccounts_CalculatesNonOffsettingBalances_AndAccount911ClearsToZero()
+    {
+        using var context = new AppDbContext(_dbOptions);
+        var glService = new GeneralLedgerService(context, NullLogger<GeneralLedgerService>.Instance);
+
+        var tk111 = await context.TaiKhoans.FirstAsync(t => t.MaTaiKhoan == "1111");
+        var tk131 = await context.TaiKhoans.FirstAsync(t => t.MaTaiKhoan == "131");
+        var tk511 = await context.TaiKhoans.FirstAsync(t => t.MaTaiKhoan == "5111");
+        var tk911 = await context.TaiKhoans.FirstAsync(t => t.MaTaiKhoan == "911");
+        var tk4212 = await context.TaiKhoans.FirstAsync(t => t.MaTaiKhoan == "4212");
+
+        var khA = await context.DoiTuongs.FirstAsync(d => d.MaDoiTuong == "KH001");
+        var khB = new DoiTuong { MaDoiTuong = "KH002", TenDoiTuong = "Khách hàng B", Loai = LoaiDoiTuong.KhachHang };
+        context.DoiTuongs.Add(khB);
+        await context.SaveChangesAsync();
+
+        // 1. Khách hàng A mua nợ 10M: Nợ 131 (KH A) / Có 5111: 10M
+        var bt1 = new ButToan
+        {
+            SoChungTu = "PKT-TWO-WAY-01",
+            NgayHachToan = new DateTime(2026, 4, 5),
+            NgayChungTu = new DateTime(2026, 4, 5),
+            TongTien = 10_000_000m,
+            TrangThai = TrangThaiButToan.DaGhiSo
+        };
+        bt1.ChiTietButToans.Add(new ChiTietButToan { DongSo = 1, TaiKhoanNoId = tk131.Id, TaiKhoanCoId = tk511.Id, DoiTuongId = khA.Id, SoTien = 10_000_000m });
+        context.ButToans.Add(bt1);
+
+        // 2. Khách hàng B trả trước tiền mặt 5M: Nợ 1111 / Có 131 (KH B): 5M
+        var bt2 = new ButToan
+        {
+            SoChungTu = "PKT-TWO-WAY-02",
+            NgayHachToan = new DateTime(2026, 4, 10),
+            NgayChungTu = new DateTime(2026, 4, 10),
+            TongTien = 5_000_000m,
+            TrangThai = TrangThaiButToan.DaGhiSo
+        };
+        bt2.ChiTietButToans.Add(new ChiTietButToan { DongSo = 1, TaiKhoanNoId = tk111.Id, TaiKhoanCoId = tk131.Id, DoiTuongId = khB.Id, SoTien = 5_000_000m });
+        context.ButToans.Add(bt2);
+
+        // 3. Kết chuyển doanh thu sang 911 và sang 4212
+        var btKc = new ButToan
+        {
+            SoChungTu = "PKT-KC-2026-04",
+            NgayHachToan = new DateTime(2026, 4, 30),
+            NgayChungTu = new DateTime(2026, 4, 30),
+            TongTien = 20_000_000m,
+            TrangThai = TrangThaiButToan.DaGhiSo
+        };
+        btKc.ChiTietButToans.Add(new ChiTietButToan { DongSo = 1, TaiKhoanNoId = tk511.Id, TaiKhoanCoId = tk911.Id, SoTien = 10_000_000m });
+        btKc.ChiTietButToans.Add(new ChiTietButToan { DongSo = 2, TaiKhoanNoId = tk911.Id, TaiKhoanCoId = tk4212.Id, SoTien = 10_000_000m });
+        context.ButToans.Add(btKc);
+
+        await context.SaveChangesAsync();
+
+        var tb = await glService.LayBangCanDoiTaiKhoanAsync(new DateTime(2026, 4, 1), new DateTime(2026, 4, 30));
+
+        // Ràng buộc số dư 2 bên lưỡng tính của TK 131:
+        // Không bù trừ giữa KH A (+10M Nợ) và KH B (+5M Có) thành 5M Nợ
+        var row131 = tb.DanhSachTaiKhoan.First(d => d.MaTaiKhoan == "131");
+        Assert.Equal(10_000_000m, row131.DuNoCuoiKy);
+        Assert.Equal(5_000_000m, row131.DuCoCuoiKy);
+
+        // Ràng buộc TK 911 đóng sạch cuối kỳ:
+        var row911 = tb.DanhSachTaiKhoan.FirstOrDefault(d => d.MaTaiKhoan == "911");
+        if (row911 != null)
+        {
+            Assert.Equal(0m, row911.DuNoCuoiKy);
+            Assert.Equal(0m, row911.DuCoCuoiKy);
+        }
+
+        // Bảng cân đối hoàn toàn
+        Assert.True(tb.CanDoiCuoiKy);
+        Assert.True(tb.CanDoiPhatSinh);
+        Assert.True(tb.CanDoiHoanToan);
+    }
 }

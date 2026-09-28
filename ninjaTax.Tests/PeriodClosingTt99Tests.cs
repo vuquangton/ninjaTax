@@ -106,15 +106,25 @@ public class PeriodClosingTt99Tests : IDisposable
         Assert.NotNull(butToanKc);
         Assert.Equal(TrangThaiButToan.DaGhiSo, butToanKc.TrangThai);
 
-        // BẤT BIẾN TT99: TUYỆT ĐỐI KHÔNG CÓ TÀI KHOẢN 911
+        // CHUẨN THÔNG TƯ 99/2025/TT-BTC: BẮT BUỘC HẠCH TOÁN QUA TÀI KHOẢN 911
         var allAccountCodes = butToanKc.ChiTietButToans
             .SelectMany(c => new[] { c.TaiKhoanNo!.MaTaiKhoan, c.TaiKhoanCo!.MaTaiKhoan })
             .ToList();
 
-        Assert.DoesNotContain("911", allAccountCodes);
-
-        // Kiểm tra định khoản đối ứng có TK 4212
+        Assert.Contains(allAccountCodes, a => a.StartsWith("911"));
         Assert.Contains(allAccountCodes, a => a.StartsWith("4212"));
+
+        // Kiểm tra TK 911 cân đối tuyệt đối giữa Nợ và Có (Số dư cuối kỳ = 0)
+        var psNo911 = butToanKc.ChiTietButToans
+            .Where(c => c.TaiKhoanNo!.MaTaiKhoan.StartsWith("911"))
+            .Sum(c => c.SoTien);
+
+        var psCo911 = butToanKc.ChiTietButToans
+            .Where(c => c.TaiKhoanCo!.MaTaiKhoan.StartsWith("911"))
+            .Sum(c => c.SoTien);
+
+        Assert.Equal(psNo911, psCo911);
+        Assert.Equal(100_000_000m, psNo911); // Tổng kết chuyển DT = 100M
     }
 
     [Fact]

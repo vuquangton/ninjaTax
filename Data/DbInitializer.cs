@@ -106,7 +106,12 @@ public static class DbInitializer
 
             // Nhóm 7 & 8: Thu nhập khác và Chi phí khác
             new() { MaTaiKhoan = "711", TenTaiKhoan = "Thu nhập khác", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.ThuNhapKhac, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = false },
-            new() { MaTaiKhoan = "811", TenTaiKhoan = "Chi phí khác", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.ChiPhiKhac, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = false }
+            new() { MaTaiKhoan = "811", TenTaiKhoan = "Chi phí khác", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.ChiPhiKhac, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = false },
+            new() { MaTaiKhoan = "821", TenTaiKhoan = "Chi phí thuế thu nhập doanh nghiệp", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.ChiPhi, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = true },
+            new() { MaTaiKhoan = "8211", TenTaiKhoan = "Chi phí thuế TNDN hiện hành", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.ChiPhi, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = false },
+
+            // Nhóm 9: Xác định kết quả kinh doanh (Chuẩn Thông tư 99/2025/TT-BTC)
+            new() { MaTaiKhoan = "911", TenTaiKhoan = "Xác định kết quả kinh doanh", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.XacDinhKetQuaKinhDoanh, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = false }
         };
 
         await context.TaiKhoans.AddRangeAsync(taiKhoans);
@@ -139,6 +144,31 @@ public static class DbInitializer
 
         await context.DoiTuongs.AddRangeAsync(doiTuongs);
         await context.SaveChangesAsync();
+        }
+        else
+        {
+            // Bổ sung các tài khoản TT99 nếu database đã được khởi tạo trước đó
+            var existingCodes = await context.TaiKhoans.Select(t => t.MaTaiKhoan).ToListAsync();
+            var missingAccounts = new List<TaiKhoan>();
+
+            if (!existingCodes.Contains("821"))
+            {
+                missingAccounts.Add(new TaiKhoan { MaTaiKhoan = "821", TenTaiKhoan = "Chi phí thuế thu nhập doanh nghiệp", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.ChiPhi, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = true });
+            }
+            if (!existingCodes.Contains("8211"))
+            {
+                missingAccounts.Add(new TaiKhoan { MaTaiKhoan = "8211", TenTaiKhoan = "Chi phí thuế TNDN hiện hành", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.ChiPhi, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = false });
+            }
+            if (!existingCodes.Contains("911"))
+            {
+                missingAccounts.Add(new TaiKhoan { MaTaiKhoan = "911", TenTaiKhoan = "Xác định kết quả kinh doanh", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.XacDinhKetQuaKinhDoanh, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = false });
+            }
+
+            if (missingAccounts.Count > 0)
+            {
+                await context.TaiKhoans.AddRangeAsync(missingAccounts);
+                await context.SaveChangesAsync();
+            }
         }
 
         // Nạp danh mục Vật tư hàng hóa mẫu nếu chưa có

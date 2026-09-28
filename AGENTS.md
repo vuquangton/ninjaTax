@@ -20,7 +20,7 @@ Repository guidelines for autonomous agents working in `ninjaTax`.
 - **Provider Switching**: Set `"DatabaseProvider": "MariaDb" | "Sqlite" | "PostgreSql" | "SqlServer"` in config.
 
 ## Core Accounting Invariants (Circular TT99 & VAS)
-- **Account 911 Prohibition**: Strict ban. Account 911 must never appear in any entity, seed data, journal entry, or posting routine.
+- **Account 911 Standardization**: Circular TT99/2025/TT-BTC requires Account 911 as the clearing account for period-end closing. Closing balances for Account 911 must always clear to zero (`DuNo == 0 && DuCo == 0`).
 - **Double-Entry Equality**: Every journal voucher must satisfy `TongNo == TongCo`.
 - **Anti-Negative Stock (VAS 02)**: Outward warehouse vouchers and inward slip cancellations cannot cause warehouse balance to drop below zero.
 - **Cost Segmentation (Phase 7)**: Department `PhongBanId` attached to expense lines (TK 154, 6421, 6422) for segment P&L.

@@ -142,11 +142,12 @@ public class ButToanService : IButToanService
                 return (false, $"Tài khoản Có (Id: {chiTiet.TaiKhoanCoId}) không tồn tại hoặc đã ngừng hoạt động.", null);
             }
 
-            // Quy định TT99: Cấm sử dụng TK 911
-            if (tkNo.MaTaiKhoan.StartsWith("911") || tkCo.MaTaiKhoan.StartsWith("911"))
+            // Quy định TT99: TK 911 chỉ dùng cho chứng từ kết chuyển cuối kỳ (PKT-KC)
+            if ((tkNo.MaTaiKhoan.StartsWith("911") || tkCo.MaTaiKhoan.StartsWith("911")) &&
+                !butToan.SoChungTu.StartsWith("PKT-KC"))
             {
-                _logger.LogCritical("Cảnh báo vi phạm chuẩn TT99: Cố gắng hạch toán vào TK 911");
-                return (false, "Vi phạm quy định TT99: Nghiêm cấm hạch toán qua Tài khoản 911. Vui lòng kết chuyển trực tiếp vào TK 421.", null);
+                _logger.LogWarning("Tài khoản 911 chỉ được sử dụng trong quy trình kết chuyển cuối kỳ: {SoChungTu}", butToan.SoChungTu);
+                return (false, "Quy định TT99: Tài khoản 911 chỉ được sử dụng trong nghiệp vụ kết chuyển cuối kỳ.", null);
             }
 
             // Không cho phép hạch toán vào tài khoản tổng hợp nếu có tài khoản con
