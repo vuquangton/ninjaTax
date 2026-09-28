@@ -180,6 +180,17 @@ public class TaiKhoanService : ITaiKhoanService
             }
         }
 
+        // Không cho phép ngừng hoạt động tài khoản mẹ nếu vẫn còn tài khoản con đang hoạt động
+        if (!model.DangHoatDong && account.DangHoatDong)
+        {
+            var hasActiveChildren = await _context.TaiKhoans
+                .AnyAsync(t => t.TaiKhoanMeId == id && t.DangHoatDong);
+            if (hasActiveChildren)
+            {
+                return (false, $"Không thể ngừng hoạt động tài khoản [{account.MaTaiKhoan}] khi vẫn còn các tài khoản con đang sử dụng.");
+            }
+        }
+
         account.MaTaiKhoan = newCode;
         account.TenTaiKhoan = model.TenTaiKhoan.Trim();
         account.TinhChat = model.TinhChat;
@@ -226,14 +237,14 @@ public class TaiKhoanService : ITaiKhoanService
         _context.TaiKhoans.Remove(account);
         await _context.SaveChangesAsync();
 
-        // 3. Nếu tài khoản mẹ sau khi xóa không còn con nào khác, cập nhật lại LaTaiKhoanSoCai = false nếu phù hợp
+        // 3. Nếu tài khoản mẹ sau khi xóa không còn con nào khác, cập nhật lại LaTaiKhoanSoCai = false chỉ khi mẹ không phải tài khoản cấp 1 chuẩn TT99
         if (parentId.HasValue)
         {
             var remainingChildren = await _context.TaiKhoans.CountAsync(t => t.TaiKhoanMeId == parentId.Value);
             if (remainingChildren == 0)
             {
                 var parent = await _context.TaiKhoans.FindAsync(parentId.Value);
-                if (parent != null)
+                if (parent != null && parent.BacTaiKhoan > 1)
                 {
                     parent.LaTaiKhoanSoCai = false;
                     await _context.SaveChangesAsync();
