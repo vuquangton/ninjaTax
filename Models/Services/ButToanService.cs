@@ -9,7 +9,7 @@ namespace ninjaTax.Models.Services;
 /// Tuân thủ nghiêm ngặt các nguyên tắc kế toán theo Thông tư TT99:
 /// 1. Nguyên tắc cân đối bút toán kép: Tổng phát sinh Nợ == Tổng phát sinh Có (TongNo == TongCo).
 /// 2. Bắt buộc theo dõi nguồn gốc: Số chứng từ gốc (SoChungTuGoc) và Ngày chứng từ gốc (NgayChungTuGoc).
-/// 3. Nghiêm cấm hạch toán qua Tài khoản 911 (Doanh thu/chi phí kết chuyển thẳng sang 421).
+/// 3. Tài khoản 911 dành riêng cho chứng từ kết chuyển cuối kỳ (PKT-KC-), không sử dụng cho chứng từ thông thường.
 /// 4. Không được phép ghi sổ các tài khoản đã ngừng hoạt động hoặc tài khoản tổng hợp mẹ.
 /// </summary>
 public class ButToanService : IButToanService

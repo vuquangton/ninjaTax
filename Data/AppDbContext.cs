@@ -11,8 +11,7 @@ namespace ninjaTax.Data;
 /// - MariaDB / MySQL
 /// Tuân thủ quy tắc kế toán Thông tư TT99:
 /// - Tất cả khóa chính và khóa ngoại đều là long (bigint).
-/// - Tất cả các trường tiền tệ decimal đều được cấu hình độ chính xác cao HasPrecision(19, 4).
-/// - Tuyệt đối không khai báo tài khoản 911.
+/// - Chuẩn hóa Tài khoản 911 theo Thông tư 99/2025/TT-BTC làm tài khoản trung gian kết chuyển cuối kỳ (số dư cuối kỳ = 0).
 /// </summary>
 public class AppDbContext : DbContext
 {

@@ -29,8 +29,7 @@ public enum TinhChatTaiKhoan
 /// <summary>
 /// Danh mục Hệ thống Tài khoản kế toán theo Thông tư TT99 (VAS).
 /// Quy định nghiệp vụ TT99:
-/// - Nghiêm cấm sử dụng Tài khoản 911 (Xác định kết quả kinh doanh).
-/// - Doanh thu, chi phí trong kỳ được kết chuyển trực tiếp vào Tài khoản 421 (Lợi nhuận sau thuế chưa phân phối).
+/// - Chuẩn hóa sử dụng Tài khoản 911 (Xác định kết quả kinh doanh) làm tài khoản trung gian kết chuyển cuối kỳ (số dư = 0).
 /// - Khóa chính (Id) dùng kiểu long/bigint tối ưu hiệu năng B-Tree Index cho Sổ Cái lớn.
 /// </summary>
 public class TaiKhoan

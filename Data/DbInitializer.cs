@@ -43,7 +43,7 @@ public static class DbInitializer
     {
         if (!await context.TaiKhoans.AnyAsync())
         {
-            // Danh mục tài khoản chuẩn TT99 (Nghiêm cấm TK 911)
+            // Danh mục tài khoản chuẩn TT99/2025/TT-BTC
             var taiKhoans = new List<TaiKhoan>
         {
             // Nhóm 1: Tài sản ngắn hạn
