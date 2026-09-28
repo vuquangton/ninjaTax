@@ -14,13 +14,51 @@
         </a>
     </div>
 
-    @if (TempData["ThongBaoThanhCong"] != null)
+    @if (TempData["SuccessMessage"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i>@TempData["ThongBaoThanhCong"]
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Search & Filter Card -->
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-body">
+            <form method="get" class="row g-2 align-items-center">
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                        <input type="text" name="timKiem" value="@Model.TimKiem" class="form-control" placeholder="Tìm theo Mã hoặc Tên vật tư hàng hóa..." />
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select name="loai" class="form-select">
+                        <option value="">-- Tất cả tính chất --</option>
+                        <option value="1" selected="@(Model.LoaiFilter == ninjaTax.Models.Entities.LoaiVatTuHangHoa.VatTu)">Nguyên vật liệu (152)</option>
+                        <option value="2" selected="@(Model.LoaiFilter == ninjaTax.Models.Entities.LoaiVatTuHangHoa.CongCuDungCu)">Công cụ dụng cụ (153)</option>
+                        <option value="3" selected="@(Model.LoaiFilter == ninjaTax.Models.Entities.LoaiVatTuHangHoa.ThanhPham)">Thành phẩm (155)</option>
+                        <option value="4" selected="@(Model.LoaiFilter == ninjaTax.Models.Entities.LoaiVatTuHangHoa.HangHoa)">Hàng hóa (156)</option>
+                        <option value="5" selected="@(Model.LoaiFilter == ninjaTax.Models.Entities.LoaiVatTuHangHoa.DichVu)">Dịch vụ (642/154)</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-secondary">
+                        <i class="bi bi-funnel me-1"></i>Lọc
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">Đặt lại</a>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <div class="card shadow-sm border-0">
         <div class="table-responsive">
@@ -31,18 +69,20 @@
                         <th>Tên hàng hóa / dịch vụ</th>
                         <th>Loại</th>
                         <th>ĐVT</th>
+                        <th>TK Kho / DT / GV</th>
                         <th class="text-end">Thuế VAT</th>
-                        <th class="text-end">Giá mua ngầm định</th>
-                        <th class="text-end">Giá bán ngầm định</th>
+                        <th class="text-end">Giá mua gần nhất</th>
+                        <th class="text-end">Giá bán tiêu chuẩn</th>
                         <th class="text-center">Trạng thái</th>
+                        <th class="text-end pe-3">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
                     @if (!Model.DanhSachVatTu.Any())
                     {
                         <tr>
-                            <td colspan="8" class="text-center py-4 text-muted">
-                                <i class="bi bi-inbox fs-3 d-block mb-2"></i>Chưa có vật tư hàng hóa nào. Nhấn "Thêm Mặt Hàng Mới" để tạo.
+                            <td colspan="10" class="text-center py-4 text-muted">
+                                <i class="bi bi-inbox fs-3 d-block mb-2"></i>Không tìm thấy vật tư hàng hóa nào.
                             </td>
                         </tr>
                     }
@@ -51,7 +91,7 @@
                         @foreach (var item in Model.DanhSachVatTu)
                         {
                             <tr>
-                                <td class="ps-3 font-monospace fw-bold">@item.MaVatTu</td>
+                                <td class="ps-3 font-monospace fw-bold text-primary">@item.MaVatTu</td>
                                 <td>
                                     <div class="fw-semibold">@item.TenVatTu</div>
                                 </td>
@@ -79,6 +119,11 @@
                                     }
                                 </td>
                                 <td>@item.DonViTinh</td>
+                                <td>
+                                    <small class="font-monospace text-muted">
+                                        Kho: @(item.TaiKhoanKhoMa ?? "-") | DT: @(item.TaiKhoanDoanhThuMa ?? "-") | GV: @(item.TaiKhoanGiaVonMa ?? "-")
+                                    </small>
+                                </td>
                                 <td class="text-end">@(item.ThueSuatVatMacDinh)%</td>
                                 <td class="text-end font-monospace">@item.DonGiaMuaGanNhat.ToString("N0") đ</td>
                                 <td class="text-end font-monospace text-success fw-bold">@item.DonGiaBanTieuChuan.ToString("N0") đ</td>
@@ -92,6 +137,23 @@
                                         <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Ngừng</span>
                                     }
                                 </td>
+                                <td class="text-end pe-3">
+                                    <div class="btn-group btn-group-sm">
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-info" title="Chi tiết">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-secondary" title="Sửa">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        @if (!item.DaPhatSinhGiaoDich)
+                                        {
+                                            <button type="button" class="btn btn-outline-danger" title="Xóa"
+                                                    onclick="xacNhanXoa(@item.Id, '@item.MaVatTu')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
                             </tr>
                         }
                     }
@@ -100,3 +162,19 @@
         </div>
     </div>
 </div>
+
+<form id="deleteForm" method="post" asp-action="Delete">
+    @Html.AntiForgeryToken()
+</form>
+
+@section Scripts {
+<script>
+    function xacNhanXoa(id, ma) {
+        if (confirm(`Bạn có chắc chắn muốn xóa mặt hàng [${ma}] không?`)) {
+            const form = document.getElementById('deleteForm');
+            form.action = '@Url.Action("Delete", "VatTuHangHoa")/' + id;
+            form.submit();
+        }
+    }
+</script>
+}

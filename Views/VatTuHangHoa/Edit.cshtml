@@ -1,0 +1,151 @@
+@model ninjaTax.Models.ViewModels.VatTuHangHoaEditViewModel
+@{
+    ViewData["Title"] = $"Chỉnh sửa vật tư: {Model.MaVatTu}";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex align-items-center mb-3">
+        <a asp-action="Index" class="btn btn-outline-secondary me-3">
+            <i class="bi bi-arrow-left"></i> Quay lại
+        </a>
+        <h3 class="mb-0 text-primary">
+            <i class="bi bi-pencil-square me-2"></i>@ViewData["Title"]
+        </h3>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <form method="post" asp-action="Edit" asp-route-id="@Model.Id">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="DaPhatSinhGiaoDich" />
+
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <h6 class="text-uppercase text-muted fw-bold border-bottom pb-2">1. Thông tin phân loại & Mã hàng</h6>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label asp-for="MaVatTu" class="form-label fw-semibold"></label> <span class="text-danger">*</span>
+                                @if (Model.DaPhatSinhGiaoDich)
+                                {
+                                    <input asp-for="MaVatTu" class="form-control font-monospace text-uppercase" readonly />
+                                    <small class="text-muted"><i class="bi bi-lock-fill"></i> Đã phát sinh giao dịch, không thể đổi mã</small>
+                                }
+                                else
+                                {
+                                    <input asp-for="MaVatTu" class="form-control font-monospace text-uppercase" />
+                                }
+                                <span asp-validation-for="MaVatTu" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-5">
+                                <label asp-for="TenVatTu" class="form-label fw-semibold"></label> <span class="text-danger">*</span>
+                                <input asp-for="TenVatTu" class="form-control" />
+                                <span asp-validation-for="TenVatTu" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label asp-for="DonViTinh" class="form-label fw-semibold"></label> <span class="text-danger">*</span>
+                                <input asp-for="DonViTinh" class="form-control" />
+                                <span asp-validation-for="DonViTinh" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label asp-for="LoaiVatTu" class="form-label fw-semibold"></label>
+                                <select asp-for="LoaiVatTu" class="form-select">
+                                    <option value="1">Nguyên vật liệu (152)</option>
+                                    <option value="2">Công cụ dụng cụ (153)</option>
+                                    <option value="3">Thành phẩm (155)</option>
+                                    <option value="4">Hàng hóa (156)</option>
+                                    <option value="5">Dịch vụ (642/154)</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label asp-for="ThueSuatVatMacDinh" class="form-label fw-semibold"></label>
+                                <div class="input-group">
+                                    <input asp-for="ThueSuatVatMacDinh" type="number" step="1" class="form-control text-end" />
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4 d-flex align-items-center mt-4">
+                                <div class="form-check form-switch me-4">
+                                    <input asp-for="DangTheoDoiTonKho" class="form-check-input" type="checkbox" id="theoDoiTonKhoSwitch" />
+                                    <label class="form-check-label fw-semibold" for="theoDoiTonKhoSwitch">Theo dõi kho</label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input asp-for="DangHoatDong" class="form-check-input" type="checkbox" id="dangHoatDongSwitch" />
+                                    <label class="form-check-label fw-semibold" for="dangHoatDongSwitch">Đang dùng</label>
+                                </div>
+                            </div>
+
+                            <!-- Nhóm 2: Tài khoản kế toán ngầm định TT99 -->
+                            <div class="col-12 mt-4">
+                                <h6 class="text-uppercase text-muted fw-bold border-bottom pb-2">2. Tài khoản kế toán ngầm định (TT99/2025/TT-BTC)</h6>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label asp-for="TaiKhoanKhoId" class="form-label fw-semibold"></label>
+                                <select asp-for="TaiKhoanKhoId" asp-items="Model.DanhSachTaiKhoanKho" class="form-select">
+                                    <option value="">-- Chọn TK Kho (152, 153, 155, 156) --</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label asp-for="TaiKhoanDoanhThuId" class="form-label fw-semibold"></label>
+                                <select asp-for="TaiKhoanDoanhThuId" asp-items="Model.DanhSachTaiKhoanDoanhThu" class="form-select">
+                                    <option value="">-- Chọn TK Doanh thu (511, 711) --</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label asp-for="TaiKhoanGiaVonId" class="form-label fw-semibold"></label>
+                                <select asp-for="TaiKhoanGiaVonId" asp-items="Model.DanhSachTaiKhoanGiaVon" class="form-select">
+                                    <option value="">-- Chọn TK Giá vốn (632, 642) --</option>
+                                </select>
+                            </div>
+
+                            <!-- Nhóm 3: Chính sách giá -->
+                            <div class="col-12 mt-4">
+                                <h6 class="text-uppercase text-muted fw-bold border-bottom pb-2">3. Chính sách giá chuẩn</h6>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="DonGiaMuaGanNhat" class="form-label fw-semibold"></label>
+                                <div class="input-group">
+                                    <input asp-for="DonGiaMuaGanNhat" type="number" step="1000" class="form-control text-end font-monospace" />
+                                    <span class="input-group-text">VNĐ</span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="DonGiaBanTieuChuan" class="form-label fw-semibold"></label>
+                                <div class="input-group">
+                                    <input asp-for="DonGiaBanTieuChuan" type="number" step="1000" class="form-control text-end font-monospace text-success fw-bold" />
+                                    <span class="input-group-text">VNĐ</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                            <a asp-action="Index" class="btn btn-outline-secondary">Hủy bỏ</a>
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-check-circle me-1"></i>Cập nhật mặt hàng
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

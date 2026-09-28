@@ -141,6 +141,12 @@
           "icon": "bi bi-file-earmark-spreadsheet",
           "controller": "Inventory",
           "action": "BaoCaoNhapXuatTon"
+        },
+        {
+          "title": "Danh mục Vật tư & Hàng hóa",
+          "icon": "bi bi-box-seam",
+          "controller": "VatTuHangHoa",
+          "action": "Index"
         }
       ]
     },
