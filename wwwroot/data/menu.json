@@ -177,6 +177,12 @@
           "icon": "bi bi-diagram-3",
           "controller": "TaiKhoan",
           "action": "Index"
+        },
+        {
+          "title": "Khách hàng & Nhà cung cấp",
+          "icon": "bi bi-people",
+          "controller": "DoiTuong",
+          "action": "Index"
         }
       ]
     }

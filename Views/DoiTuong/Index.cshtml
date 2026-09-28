@@ -1,0 +1,177 @@
+@model ninjaTax.Models.ViewModels.DoiTuongIndexViewModel
+@{
+    ViewData["Title"] = "Danh mục Khách hàng & Nhà cung cấp";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0 text-primary"><i class="bi bi-people me-2"></i>Danh mục Khách hàng & Nhà cung cấp</h3>
+            <small class="text-muted">Quản lý đối tác công nợ (TK 131, 331, 141, 138, 338) theo Thông tư 99/2025/TT-BTC</small>
+        </div>
+        <div class="btn-group">
+            <a asp-action="Create" asp-route-loai="@ninjaTax.Models.Entities.LoaiDoiTuong.KhachHang" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i>Thêm Khách Hàng
+            </a>
+            <a asp-action="Create" asp-route-loai="@ninjaTax.Models.Entities.LoaiDoiTuong.NhaCungCap" class="btn btn-outline-primary">
+                <i class="bi bi-plus-circle me-1"></i>Thêm Nhà Cung Cấp
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Search & Filter Card -->
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-body">
+            <form method="get" class="row g-2 align-items-center">
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                        <input type="text" name="timKiem" value="@Model.TimKiem" class="form-control" placeholder="Tìm theo Mã, Tên đối tượng, Mã số thuế, SĐT..." />
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select name="loai" class="form-select">
+                        <option value="">-- Tất cả phân loại --</option>
+                        <option value="1" selected="@(Model.LoaiFilter == ninjaTax.Models.Entities.LoaiDoiTuong.KhachHang)">Khách hàng</option>
+                        <option value="2" selected="@(Model.LoaiFilter == ninjaTax.Models.Entities.LoaiDoiTuong.NhaCungCap)">Nhà cung cấp</option>
+                        <option value="3" selected="@(Model.LoaiFilter == ninjaTax.Models.Entities.LoaiDoiTuong.NhanVien)">Nhân viên / Tạm ứng</option>
+                        <option value="4" selected="@(Model.LoaiFilter == ninjaTax.Models.Entities.LoaiDoiTuong.Khac)">Khác / Đối tác</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-secondary">
+                        <i class="bi bi-funnel me-1"></i>Lọc
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">Đặt lại</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Mã ĐT</th>
+                        <th>Tên Khách hàng / Nhà cung cấp</th>
+                        <th>Loại</th>
+                        <th>Mã số thuế</th>
+                        <th>Điện thoại</th>
+                        <th>Địa chỉ</th>
+                        <th class="text-center">Trạng thái</th>
+                        <th class="text-end pe-3">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.DanhSach.Any())
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-4 text-muted">
+                                <i class="bi bi-inbox fs-3 d-block mb-2"></i>Không tìm thấy đối tượng nào phù hợp.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model.DanhSach)
+                        {
+                            <tr>
+                                <td class="ps-3 font-monospace fw-bold text-primary">@item.MaDoiTuong</td>
+                                <td>
+                                    <div class="fw-semibold">@item.TenDoiTuong</div>
+                                    @if (!string.IsNullOrEmpty(item.NguoiLienHe))
+                                    {
+                                        <small class="text-muted"><i class="bi bi-person me-1"></i>@item.NguoiLienHe</small>
+                                    }
+                                </td>
+                                <td>
+                                    @switch (item.Loai)
+                                    {
+                                        case ninjaTax.Models.Entities.LoaiDoiTuong.KhachHang:
+                                            <span class="badge bg-primary">Khách hàng</span>
+                                            break;
+                                        case ninjaTax.Models.Entities.LoaiDoiTuong.NhaCungCap:
+                                            <span class="badge bg-success">Nhà cung cấp</span>
+                                            break;
+                                        case ninjaTax.Models.Entities.LoaiDoiTuong.NhanVien:
+                                            <span class="badge bg-info text-dark">Nhân viên</span>
+                                            break;
+                                        default:
+                                            <span class="badge bg-secondary">Khác</span>
+                                            break;
+                                    }
+                                </td>
+                                <td class="font-monospace">@(item.MaSoThue ?? "-")</td>
+                                <td>@(item.SoDienThoai ?? "-")</td>
+                                <td class="text-truncate" style="max-width: 250px;" title="@item.DiaChi">@(item.DiaChi ?? "-")</td>
+                                <td class="text-center">
+                                    @if (item.DangHoatDong)
+                                    {
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle">Đang giao dịch</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Ngừng GD</span>
+                                    }
+                                </td>
+                                <td class="text-end pe-3">
+                                    <div class="btn-group btn-group-sm">
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-info" title="Chi tiết">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-secondary" title="Sửa">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        @if (!item.DaPhatSinhGiaoDich)
+                                        {
+                                            <button type="button" class="btn btn-outline-danger" title="Xóa"
+                                                    onclick="xacNhanXoa(@item.Id, '@item.MaDoiTuong')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal xác nhận xóa -->
+<form id="deleteForm" method="post" asp-action="Delete">
+    @Html.AntiForgeryToken()
+    <input type="hidden" id="deleteId" name="id" value="" />
+</form>
+
+@section Scripts {
+<script>
+    function xacNhanXoa(id, ma) {
+        if (confirm(`Bạn có chắc chắn muốn xóa đối tượng [${ma}] không?`)) {
+            document.getElementById('deleteId').value = id;
+            document.getElementById('deleteForm').action = '@Url.Action("Delete", "DoiTuong")/' + id;
+            document.getElementById('deleteForm').submit();
+        }
+    }
+</script>
+}

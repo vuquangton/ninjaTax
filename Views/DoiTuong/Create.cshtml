@@ -1,0 +1,131 @@
+@model ninjaTax.Models.ViewModels.DoiTuongCreateEditViewModel
+@{
+    var isEdit = Model.Id > 0;
+    ViewData["Title"] = isEdit ? $"Chỉnh sửa đối tượng: {Model.MaDoiTuong}" : "Thêm mới đối tượng";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex align-items-center mb-3">
+        <a asp-action="Index" class="btn btn-outline-secondary me-3">
+            <i class="bi bi-arrow-left"></i> Quay lại
+        </a>
+        <h3 class="mb-0 text-primary">
+            <i class="bi @(isEdit ? "bi-pencil-square" : "bi-person-plus") me-2"></i>@ViewData["Title"]
+        </h3>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <form method="post" asp-action="@(isEdit ? "Edit" : "Create")" asp-route-id="@(isEdit ? Model.Id : null)">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="Id" />
+
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <div class="row g-3">
+                            <!-- Nhóm 1: Định danh đối tượng -->
+                            <div class="col-12">
+                                <h6 class="text-uppercase text-muted fw-bold border-bottom pb-2">1. Thông tin định danh & Phân loại</h6>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label asp-for="MaDoiTuong" class="form-label fw-semibold"></label> <span class="text-danger">*</span>
+                                <input asp-for="MaDoiTuong" class="form-control font-monospace text-uppercase" placeholder="VD: KH001, NCC_HP" />
+                                <span asp-validation-for="MaDoiTuong" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-5">
+                                <label asp-for="TenDoiTuong" class="form-label fw-semibold"></label> <span class="text-danger">*</span>
+                                <input asp-for="TenDoiTuong" class="form-control" placeholder="Tên công ty hoặc họ tên cá nhân..." />
+                                <span asp-validation-for="TenDoiTuong" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label asp-for="Loai" class="form-label fw-semibold"></label> <span class="text-danger">*</span>
+                                <select asp-for="Loai" class="form-select">
+                                    <option value="1">Khách hàng</option>
+                                    <option value="2">Nhà cung cấp</option>
+                                    <option value="3">Nhân viên / Tạm ứng</option>
+                                    <option value="4">Khác / Đối tác</option>
+                                </select>
+                                <span asp-validation-for="Loai" class="text-danger"></span>
+                            </div>
+
+                            <!-- Nhóm 2: Thông tin Thuế & Liên hệ -->
+                            <div class="col-12 mt-4">
+                                <h6 class="text-uppercase text-muted fw-bold border-bottom pb-2">2. Thông tin Thuế & Liên hệ</h6>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label asp-for="MaSoThue" class="form-label fw-semibold"></label>
+                                <input asp-for="MaSoThue" class="form-control font-monospace" placeholder="Mã số thuế (10 hoặc 13 số)..." />
+                                <span asp-validation-for="MaSoThue" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label asp-for="SoDienThoai" class="form-label fw-semibold"></label>
+                                <input asp-for="SoDienThoai" class="form-control" placeholder="Số điện thoại di động / bàn..." />
+                                <span asp-validation-for="SoDienThoai" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label asp-for="Email" class="form-label fw-semibold"></label>
+                                <input asp-for="Email" type="email" class="form-control" placeholder="ke_toan@congty.com" />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-8">
+                                <label asp-for="DiaChi" class="form-label fw-semibold"></label>
+                                <input asp-for="DiaChi" class="form-control" placeholder="Địa chỉ theo đăng ký kinh doanh hoặc địa chỉ cư trú..." />
+                                <span asp-validation-for="DiaChi" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label asp-for="NguoiLienHe" class="form-label fw-semibold"></label>
+                                <input asp-for="NguoiLienHe" class="form-control" placeholder="Họ tên người liên hệ..." />
+                                <span asp-validation-for="NguoiLienHe" class="text-danger"></span>
+                            </div>
+
+                            <!-- Nhóm 3: Tài khoản ngân hàng & Trạng thái -->
+                            <div class="col-12 mt-4">
+                                <h6 class="text-uppercase text-muted fw-bold border-bottom pb-2">3. Thanh toán & Trạng thái</h6>
+                            </div>
+
+                            <div class="col-md-5">
+                                <label asp-for="SoTaiKhoanNganHang" class="form-label fw-semibold"></label>
+                                <input asp-for="SoTaiKhoanNganHang" class="form-control font-monospace" placeholder="Số tài khoản ngân hàng..." />
+                                <span asp-validation-for="SoTaiKhoanNganHang" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-5">
+                                <label asp-for="TenNganHang" class="form-label fw-semibold"></label>
+                                <input asp-for="TenNganHang" class="form-control" placeholder="Tên ngân hàng & Chi nhánh..." />
+                                <span asp-validation-for="TenNganHang" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-2 d-flex align-items-center mt-4">
+                                <div class="form-check form-switch">
+                                    <input asp-for="DangHoatDong" class="form-check-input" type="checkbox" id="dangHoatDongSwitch" />
+                                    <label class="form-check-label fw-semibold" for="dangHoatDongSwitch">Đang GD</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                            <a asp-action="Index" class="btn btn-outline-secondary">Hủy bỏ</a>
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-check-circle me-1"></i>@(isEdit ? "Cập nhật" : "Lưu đối tượng")
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
