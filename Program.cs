@@ -30,6 +30,9 @@ builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IDepartmentService, DepartmentService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IPeriodClosingService, PeriodClosingService>();
+builder.Services.AddScoped<IGeneralLedgerService, GeneralLedgerService>();
+builder.Services.AddScoped<ISubledgerReconciliationService, SubledgerReconciliationService>();
 
 var app = builder.Build();
 

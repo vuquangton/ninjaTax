@@ -1,0 +1,114 @@
+@model ninjaTax.Models.ViewModels.BangCanDoiTaiKhoanViewModel
+@{
+    ViewData["Title"] = "Bảng Cân Đối Tài Khoản (Trial Balance)";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h4 class="mb-1"><i class="bi bi-layout-three-columns me-2 text-primary"></i>Bảng Cân Đối Số Phát Sinh Các Tài Khoản</h4>
+        <p class="text-muted small mb-0">Trial Balance 8 Cột - Tuân thủ Thông tư 99/2025/TT-BTC</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm"><i class="bi bi-journal-bookmark me-1"></i>Sổ Nhật Ký</a>
+        <a asp-action="SoCai" class="btn btn-outline-secondary btn-sm"><i class="bi bi-book me-1"></i>Sổ Cái</a>
+        <button class="btn btn-outline-success btn-sm" onclick="window.print()"><i class="bi bi-printer me-1"></i>In Bảng Cân Đối</button>
+    </div>
+</div>
+
+<div class="card mb-3 shadow-sm border-0">
+    <div class="card-body py-2">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-auto">
+                <label class="form-label small mb-0 fw-semibold">Từ ngày:</label>
+                <input type="date" name="tuNgay" class="form-control form-control-sm" value="@Model.TuNgay.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-auto">
+                <label class="form-label small mb-0 fw-semibold">Đến ngày:</label>
+                <input type="date" name="denNgay" class="form-control form-control-sm" value="@Model.DenNgay.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-auto align-self-end">
+                <button type="submit" class="btn btn-primary btn-sm px-3"><i class="bi bi-search me-1"></i>Xem bảng cân đối</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row g-2 mb-3">
+    <div class="col-md-4">
+        <div class="p-2 border rounded @(Model.CanDoiDauKy ? "bg-success-subtle border-success" : "bg-danger-subtle border-danger") text-center">
+            <small class="d-block text-muted">Cân đối Số dư Đầu kỳ</small>
+            <span class="fw-bold @(Model.CanDoiDauKy ? "text-success" : "text-danger")">
+                <i class="bi @(Model.CanDoiDauKy ? "bi-check-circle" : "bi-x-circle") me-1"></i>
+                @(Model.CanDoiDauKy ? "100% Cân Đối" : "Lệch Nợ - Có!")
+            </span>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="p-2 border rounded @(Model.CanDoiPhatSinh ? "bg-success-subtle border-success" : "bg-danger-subtle border-danger") text-center">
+            <small class="d-block text-muted">Cân đối Số Phát sinh Trong kỳ</small>
+            <span class="fw-bold @(Model.CanDoiPhatSinh ? "text-success" : "text-danger")">
+                <i class="bi @(Model.CanDoiPhatSinh ? "bi-check-circle" : "bi-x-circle") me-1"></i>
+                @(Model.CanDoiPhatSinh ? "100% Cân Đối" : "Lệch Nợ - Có!")
+            </span>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="p-2 border rounded @(Model.CanDoiCuoiKy ? "bg-success-subtle border-success" : "bg-danger-subtle border-danger") text-center">
+            <small class="d-block text-muted">Cân đối Số dư Cuối kỳ</small>
+            <span class="fw-bold @(Model.CanDoiCuoiKy ? "text-success" : "text-danger")">
+                <i class="bi @(Model.CanDoiCuoiKy ? "bi-check-circle" : "bi-x-circle") me-1"></i>
+                @(Model.CanDoiCuoiKy ? "100% Cân Đối" : "Lệch Nợ - Có!")
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle mb-0 text-nowrap">
+                <thead class="table-light text-center">
+                    <tr>
+                        <th rowspan="2" class="align-middle">Số hiệu TK</th>
+                        <th rowspan="2" class="align-middle text-start">Tên tài khoản</th>
+                        <th colspan="2">Số dư đầu kỳ</th>
+                        <th colspan="2">Số phát sinh trong kỳ</th>
+                        <th colspan="2">Số dư cuối kỳ</th>
+                    </tr>
+                    <tr>
+                        <th style="width: 120px;">Nợ</th>
+                        <th style="width: 120px;">Có</th>
+                        <th style="width: 120px;">Nợ</th>
+                        <th style="width: 120px;">Có</th>
+                        <th style="width: 120px;">Nợ</th>
+                        <th style="width: 120px;">Có</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var tk in Model.DanhSachTaiKhoan)
+                    {
+                        <tr class="@(tk.LaTaiKhoanSoCai ? "fw-bold table-light" : "")">
+                            <td class="text-center font-monospace">@tk.MaTaiKhoan</td>
+                            <td class="text-start">@tk.TenTaiKhoan</td>
+                            <td class="text-end">@(tk.DuNoDauKy > 0 ? tk.DuNoDauKy.ToString("N0") : "-")</td>
+                            <td class="text-end">@(tk.DuCoDauKy > 0 ? tk.DuCoDauKy.ToString("N0") : "-")</td>
+                            <td class="text-end text-primary">@(tk.PhatSinhNoTrongKy > 0 ? tk.PhatSinhNoTrongKy.ToString("N0") : "-")</td>
+                            <td class="text-end text-success">@(tk.PhatSinhCoTrongKy > 0 ? tk.PhatSinhCoTrongKy.ToString("N0") : "-")</td>
+                            <td class="text-end">@(tk.DuNoCuoiKy > 0 ? tk.DuNoCuoiKy.ToString("N0") : "-")</td>
+                            <td class="text-end">@(tk.DuCoCuoiKy > 0 ? tk.DuCoCuoiKy.ToString("N0") : "-")</td>
+                        </tr>
+                    }
+                    <tr class="table-dark fw-bold text-end">
+                        <td colspan="2" class="text-center">TỔNG CỘNG CÂN ĐỐI</td>
+                        <td>@Model.TongDuNoDauKy.ToString("N0")</td>
+                        <td>@Model.TongDuCoDauKy.ToString("N0")</td>
+                        <td>@Model.TongPhatSinhNoTrongKy.ToString("N0")</td>
+                        <td>@Model.TongPhatSinhCoTrongKy.ToString("N0")</td>
+                        <td>@Model.TongDuNoCuoiKy.ToString("N0")</td>
+                        <td>@Model.TongDuCoCuoiKy.ToString("N0")</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

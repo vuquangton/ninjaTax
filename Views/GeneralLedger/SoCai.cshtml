@@ -1,0 +1,138 @@
+@model ninjaTax.Models.ViewModels.SoCaiViewModel
+@{
+    ViewData["Title"] = $"Sổ Cái Tài Khoản {Model.MaTaiKhoan} (S03b-DN)";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h4 class="mb-1"><i class="bi bi-book me-2 text-primary"></i>Sổ Cái Tài Khoản: @Model.MaTaiKhoan - @Model.TenTaiKhoan</h4>
+        <p class="text-muted small mb-0">Mẫu số S03b-DN ban hành theo Thông tư 99/2025/TT-BTC</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm"><i class="bi bi-journal-bookmark me-1"></i>Sổ Nhật Ký Chung</a>
+        <a asp-action="BangCanDoi" class="btn btn-outline-primary btn-sm"><i class="bi bi-layout-three-columns me-1"></i>Bảng Cân Đối TK</a>
+        <button class="btn btn-outline-success btn-sm" onclick="window.print()"><i class="bi bi-printer me-1"></i>In Sổ S03b</button>
+    </div>
+</div>
+
+<div class="card mb-3 shadow-sm border-0">
+    <div class="card-body py-2">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-auto">
+                <label class="form-label small mb-0 fw-semibold">Số hiệu TK:</label>
+                <input type="text" name="maTaiKhoan" class="form-control form-control-sm text-uppercase fw-bold" style="width: 120px;" value="@Model.MaTaiKhoan" placeholder="VD: 1111" />
+            </div>
+            <div class="col-auto">
+                <label class="form-label small mb-0 fw-semibold">Từ ngày:</label>
+                <input type="date" name="tuNgay" class="form-control form-control-sm" value="@Model.TuNgay.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-auto">
+                <label class="form-label small mb-0 fw-semibold">Đến ngày:</label>
+                <input type="date" name="denNgay" class="form-control form-control-sm" value="@Model.DenNgay.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-auto align-self-end">
+                <button type="submit" class="btn btn-primary btn-sm px-3"><i class="bi bi-search me-1"></i>Xem sổ cái</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-3">
+        <div class="card border-0 bg-light shadow-sm">
+            <div class="card-body py-2">
+                <small class="text-muted">Dư Nợ Đầu Kỳ</small>
+                <h6 class="mb-0 text-dark fw-bold">@Model.DuNoDauKy.ToString("N0") đ</h6>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 bg-light shadow-sm">
+            <div class="card-body py-2">
+                <small class="text-muted">Tổng Phát Sinh Nợ</small>
+                <h6 class="mb-0 text-primary fw-bold">@Model.TongPhatSinhNo.ToString("N0") đ</h6>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 bg-light shadow-sm">
+            <div class="card-body py-2">
+                <small class="text-muted">Tổng Phát Sinh Có</small>
+                <h6 class="mb-0 text-success fw-bold">@Model.TongPhatSinhCo.ToString("N0") đ</h6>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 bg-light shadow-sm">
+            <div class="card-body py-2">
+                <small class="text-muted">Dư Cuối Kỳ</small>
+                <h6 class="mb-0 fw-bold @(Model.DuNoCuoiKy > 0 ? "text-primary" : "text-success")">
+                    @(Model.DuNoCuoiKy > 0 ? $"Nợ: {Model.DuNoCuoiKy:N0} đ" : $"Có: {Model.DuCoCuoiKy:N0} đ")
+                </h6>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle mb-0 text-nowrap">
+                <thead class="table-light">
+                    <tr>
+                        <th>Ngày HT</th>
+                        <th>Ngày CT</th>
+                        <th>Số chứng từ</th>
+                        <th>Diễn giải</th>
+                        <th class="text-center">TK Đối ứng</th>
+                        <th class="text-end">Phát sinh Nợ</th>
+                        <th class="text-end">Phát sinh Có</th>
+                        <th class="text-end">Số dư lũy kế</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="table-light fw-semibold">
+                        <td colspan="4">Số dư đầu kỳ</td>
+                        <td class="text-center">-</td>
+                        <td class="text-end">@(Model.DuNoDauKy > 0 ? Model.DuNoDauKy.ToString("N0") : "-")</td>
+                        <td class="text-end">@(Model.DuCoDauKy > 0 ? Model.DuCoDauKy.ToString("N0") : "-")</td>
+                        <td class="text-end">@((Model.DuNoDauKy - Model.DuCoDauKy).ToString("N0"))</td>
+                    </tr>
+                    @if (Model.DongChiTiets.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-4 text-muted">
+                                Không có phát sinh trong kỳ kế toán đối với tài khoản @Model.MaTaiKhoan.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var row in Model.DongChiTiets)
+                        {
+                            <tr>
+                                <td>@row.NgayHachToan.ToString("dd/MM/yyyy")</td>
+                                <td>@row.NgayChungTu.ToString("dd/MM/yyyy")</td>
+                                <td><span class="badge bg-secondary-subtle text-secondary font-monospace">@row.SoChungTu</span></td>
+                                <td>@row.DienGiai</td>
+                                <td class="text-center fw-bold">@row.TaiKhoanDoiUng</td>
+                                <td class="text-end text-primary fw-semibold">@(row.PhatSinhNo > 0 ? row.PhatSinhNo.ToString("N0") : "-")</td>
+                                <td class="text-end text-success fw-semibold">@(row.PhatSinhCo > 0 ? row.PhatSinhCo.ToString("N0") : "-")</td>
+                                <td class="text-end fw-bold">@row.SoDuLuyKe.ToString("N0")</td>
+                            </tr>
+                        }
+                    }
+                    <tr class="table-secondary fw-bold">
+                        <td colspan="4">Cộng phát sinh và số dư cuối kỳ</td>
+                        <td class="text-center">-</td>
+                        <td class="text-end text-primary">@Model.TongPhatSinhNo.ToString("N0")</td>
+                        <td class="text-end text-success">@Model.TongPhatSinhCo.ToString("N0")</td>
+                        <td class="text-end">
+                            @(Model.DuNoCuoiKy > 0 ? $"Nợ: {Model.DuNoCuoiKy:N0}" : $"Có: {Model.DuCoCuoiKy:N0}")
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

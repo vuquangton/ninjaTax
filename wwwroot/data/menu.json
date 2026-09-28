@@ -79,6 +79,42 @@
       ]
     },
     {
+      "title": "Sổ Cái & Tổng Hợp",
+      "icon": "bi bi-journal-bookmark",
+      "children": [
+        {
+          "title": "Sổ Nhật ký chung (S03a)",
+          "icon": "bi bi-journal-text",
+          "controller": "GeneralLedger",
+          "action": "Index"
+        },
+        {
+          "title": "Sổ Cái tài khoản (S03b)",
+          "icon": "bi bi-book",
+          "controller": "GeneralLedger",
+          "action": "SoCai"
+        },
+        {
+          "title": "Bảng Cân đối tài khoản",
+          "icon": "bi bi-layout-three-columns",
+          "controller": "GeneralLedger",
+          "action": "BangCanDoi"
+        },
+        {
+          "title": "Kết chuyển cuối kỳ (TT99)",
+          "icon": "bi bi-arrow-repeat",
+          "controller": "GeneralLedger",
+          "action": "KetChuyenCuoiKy"
+        },
+        {
+          "title": "Đối soát Sổ phụ vs Sổ cái",
+          "icon": "bi bi-patch-check",
+          "controller": "GeneralLedger",
+          "action": "DoiSoat"
+        }
+      ]
+    },
+    {
       "title": "Kho & Hàng Hóa",
       "icon": "bi bi-boxes",
       "children": [

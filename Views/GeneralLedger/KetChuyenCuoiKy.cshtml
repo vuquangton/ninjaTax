@@ -1,0 +1,111 @@
+@{
+    ViewData["Title"] = "Kết Chuyển Kết Quả Kinh Doanh Cuối Kỳ (TT99)";
+    int nam = ViewBag.Nam;
+    int thang = ViewBag.Thang;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h4 class="mb-1"><i class="bi bi-arrow-repeat me-2 text-primary"></i>Kết Chuyển Tự Động Kết Quả Kinh Doanh (TT99)</h4>
+        <p class="text-muted small mb-0">Quy tắc bắt buộc: Kết chuyển trực tiếp Doanh thu/Chi phí vào TK 4212 (Nghiêm cấm dùng TK 911)</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="BangCanDoi" class="btn btn-outline-primary btn-sm"><i class="bi bi-layout-three-columns me-1"></i>Xem Bảng Cân Đối</a>
+    </div>
+</div>
+
+@if (TempData["ThongBaoThanhCong"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>@TempData["ThongBaoThanhCong"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ThongBaoLoi"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ThongBaoLoi"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white py-3">
+                <h6 class="card-title mb-0 fw-bold"><i class="bi bi-sliders me-2 text-primary"></i>Thiết lập Kỳ Kết Chuyển</h6>
+            </div>
+            <div class="card-body">
+                <form asp-action="ThucHienKetChuyen" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Năm tài chính:</label>
+                        <input type="number" name="nam" class="form-control" value="@nam" min="2020" max="2050" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Tháng kế toán (để trống nếu kết chuyển cả năm):</label>
+                        <select name="thang" class="form-select">
+                            <option value="">-- Cả năm tài chính --</option>
+                            @for (int m = 1; m <= 12; m++)
+                            {
+                                <option value="@m" selected="@(m == thang)">Tháng @m</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="alert alert-warning py-2 mb-3">
+                        <small>
+                            <i class="bi bi-info-circle me-1"></i>
+                            <strong>Lưu ý nghiệp vụ:</strong> Bút toán kết chuyển sẽ quét toàn bộ số dư của các tài khoản doanh thu (511, 515, 711) và chi phí (632, 635, 641, 642, 811) để kết chuyển vào TK 4212. Nếu kỳ đã khóa sổ, hệ thống sẽ từ chối ghi nhận.
+                        </small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                        <i class="bi bi-play-circle me-1"></i>Thực Hiện Kết Chuyển Ngay
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white py-3">
+                <h6 class="card-title mb-0 fw-bold"><i class="bi bi-shield-check me-2 text-success"></i>Bất Biến Nghiệp Vụ Chuẩn TT99/2025</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush small">
+                    <li class="list-group-item d-flex align-items-start px-0">
+                        <i class="bi bi-check-circle-fill text-success fs-5 me-2 mt-1"></i>
+                        <div>
+                            <strong>Không sử dụng Tài khoản 911</strong>
+                            <p class="text-muted mb-0">Loại bỏ hoàn toàn tài khoản trung gian 911; toàn bộ lãi lỗ phản ánh trực tiếp vào nguồn vốn CSH.</p>
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex align-items-start px-0">
+                        <i class="bi bi-check-circle-fill text-success fs-5 me-2 mt-1"></i>
+                        <div>
+                            <strong>Kết chuyển Doanh thu</strong>
+                            <p class="text-muted mb-0">Nợ TK 511, 515, 711 / Có TK 4212 (Lợi nhuận sau thuế chưa phân phối năm nay).</p>
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex align-items-start px-0">
+                        <i class="bi bi-check-circle-fill text-success fs-5 me-2 mt-1"></i>
+                        <div>
+                            <strong>Kết chuyển Chi phí</strong>
+                            <p class="text-muted mb-0">Nợ TK 4212 / Có TK 632, 635, 641, 642, 811, 8211.</p>
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex align-items-start px-0">
+                        <i class="bi bi-check-circle-fill text-success fs-5 me-2 mt-1"></i>
+                        <div>
+                            <strong>Cân đối Sổ Cái</strong>
+                            <p class="text-muted mb-0">Sau kết chuyển, toàn bộ tài khoản loại 5, 6, 7, 8 có số dư cuối kỳ bằng 0.</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

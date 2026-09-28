@@ -1,0 +1,88 @@
+@model ninjaTax.Models.ViewModels.SubledgerReconciliationReportViewModel
+@{
+    ViewData["Title"] = "Đối Soát Sổ Phụ & Sổ Cái (Reconciliation)";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h4 class="mb-1"><i class="bi bi-patch-check me-2 text-primary"></i>Kiểm Tra Đối Soát Sổ Phụ vs Sổ Cái (Subledger vs GL)</h4>
+        <p class="text-muted small mb-0">Chốt chặn tự động tính toàn vẹn đa phân hệ trước khi khóa sổ kỳ kế toán</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="BangCanDoi" class="btn btn-outline-primary btn-sm"><i class="bi bi-layout-three-columns me-1"></i>Bảng Cân Đối TK</a>
+        <button class="btn btn-outline-success btn-sm" onclick="window.print()"><i class="bi bi-printer me-1"></i>In Báo Cáo Đối Soát</button>
+    </div>
+</div>
+
+<div class="card mb-3 shadow-sm border-0">
+    <div class="card-body py-2">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-auto">
+                <label class="form-label small mb-0 fw-semibold">Mốc thời gian kiểm tra:</label>
+                <input type="date" name="mocThoiGian" class="form-control form-control-sm" value="@Model.MocThoiGian.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-auto align-self-end">
+                <button type="submit" class="btn btn-primary btn-sm px-3"><i class="bi bi-arrow-clockwise me-1"></i>Chạy đối soát ngay</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="alert @(Model.ToanBoKhopSoLieu ? "alert-success" : "alert-danger") d-flex align-items-center mb-3" role="alert">
+    <i class="bi @(Model.ToanBoKhopSoLieu ? "bi-check-circle-fill" : "bi-exclamation-triangle-fill") fs-4 me-3"></i>
+    <div>
+        <h6 class="alert-heading mb-1 fw-bold">
+            @(Model.ToanBoKhopSoLieu ? "DỮ LIỆU ĐA PHÂN HỆ VÀ SỔ CÁI KHỚP NHAU 100%!" : $"PHÁT HIỆN {Model.SoMucLech} MỤC LỆCH SỐ LIỆU GIỮA SỔ PHỤ VÀ SỔ CÁI!")
+        </h6>
+        <p class="mb-0 small">
+            @(Model.ToanBoKhopSoLieu ? "Tất cả các phân hệ Công nợ (AR/AP), Kho hàng hóa (S10-DN) và TSCĐ hoàn toàn khớp với Sổ Cái GL. Đủ điều kiện khóa sổ kỳ kế toán." : "Doanh nghiệp chưa đủ điều kiện khóa sổ kế toán. Cần kiểm tra các chứng từ bị sót hoặc hạch toán trực tiếp không qua phân hệ.")
+        </p>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle mb-0 text-nowrap">
+                <thead class="table-light">
+                    <tr>
+                        <th>Phân hệ nghiệp vụ</th>
+                        <th class="text-center">Số hiệu TK</th>
+                        <th>Tên tài khoản Sổ cái</th>
+                        <th class="text-end">Số dư Sổ phụ (Subledger)</th>
+                        <th class="text-end">Số dư Sổ cái (GL)</th>
+                        <th class="text-end">Chênh lệch</th>
+                        <th class="text-center">Trạng thái</th>
+                        <th>Ý nghĩa kiểm tra</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.DanhSachDoiSoat)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@row.PhanHe</td>
+                            <td class="text-center font-monospace fw-bold">@row.MaTaiKhoan</td>
+                            <td>@row.TenTaiKhoan</td>
+                            <td class="text-end font-monospace">@row.SoDuSoPhuSubledger.ToString("N0") đ</td>
+                            <td class="text-end font-monospace">@row.SoDuSoCaiGl.ToString("N0") đ</td>
+                            <td class="text-end font-monospace fw-bold @(row.KhopSoLieu ? "text-success" : "text-danger")">
+                                @row.ChenhLech.ToString("N0") đ
+                            </td>
+                            <td class="text-center">
+                                @if (row.KhopSoLieu)
+                                {
+                                    <span class="badge bg-success-subtle text-success px-2 py-1"><i class="bi bi-check-lg me-1"></i>Khớp</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger-subtle text-danger px-2 py-1"><i class="bi bi-x-lg me-1"></i>Lệch số</span>
+                                }
+                            </td>
+                            <td><small class="text-muted">@row.GhiChu</small></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
