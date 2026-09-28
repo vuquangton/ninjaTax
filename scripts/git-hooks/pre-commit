@@ -1,0 +1,26 @@
+#!/bin/sh
+# ninjaTax Git Pre-Commit Hook
+# Enforces Quality Gates defined in docs/test-strategy.md and AGENTS.md
+
+echo "==> [Pre-Commit Hook] Validating build and zero compiler warnings..."
+dotnet build --nologo "-p:TreatWarningsAsErrors=true" ninjaTax.slnx
+BUILD_STATUS=$?
+
+if [ $BUILD_STATUS -ne 0 ]; then
+    echo "❌ [Pre-Commit Hook] Build failed or contains compiler warnings! Commit aborted."
+    echo "    Fix errors/warnings or review docs/test-strategy.md (Section 7.2 Exit Criteria)."
+    exit 1
+fi
+
+echo "==> [Pre-Commit Hook] Running test suite (100% pass required)..."
+dotnet test --no-build --nologo ninjaTax.slnx
+TEST_STATUS=$?
+
+if [ $TEST_STATUS -ne 0 ]; then
+    echo "❌ [Pre-Commit Hook] Unit or integration tests failed! Commit aborted."
+    echo "    Review failing tests against TT99 accounting invariants."
+    exit 1
+fi
+
+echo "✅ [Pre-Commit Hook] All quality gates passed (0 warnings, all tests green). Proceeding with commit."
+exit 0

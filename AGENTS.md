@@ -31,6 +31,7 @@ Repository guidelines for autonomous agents working in `ninjaTax`.
 - **Anti-Negative Stock (VAS 02)**: Outward warehouse vouchers and inward slip cancellations cannot cause warehouse balance to drop below zero.
 - **Cost Segmentation (Phase 7)**: Department `PhongBanId` attached to expense lines (TK 154, 6421, 6422) for segment P&L.
 - **Inventory S10-DN Reconciliation (Phase 8)**: Total closing stock value must reconcile against GL inventory accounts (152, 155, 1561).
+- **Master Quality Gates Reference**: Full statutory test definitions, risk assessment, and QA exit criteria are defined in [docs/test-strategy.md](docs/test-strategy.md).
 
 ## Architecture & Layout
 - `Controllers/`: ASP.NET Core MVC controllers. Keep controllers thin; delegate logic to service layer.
@@ -41,8 +42,11 @@ Repository guidelines for autonomous agents working in `ninjaTax`.
 - `Data/`: `AppDbContext`, `DatabaseServiceExtensions`, `DbInitializer`.
 - `ninjaTax.Tests/`: Unit and integration test suites.
 
-## Agent Workflow
-- Verify any code modification with `dotnet build` and `dotnet test` before reporting completion.
+## Agent Workflow & Quality Gates
+- **Testing Strategy Adherence**: All code modifications must comply with [docs/test-strategy.md](docs/test-strategy.md) Section 7.2 Exit Criteria.
+- **Verification Rule**: Verify every code change with `dotnet build /p:TreatWarningsAsErrors=true` (must be 0 warnings, 0 errors) and `dotnet test` (100% pass rate) before reporting completion.
+- **CI & Pre-Commit Enforcement**: GitHub Actions (`.github/workflows/ci.yml`) and local Git hook (`scripts/git-hooks/pre-commit` -> `.git/hooks/pre-commit`) reject any build with compiler warnings or broken tests.
+- **Precision & Data Protection**: Enforce `decimal(19, 4)` for currency/rates; enforce accounting book lock (`NgayKhoaSo`) across all journal writes.
 - Keep edits localized and preserve existing file structures and configurations.
 
 ## Skill Selection Matrix (5W1H)

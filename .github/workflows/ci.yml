@@ -1,0 +1,44 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ master, main, 'feature/**', 'fix/**' ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  build-and-test:
+    name: Build & Test (TT99 Quality Gates)
+    runs-on: ubuntu-latest
+
+    services:
+      mariadb:
+        image: mariadb:12-noble
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: ninjataxdb
+          MYSQL_USER: dev
+          MYSQL_PASSWORD: "123456"
+        ports:
+          - 3306:3306
+        options: --health-cmd="mariadb-admin ping -proot" --health-interval=5s --health-timeout=2s --health-retries=5
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore Dependencies
+        run: dotnet restore
+
+      - name: Build Solution (TreatWarningsAsErrors)
+        run: dotnet build --configuration Release --no-restore /p:TreatWarningsAsErrors=true
+
+      - name: Run Test Suite (100% Pass Rate Required)
+        run: dotnet test --configuration Release --no-build --verbosity normal --logger "console;verbosity=detailed"
+        env:
+          ConnectionStrings__MariaDb: "Server=127.0.0.1;Port=3306;Database=ninjataxdb;User ID=dev;Password=123456;TreatTinyAsBoolean=true"
