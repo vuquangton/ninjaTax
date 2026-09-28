@@ -195,6 +195,12 @@
           "icon": "bi bi-people",
           "controller": "DoiTuong",
           "action": "Index"
+        },
+        {
+          "title": "Tài khoản ngân hàng",
+          "icon": "bi bi-bank",
+          "controller": "TaiKhoanNganHang",
+          "action": "Index"
         }
       ]
     }

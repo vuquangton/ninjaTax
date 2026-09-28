@@ -1,0 +1,104 @@
+@model ninjaTax.Models.ViewModels.TaiKhoanNganHangCreateEditViewModel
+@{
+    var isEdit = Model.Id > 0;
+    ViewData["Title"] = isEdit ? $"Chỉnh sửa tài khoản: {Model.SoTaiKhoan}" : "Thêm mới tài khoản ngân hàng";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex align-items-center mb-3">
+        <a asp-action="Index" class="btn btn-outline-secondary me-3">
+            <i class="bi bi-arrow-left"></i> Quay lại
+        </a>
+        <h3 class="mb-0 text-primary">
+            <i class="bi @(isEdit ? "bi-pencil-square" : "bi-plus-circle") me-2"></i>@ViewData["Title"]
+        </h3>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <form method="post" asp-action="@(isEdit ? "Edit" : "Create")" asp-route-id="@(isEdit ? Model.Id : null)">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="DaPhatSinhGiaoDich" />
+
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="SoTaiKhoan" class="form-label fw-semibold"></label> <span class="text-danger">*</span>
+                                @if (isEdit && Model.DaPhatSinhGiaoDich)
+                                {
+                                    <input asp-for="SoTaiKhoan" class="form-control font-monospace" readonly />
+                                }
+                                else
+                                {
+                                    <input asp-for="SoTaiKhoan" class="form-control font-monospace" placeholder="VD: 0011001234567" />
+                                }
+                                <span asp-validation-for="SoTaiKhoan" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="TenNganHang" class="form-label fw-semibold"></label> <span class="text-danger">*</span>
+                                <input asp-for="TenNganHang" class="form-control" placeholder="VD: Vietcombank, Techcombank, BIDV..." />
+                                <span asp-validation-for="TenNganHang" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="ChiNhanh" class="form-label fw-semibold"></label>
+                                <input asp-for="ChiNhanh" class="form-control" placeholder="Chi nhánh mở tài khoản..." />
+                                <span asp-validation-for="ChiNhanh" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="ChuTaiKhoan" class="form-label fw-semibold"></label>
+                                <input asp-for="ChuTaiKhoan" class="form-control text-uppercase" placeholder="Tên chủ tài khoản..." />
+                                <span asp-validation-for="ChuTaiKhoan" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="TaiKhoanKeToanId" class="form-label fw-semibold"></label>
+                                <select asp-for="TaiKhoanKeToanId" asp-items="Model.AccountList" class="form-select"></select>
+                                <span asp-validation-for="TaiKhoanKeToanId" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="SoDuBanDau" class="form-label fw-semibold"></label>
+                                <div class="input-group">
+                                    <input asp-for="SoDuBanDau" type="number" step="1000" class="form-control text-end font-monospace" />
+                                    <span class="input-group-text">VNĐ</span>
+                                </div>
+                                <span asp-validation-for="SoDuBanDau" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-12">
+                                <div class="form-check form-switch mt-2">
+                                    <input asp-for="DangHoatDong" class="form-check-input" type="checkbox" id="dangHoatDongSwitch" />
+                                    <label class="form-check-label fw-semibold" for="dangHoatDongSwitch">Đang sử dụng cho giao dịch thu/chi ngân hàng</label>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <label asp-for="GhiChu" class="form-label fw-semibold"></label>
+                                <textarea asp-for="GhiChu" class="form-control" rows="2" placeholder="Ghi chú thêm..."></textarea>
+                                <span asp-validation-for="GhiChu" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                            <a asp-action="Index" class="btn btn-outline-secondary">Hủy bỏ</a>
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-check-circle me-1"></i>@(isEdit ? "Cập nhật" : "Lưu tài khoản")
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

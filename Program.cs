@@ -36,6 +36,7 @@ builder.Services.AddScoped<ISubledgerReconciliationService, SubledgerReconciliat
 builder.Services.AddScoped<ITaiKhoanService, TaiKhoanService>();
 builder.Services.AddScoped<IDoiTuongService, DoiTuongService>();
 builder.Services.AddScoped<IVatTuHangHoaService, VatTuHangHoaService>();
+builder.Services.AddScoped<ITaiKhoanNganHangService, TaiKhoanNganHangService>();
 
 var app = builder.Build();
 
