@@ -1,0 +1,133 @@
+@model ninjaTax.Models.ViewModels.TaiKhoanNganHangIndexViewModel
+@{
+    ViewData["Title"] = "Danh mục Tài khoản Ngân hàng";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0 text-primary"><i class="bi bi-bank me-2"></i>Danh mục Tài khoản Ngân hàng</h3>
+            <small class="text-muted">Quản lý các tài khoản ngân hàng của doanh nghiệp phục vụ sổ tiền gửi TK 112</small>
+        </div>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>Thêm Tài Khoản Mới
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-body">
+            <form method="get" class="row g-2 align-items-center">
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                        <input type="text" name="timKiem" value="@Model.TimKiem" class="form-control" placeholder="Tìm theo Số tài khoản, Ngân hàng, Chủ tài khoản..." />
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-secondary w-100">
+                        <i class="bi bi-funnel me-1"></i>Tìm kiếm
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Số tài khoản</th>
+                        <th>Ngân hàng</th>
+                        <th>Chi nhánh</th>
+                        <th>Chủ tài khoản</th>
+                        <th>TK Kế toán 112</th>
+                        <th class="text-end">Số dư ban đầu</th>
+                        <th class="text-center">Trạng thái</th>
+                        <th class="text-end pe-3">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.DanhSach.Any())
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-4 text-muted">
+                                <i class="bi bi-inbox fs-3 d-block mb-2"></i>Chưa có tài khoản ngân hàng nào.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model.DanhSach)
+                        {
+                            <tr>
+                                <td class="ps-3 font-monospace fw-bold text-primary">@item.SoTaiKhoan</td>
+                                <td class="fw-semibold">@item.TenNganHang</td>
+                                <td>@(item.ChiNhanh ?? "-")</td>
+                                <td>@(item.ChuTaiKhoan ?? "-")</td>
+                                <td class="font-monospace text-success fw-bold">@(item.TaiKhoanKeToanMa ?? "-")</td>
+                                <td class="text-end font-monospace">@item.SoDuBanDau.ToString("N0") đ</td>
+                                <td class="text-center">
+                                    @if (item.DangHoatDong)
+                                    {
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle">Hoạt động</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Ngừng</span>
+                                    }
+                                </td>
+                                <td class="text-end pe-3">
+                                    <div class="btn-group btn-group-sm">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-secondary" title="Sửa">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        @if (!item.DaPhatSinhGiaoDich)
+                                        {
+                                            <button type="button" class="btn btn-outline-danger" title="Xóa"
+                                                    onclick="xacNhanXoa(@item.Id, '@item.SoTaiKhoan')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<form id="deleteForm" method="post" asp-action="Delete">
+    @Html.AntiForgeryToken()
+</form>
+
+@section Scripts {
+<script>
+    function xacNhanXoa(id, stk) {
+        if (confirm(`Bạn có chắc chắn muốn xóa tài khoản ngân hàng [${stk}] không?`)) {
+            const form = document.getElementById('deleteForm');
+            form.action = '@Url.Action("Delete", "TaiKhoanNganHang")/' + id;
+            form.submit();
+        }
+    }
+</script>
+}

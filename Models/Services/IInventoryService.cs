@@ -28,6 +28,11 @@ public interface IInventoryService
     Task<List<Kho>> GetActiveWarehousesAsync(long? branchId = null);
 
     /// <summary>
+    /// Lấy toàn bộ danh sách kho hàng (kèm chi nhánh, thủ kho, tài khoản).
+    /// </summary>
+    Task<List<Kho>> GetAllWarehousesAsync(long? branchId = null);
+
+    /// <summary>
     /// Lấy thông tin kho theo Id kèm chi nhánh và thủ kho.
     /// </summary>
     Task<Kho?> GetWarehouseByIdAsync(long id);
@@ -36,6 +41,16 @@ public interface IInventoryService
     /// Lưu hoặc cập nhật thông tin kho hàng.
     /// </summary>
     Task<Kho> SaveWarehouseAsync(Kho kho);
+
+    /// <summary>
+    /// Kiểm tra kho hàng đã phát sinh phiếu kho hoặc tồn kho hay chưa.
+    /// </summary>
+    Task<bool> CanDeleteWarehouseAsync(long khoId);
+
+    /// <summary>
+    /// Xóa kho hàng nếu chưa phát sinh chứng từ.
+    /// </summary>
+    Task<(bool Success, string? Message)> DeleteWarehouseAsync(long khoId);
 
     /// <summary>
     /// Tính đơn giá xuất kho bình quân gia quyền tại thời điểm xuất kho (VAS 02 / TT 200).

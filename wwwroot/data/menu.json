@@ -141,6 +141,18 @@
           "icon": "bi bi-file-earmark-spreadsheet",
           "controller": "Inventory",
           "action": "BaoCaoNhapXuatTon"
+        },
+        {
+          "title": "Danh mục Vật tư & Hàng hóa",
+          "icon": "bi bi-box-seam",
+          "controller": "VatTuHangHoa",
+          "action": "Index"
+        },
+        {
+          "title": "Danh mục Kho hàng",
+          "icon": "bi bi-buildings",
+          "controller": "Kho",
+          "action": "Index"
         }
       ]
     },
@@ -176,6 +188,18 @@
           "title": "Hệ thống tài khoản (COA)",
           "icon": "bi bi-diagram-3",
           "controller": "TaiKhoan",
+          "action": "Index"
+        },
+        {
+          "title": "Khách hàng & Nhà cung cấp",
+          "icon": "bi bi-people",
+          "controller": "DoiTuong",
+          "action": "Index"
+        },
+        {
+          "title": "Tài khoản ngân hàng",
+          "icon": "bi bi-bank",
+          "controller": "TaiKhoanNganHang",
           "action": "Index"
         }
       ]

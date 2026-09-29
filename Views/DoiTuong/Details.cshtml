@@ -1,0 +1,131 @@
+@model ninjaTax.Models.ViewModels.DoiTuongItemViewModel
+@{
+    ViewData["Title"] = $"Hồ sơ đối tượng: {Model.MaDoiTuong}";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex align-items-center">
+            <a asp-action="Index" class="btn btn-outline-secondary me-3">
+                <i class="bi bi-arrow-left"></i> Quay lại
+            </a>
+            <div>
+                <h3 class="mb-0 text-primary"><i class="bi bi-person-badge me-2"></i>@Model.TenDoiTuong</h3>
+                <span class="font-monospace text-muted">Mã: @Model.MaDoiTuong</span>
+            </div>
+        </div>
+        <div class="btn-group">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                <i class="bi bi-pencil me-1"></i>Chỉnh sửa hồ sơ
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <!-- Thông tin cơ bản -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-light fw-bold py-2">
+                    <i class="bi bi-info-circle me-1"></i>Thông tin pháp lý & Liên hệ
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm table-borderless">
+                        <tbody>
+                            <tr>
+                                <th style="width: 35%;" class="text-muted">Phân loại:</th>
+                                <td>
+                                    @switch (Model.Loai)
+                                    {
+                                        case ninjaTax.Models.Entities.LoaiDoiTuong.KhachHang:
+                                            <span class="badge bg-primary">Khách hàng</span>
+                                            break;
+                                        case ninjaTax.Models.Entities.LoaiDoiTuong.NhaCungCap:
+                                            <span class="badge bg-success">Nhà cung cấp</span>
+                                            break;
+                                        case ninjaTax.Models.Entities.LoaiDoiTuong.NhanVien:
+                                            <span class="badge bg-info text-dark">Nhân viên</span>
+                                            break;
+                                        default:
+                                            <span class="badge bg-secondary">Khác</span>
+                                            break;
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Mã số thuế:</th>
+                                <td class="font-monospace fw-bold">@(Model.MaSoThue ?? "-")</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Địa chỉ:</th>
+                                <td>@(Model.DiaChi ?? "-")</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Số điện thoại:</th>
+                                <td>@(Model.SoDienThoai ?? "-")</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Email:</th>
+                                <td>@(Model.Email ?? "-")</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Người liên hệ:</th>
+                                <td>@(Model.NguoiLienHe ?? "-")</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Trạng thái GD:</th>
+                                <td>
+                                    @if (Model.DangHoatDong)
+                                    {
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle">Đang giao dịch</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Ngừng giao dịch</span>
+                                    }
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trạng thái Kế toán & Rủi ro Thuế -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-light fw-bold py-2">
+                    <i class="bi bi-shield-check me-1"></i>Kiểm soát Kế toán & Rủi ro Thuế (TT99)
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="text-muted">Phát sinh dữ liệu kế toán:</span>
+                            @if (Model.DaPhatSinhGiaoDich)
+                            {
+                                <span class="badge bg-warning text-dark"><i class="bi bi-lock-fill me-1"></i>Đã có phát sinh (Khóa xóa)</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Chưa có giao dịch phát sinh</span>
+                            }
+                        </div>
+                        <small class="text-muted d-block">
+                            Tuân thủ bất biến TT99: Đối tượng đã có chứng từ trong Nhật Ký Chung hoặc Hóa đơn chỉ được phép chuyển trạng thái 'Ngừng giao dịch', không được xóa vật lý để bảo toàn lịch sử sổ sách.
+                        </small>
+                    </div>
+
+                    <hr />
+
+                    <div class="d-flex gap-2">
+                        <a asp-controller="CongNo" asp-action="Index" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-journal-text me-1"></i>Tra cứu Sổ Công Nợ
+                        </a>
+                        <a asp-controller="GeneralLedger" asp-action="SoCai" asp-route-taiKhoan="@(Model.Loai == ninjaTax.Models.Entities.LoaiDoiTuong.KhachHang ? "131" : "331")" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-book me-1"></i>Xem Sổ Cái
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

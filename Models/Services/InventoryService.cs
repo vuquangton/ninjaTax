@@ -655,6 +655,54 @@ public class InventoryService : IInventoryService
         return kho;
     }
 
+    public async Task<List<Kho>> GetAllWarehousesAsync(long? branchId = null)
+    {
+        var query = _context.Khos
+            .Include(k => k.ChiNhanh)
+            .Include(k => k.ThuKho)
+            .Include(k => k.TaiKhoanKhoMacDinh)
+            .AsNoTracking()
+            .AsQueryable();
+
+        if (branchId.HasValue && branchId.Value > 0)
+        {
+            query = query.Where(k => k.ChiNhanhId == branchId.Value);
+        }
+
+        return await query.OrderBy(k => k.MaKho).ToListAsync();
+    }
+
+    public async Task<bool> CanDeleteWarehouseAsync(long khoId)
+    {
+        var coNhap = await _context.PhieuNhapKhos.AnyAsync(p => p.KhoId == khoId);
+        if (coNhap) return false;
+
+        var coXuat = await _context.PhieuXuatKhos.AnyAsync(p => p.KhoId == khoId);
+        if (coXuat) return false;
+
+        return true;
+    }
+
+    public async Task<(bool Success, string? Message)> DeleteWarehouseAsync(long khoId)
+    {
+        var kho = await _context.Khos.FindAsync(khoId);
+        if (kho == null)
+        {
+            return (false, "Không tìm thấy kho hàng cần xóa.");
+        }
+
+        var canDelete = await CanDeleteWarehouseAsync(khoId);
+        if (!canDelete)
+        {
+            return (false, $"Kho hàng '{kho.MaKho} - {kho.TenKho}' đã phát sinh phiếu nhập/xuất kho. Không được phép xóa! Vui lòng chuyển trạng thái sang 'Ngừng hoạt động'.");
+        }
+
+        _context.Khos.Remove(kho);
+        await _context.SaveChangesAsync();
+        _logger.LogInformation("Đã xóa kho hàng {Ma}", kho.MaKho);
+        return (true, null);
+    }
+
     public async Task<BaoCaoNhapXuatTonViewModel> LapBaoCaoNhapXuatTonAsync(DateTime tuNgay, DateTime denNgay, long? khoId = null, long? branchId = null)
     {
         var startOfDay = tuNgay.Date;
