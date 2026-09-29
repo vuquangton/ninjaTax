@@ -979,5 +979,209 @@ public class InventoryService : IInventoryService
 
         return (true, $"Đã tính lại giá xuất kho thành công cho {soDongCapNhat} dòng xuất.", soDongCapNhat, tongChenhLech);
     }
+
+    public async Task<PhieuDieuChuyenKho> TaoPhieuDieuChuyenKhoAsync(PhieuDieuChuyenKho phieu)
+    {
+        if (phieu.KhoXuatId == phieu.KhoNhapId)
+        {
+            throw new InvalidOperationException("Kho xuất và kho nhập không được trùng nhau.");
+        }
+
+        if (phieu.ChiTietDieuChuyens == null || !phieu.ChiTietDieuChuyens.Any())
+        {
+            throw new InvalidOperationException("Phiếu điều chuyển phải có ít nhất một dòng hàng hóa.");
+        }
+
+        // 1. Kiểm tra tồn kho tại Kho Xuất (Anti-Negative Stock)
+        foreach (var item in phieu.ChiTietDieuChuyens)
+        {
+            await ValidateStockAvailabilityAsync(phieu.KhoXuatId, item.VatTuHangHoaId, item.SoLuong, phieu.NgayHachToan);
+        }
+
+        // 2. Tính tổng số lượng và giá trị
+        phieu.TongSoLuong = phieu.ChiTietDieuChuyens.Sum(c => c.SoLuong);
+        phieu.TongGiaTri = phieu.ChiTietDieuChuyens.Sum(c => c.ThanhTien);
+        phieu.TrangThai = TrangThaiDieuChuyenKho.DaHoanThanh;
+
+        // 3. Lấy tài khoản mặc định nếu chưa gán
+        var tk1561 = await _context.TaiKhoans.FirstOrDefaultAsync(t => t.MaTaiKhoan == "1561")
+                     ?? await _context.TaiKhoans.FirstOrDefaultAsync(t => t.MaTaiKhoan == "156")
+                     ?? await _context.TaiKhoans.FirstAsync();
+
+        foreach (var item in phieu.ChiTietDieuChuyens)
+        {
+            item.TaiKhoanNhapId ??= tk1561.Id;
+            item.TaiKhoanXuatId ??= tk1561.Id;
+        }
+
+        // 4. Sinh Bút toán chuyển kho nếu tài khoản Nợ khác tài khoản Có (ví dụ: chuyển nguyên vật liệu 152 sang hàng hoá 1561)
+        // Nếu cùng tài khoản (1561 -> 1561), nghiệp vụ ghi nhận biến động vật lý qua Phiếu Xuất/Phiếu Nhập và Sổ kho S10-DN, không phát sinh bút toán Nợ 1561/Có 1561
+        var needsGlPosting = phieu.ChiTietDieuChuyens.Any(c => c.TaiKhoanNhapId != c.TaiKhoanXuatId);
+        if (needsGlPosting)
+        {
+            var butToan = new ButToan
+            {
+                SoChungTu = $"PKT-{phieu.SoPhieu}",
+                NgayHachToan = phieu.NgayHachToan,
+                NgayChungTu = phieu.NgayDieuChuyen,
+                SoChungTuGoc = phieu.SoPhieu,
+                NgayChungTuGoc = phieu.NgayDieuChuyen,
+                DienGiai = string.IsNullOrWhiteSpace(phieu.LyDoDieuChuyen)
+                    ? $"Điều chuyển kho nội bộ {phieu.SoPhieu}"
+                    : phieu.LyDoDieuChuyen,
+                TrangThai = TrangThaiButToan.DaGhiSo
+            };
+
+            var lines = new List<ChiTietButToan>();
+            int dongSo = 1;
+
+            foreach (var item in phieu.ChiTietDieuChuyens.Where(c => c.TaiKhoanNhapId != c.TaiKhoanXuatId))
+            {
+                lines.Add(new ChiTietButToan
+                {
+                    DongSo = dongSo++,
+                    TaiKhoanNoId = item.TaiKhoanNhapId!.Value,
+                    TaiKhoanCoId = item.TaiKhoanXuatId!.Value,
+                    SoTien = item.ThanhTien,
+                    DienGiai = $"Điều chuyển hàng: {item.DonViTinh} sang kho nhập"
+                });
+            }
+
+            butToan.ChiTietButToans = lines;
+            var (ok, msg, createdBt) = await _butToanService.TaoMoiAsync(butToan);
+            if (!ok || createdBt == null)
+            {
+                throw new InvalidOperationException($"Lỗi hạch toán sổ cái phiếu điều chuyển kho: {msg}");
+            }
+
+            phieu.ButToanId = createdBt.Id;
+        }
+
+        _context.PhieuDieuChuyenKhos.Add(phieu);
+
+        // 5. Tự động sinh đồng bộ PhieuXuatKho và PhieuNhapKho nội bộ
+        var px = new PhieuXuatKho
+        {
+            ChiNhanhId = phieu.ChiNhanhId,
+            KhoId = phieu.KhoXuatId,
+            SoPhieu = $"PXK-{phieu.SoPhieu}",
+            NgayXuat = phieu.NgayDieuChuyen,
+            NgayHachToan = phieu.NgayHachToan,
+            LoaiXuatKho = LoaiXuatKho.SuDungNoiBo,
+            DienGiai = phieu.LyDoDieuChuyen ?? "Xuất điều chuyển kho nội bộ",
+            TongSoLuong = phieu.TongSoLuong,
+            TongTienGiaVon = phieu.TongGiaTri,
+            TrangThai = TrangThaiPhieuKho.DaGhiSo,
+            ChiTietXuatKhos = phieu.ChiTietDieuChuyens.Select(c => new ChiTietXuatKho
+            {
+                VatTuHangHoaId = c.VatTuHangHoaId,
+                SoLuong = c.SoLuong,
+                DonGiaVon = c.DonGiaVon,
+                TienGiaVon = c.ThanhTien,
+                TaiKhoanNoId = c.TaiKhoanNhapId!.Value,
+                TaiKhoanCoId = c.TaiKhoanXuatId!.Value
+            }).ToList()
+        };
+        _context.PhieuXuatKhos.Add(px);
+
+        var pn = new PhieuNhapKho
+        {
+            ChiNhanhId = phieu.ChiNhanhId,
+            KhoId = phieu.KhoNhapId,
+            SoPhieu = $"PNK-{phieu.SoPhieu}",
+            NgayNhap = phieu.NgayDieuChuyen,
+            NgayHachToan = phieu.NgayHachToan,
+            LoaiNhapKho = LoaiNhapKho.NhapKhac,
+            DienGiai = phieu.LyDoDieuChuyen ?? "Nhập điều chuyển kho nội bộ",
+            TongSoLuong = phieu.TongSoLuong,
+            TongTienHang = phieu.TongGiaTri,
+            TrangThai = TrangThaiPhieuKho.DaGhiSo,
+            ChiTietNhapKhos = phieu.ChiTietDieuChuyens.Select(c => new ChiTietNhapKho
+            {
+                VatTuHangHoaId = c.VatTuHangHoaId,
+                SoLuong = c.SoLuong,
+                DonGia = c.DonGiaVon,
+                ThanhTien = c.ThanhTien,
+                TaiKhoanNoId = c.TaiKhoanNhapId!.Value,
+                TaiKhoanCoId = c.TaiKhoanXuatId!.Value
+            }).ToList()
+        };
+        _context.PhieuNhapKhos.Add(pn);
+
+        await _context.SaveChangesAsync();
+        _logger.LogInformation("Lập và ghi sổ thành công phiếu điều chuyển kho {SoPhieu}", phieu.SoPhieu);
+        return phieu;
+    }
+
+    public async Task<bool> HuyPhieuDieuChuyenKhoAsync(long phieuDieuChuyenId)
+    {
+        var phieu = await _context.PhieuDieuChuyenKhos
+            .Include(p => p.ChiTietDieuChuyens)
+            .FirstOrDefaultAsync(p => p.Id == phieuDieuChuyenId);
+
+        if (phieu == null) return false;
+        if (phieu.TrangThai == TrangThaiDieuChuyenKho.DaHuy) return true;
+
+        if (phieu.ButToanId.HasValue)
+        {
+            await _butToanService.XoaAsync(phieu.ButToanId.Value);
+            phieu.ButToanId = null;
+        }
+
+        // Hủy phiếu xuất và nhập tương ứng
+        var pxSoPhieu = $"PXK-{phieu.SoPhieu}";
+        var pnSoPhieu = $"PNK-{phieu.SoPhieu}";
+
+        var px = await _context.PhieuXuatKhos.FirstOrDefaultAsync(p => p.SoPhieu == pxSoPhieu);
+        if (px != null) px.TrangThai = TrangThaiPhieuKho.DaHuy;
+
+        var pn = await _context.PhieuNhapKhos.FirstOrDefaultAsync(p => p.SoPhieu == pnSoPhieu);
+        if (pn != null) pn.TrangThai = TrangThaiPhieuKho.DaHuy;
+
+        phieu.TrangThai = TrangThaiDieuChuyenKho.DaHuy;
+        await _context.SaveChangesAsync();
+        _logger.LogInformation("Đã hủy phiếu điều chuyển kho {SoPhieu}", phieu.SoPhieu);
+        return true;
+    }
+
+    public async Task<List<PhieuDieuChuyenKho>> LayDanhSachPhieuDieuChuyenAsync(DateTime? tuNgay = null, DateTime? denNgay = null, long? branchId = null)
+    {
+        var query = _context.PhieuDieuChuyenKhos
+            .Include(p => p.KhoXuat)
+            .Include(p => p.KhoNhap)
+            .Include(p => p.ChiNhanh)
+            .AsNoTracking()
+            .AsQueryable();
+
+        if (branchId.HasValue && branchId.Value > 0)
+        {
+            query = query.Where(p => p.ChiNhanhId == branchId.Value);
+        }
+
+        if (tuNgay.HasValue)
+        {
+            query = query.Where(p => p.NgayDieuChuyen >= tuNgay.Value.Date);
+        }
+
+        if (denNgay.HasValue)
+        {
+            var endOfDay = denNgay.Value.Date.AddDays(1).AddTicks(-1);
+            query = query.Where(p => p.NgayDieuChuyen <= endOfDay);
+        }
+
+        return await query.OrderByDescending(p => p.NgayDieuChuyen).ThenByDescending(p => p.Id).ToListAsync();
+    }
+
+    public async Task<PhieuDieuChuyenKho?> LayChiTietPhieuDieuChuyenAsync(long id)
+    {
+        return await _context.PhieuDieuChuyenKhos
+            .Include(p => p.KhoXuat)
+            .Include(p => p.KhoNhap)
+            .Include(p => p.ChiNhanh)
+            .Include(p => p.ButToan)
+            .Include(p => p.ChiTietDieuChuyens)
+                .ThenInclude(c => c.VatTuHangHoa)
+            .FirstOrDefaultAsync(p => p.Id == id);
+    }
 }
 

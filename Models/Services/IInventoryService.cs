@@ -112,4 +112,25 @@ public interface IInventoryService
         DateTime denNgay, 
         long? khoId = null, 
         long? branchId = null);
+
+    /// <summary>
+    /// Lập và ghi sổ phiếu điều chuyển kho nội bộ (Mẫu 03-VT).
+    /// Tự động kiểm tra tồn kho tại Kho Xuất, ghi tăng Kho Nhập và định khoản Nợ 1561(Nhập) / Có 1561(Xuất).
+    /// </summary>
+    Task<PhieuDieuChuyenKho> TaoPhieuDieuChuyenKhoAsync(PhieuDieuChuyenKho phieu);
+
+    /// <summary>
+    /// Hủy phiếu điều chuyển kho nội bộ và đảo ngược bút toán sổ cái.
+    /// </summary>
+    Task<bool> HuyPhieuDieuChuyenKhoAsync(long phieuDieuChuyenId);
+
+    /// <summary>
+    /// Lấy danh sách phiếu điều chuyển kho.
+    /// </summary>
+    Task<List<PhieuDieuChuyenKho>> LayDanhSachPhieuDieuChuyenAsync(DateTime? tuNgay = null, DateTime? denNgay = null, long? branchId = null);
+
+    /// <summary>
+    /// Lấy chi tiết phiếu điều chuyển kho theo Id.
+    /// </summary>
+    Task<PhieuDieuChuyenKho?> LayChiTietPhieuDieuChuyenAsync(long id);
 }

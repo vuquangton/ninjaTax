@@ -76,6 +76,8 @@ public class AppDbContext : DbContext
 
     // Phase 14: Đơn Vị Tính Quy Đổi & Điều Chuyển Kho Nội Bộ
     public DbSet<DonViTinhQuyDoi> DonViTinhQuyDois => Set<DonViTinhQuyDoi>();
+    public DbSet<PhieuDieuChuyenKho> PhieuDieuChuyenKhos => Set<PhieuDieuChuyenKho>();
+    public DbSet<ChiTietDieuChuyenKho> ChiTietDieuChuyenKhos => Set<ChiTietDieuChuyenKho>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -1232,6 +1234,50 @@ public class AppDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.VatTuHangHoaId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<PhieuDieuChuyenKho>(entity =>
+        {
+            entity.ToTable("PhieuDieuChuyenKho");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+
+            entity.HasOne(e => e.KhoXuat)
+                .WithMany()
+                .HasForeignKey(e => e.KhoXuatId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.KhoNhap)
+                .WithMany()
+                .HasForeignKey(e => e.KhoNhapId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.ChiNhanh)
+                .WithMany()
+                .HasForeignKey(e => e.ChiNhanhId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.ButToan)
+                .WithMany()
+                .HasForeignKey(e => e.ButToanId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<ChiTietDieuChuyenKho>(entity =>
+        {
+            entity.ToTable("ChiTietDieuChuyenKho");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+
+            entity.HasOne(e => e.PhieuDieuChuyenKho)
+                .WithMany(p => p.ChiTietDieuChuyens)
+                .HasForeignKey(e => e.PhieuDieuChuyenKhoId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.VatTuHangHoa)
+                .WithMany()
+                .HasForeignKey(e => e.VatTuHangHoaId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }
