@@ -38,6 +38,7 @@ builder.Services.AddScoped<IDoiTuongService, DoiTuongService>();
 builder.Services.AddScoped<IVatTuHangHoaService, VatTuHangHoaService>();
 builder.Services.AddScoped<ITaiKhoanNganHangService, TaiKhoanNganHangService>();
 builder.Services.AddScoped<ILandedCostService, LandedCostService>();
+builder.Services.AddScoped<IUnitConversionService, UnitConversionService>();
 
 var app = builder.Build();
 

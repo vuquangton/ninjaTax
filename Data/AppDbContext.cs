@@ -74,6 +74,9 @@ public class AppDbContext : DbContext
     public DbSet<ChungTuChiPhiMuaHang> ChungTuChiPhiMuaHangs => Set<ChungTuChiPhiMuaHang>();
     public DbSet<ChiPhiMuaHangPhanBo> ChiPhiMuaHangPhanBos => Set<ChiPhiMuaHangPhanBo>();
 
+    // Phase 14: Đơn Vị Tính Quy Đổi & Điều Chuyển Kho Nội Bộ
+    public DbSet<DonViTinhQuyDoi> DonViTinhQuyDois => Set<DonViTinhQuyDoi>();
+
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         base.ConfigureConventions(configurationBuilder);
@@ -1216,6 +1219,18 @@ public class AppDbContext : DbContext
             entity.HasOne(e => e.ChiTietNhapKho)
                 .WithMany(n => n.ChiPhiPhanBos)
                 .HasForeignKey(e => e.ChiTietNhapKhoId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<DonViTinhQuyDoi>(entity =>
+        {
+            entity.ToTable("DonViTinhQuyDoi");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+
+            entity.HasOne(e => e.VatTuHangHoa)
+                .WithMany()
+                .HasForeignKey(e => e.VatTuHangHoaId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
     }
