@@ -99,4 +99,14 @@ public class ChiTietXuatKho
 
     [StringLength(255)]
     public string? GhiChu { get; set; }
+
+    /// <summary>
+    /// Đơn giá vốn bình quân gia quyền tính lại cuối kỳ (VAS 02)
+    /// </summary>
+    public decimal? DonGiaVonCuoiKy { get; set; }
+
+    /// <summary>
+    /// Chênh lệch giá vốn sau khi tính lại = (DonGiaVonCuoiKy - DonGiaVon) * SoLuong
+    /// </summary>
+    public decimal? ChenhLechGiaVon { get; set; }
 }

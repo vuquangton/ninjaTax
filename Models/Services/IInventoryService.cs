@@ -102,4 +102,14 @@ public interface IInventoryService
     /// và tự động đối soát với Sổ Cái TK Kho (152, 1561).
     /// </summary>
     Task<BaoCaoNhapXuatTonViewModel> LapBaoCaoNhapXuatTonAsync(DateTime tuNgay, DateTime denNgay, long? khoId = null, long? branchId = null);
+
+    /// <summary>
+    /// Động cơ tính lại giá xuất kho theo phương pháp Bình quân gia quyền cả kỳ (VAS 02).
+    /// Quét và cập nhật lại đơn giá vốn trên toàn bộ các dòng phiếu xuất kho trong kỳ và sinh bút toán điều chỉnh giá vốn (TK 632 / 1561).
+    /// </summary>
+    Task<(bool Success, string? Message, int SoDongCapNhat, decimal TongChenhLech)> RecalculatePeriodWeightedAverageCostAsync(
+        DateTime tuNgay, 
+        DateTime denNgay, 
+        long? khoId = null, 
+        long? branchId = null);
 }

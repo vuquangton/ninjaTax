@@ -17,4 +17,10 @@ public interface IPeriodClosingService
     /// Hủy kết chuyển kỳ (Xóa bút toán kết chuyển để tính toán lại nếu kỳ chưa bị khóa sổ).
     /// </summary>
     Task<(bool ThanhCong, string? ThongBao)> HuyKetChuyenAsync(long butToanKetChuyenId);
+
+    /// <summary>
+    /// Tự động thực hiện bù trừ/khấu trừ thuế GTGT đầu vào (TK 1331) và đầu ra (TK 33311) định kỳ.
+    /// Sinh chứng từ kết chuyển Nợ 33311 / Có 1331 với số tiền = Min(Dư Nợ 1331, Dư Có 33311).
+    /// </summary>
+    Task<(bool ThanhCong, string? ThongBao, decimal SoTienKhauTru, long? ButToanId)> KhauTruThueGtgtAsync(int nam, int? thang = null);
 }

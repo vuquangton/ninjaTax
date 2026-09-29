@@ -255,4 +255,108 @@ public class PeriodClosingService : IPeriodClosingService
 
         return (true, "Đã hủy chứng từ kết chuyển thành công.");
     }
+
+    public async Task<(bool ThanhCong, string? ThongBao, decimal SoTienKhauTru, long? ButToanId)> KhauTruThueGtgtAsync(int nam, int? thang = null)
+    {
+        var tuNgay = thang.HasValue
+            ? new DateTime(nam, thang.Value, 1)
+            : new DateTime(nam, 1, 1);
+
+        var denNgay = thang.HasValue
+            ? new DateTime(nam, thang.Value, DateTime.DaysInMonth(nam, thang.Value), 23, 59, 59)
+            : new DateTime(nam, 12, 31, 23, 59, 59);
+
+        // 1. Kiểm tra khóa sổ
+        var cauHinh = await _context.CauHinhKeToans.FirstOrDefaultAsync();
+        if (cauHinh != null && !cauHinh.ChoPhepGhiSo(denNgay.Date))
+        {
+            return (false, $"Kỳ kế toán đến ngày {denNgay:dd/MM/yyyy} đã bị khóa sổ.", 0, null);
+        }
+
+        // 2. Tìm tài khoản 1331 và 33311
+        var tk1331 = await _context.TaiKhoans.FirstOrDefaultAsync(t => t.MaTaiKhoan == "1331");
+        var tk33311 = await _context.TaiKhoans.FirstOrDefaultAsync(t => t.MaTaiKhoan == "33311");
+
+        if (tk1331 == null || tk33311 == null)
+        {
+            return (false, "Không tìm thấy TK 1331 hoặc TK 33311 trong danh mục hệ thống tài khoản.", 0, null);
+        }
+
+        // Xóa chứng từ cấn trừ thuế cũ nếu có trong kỳ để bảo đảm tính idempotency
+        string soChungTuThue = thang.HasValue
+            ? $"PKT-KT-THUE-{nam}{thang.Value:D2}"
+            : $"PKT-KT-THUE-{nam}";
+
+        var cu = await _context.ButToans
+            .Include(b => b.ChiTietButToans)
+            .FirstOrDefaultAsync(b => b.SoChungTu == soChungTuThue);
+
+        if (cu != null)
+        {
+            _context.ChiTietButToans.RemoveRange(cu.ChiTietButToans);
+            _context.ButToans.Remove(cu);
+            await _context.SaveChangesAsync();
+        }
+
+        // 3. Tính số dư Nợ lũy kế TK 1331 và số dư Có lũy kế TK 33311 đến hết kỳ
+        var lines1331 = await _context.ChiTietButToans
+            .Include(c => c.ButToan)
+            .Where(c => c.ButToan != null &&
+                        c.ButToan.TrangThai == TrangThaiButToan.DaGhiSo &&
+                        c.ButToan.NgayHachToan <= denNgay &&
+                        (c.TaiKhoanNoId == tk1331.Id || c.TaiKhoanCoId == tk1331.Id))
+            .ToListAsync();
+
+        decimal duNo1331 = lines1331.Where(c => c.TaiKhoanNoId == tk1331.Id).Sum(c => c.SoTien)
+                         - lines1331.Where(c => c.TaiKhoanCoId == tk1331.Id).Sum(c => c.SoTien);
+
+        var lines33311 = await _context.ChiTietButToans
+            .Include(c => c.ButToan)
+            .Where(c => c.ButToan != null &&
+                        c.ButToan.TrangThai == TrangThaiButToan.DaGhiSo &&
+                        c.ButToan.NgayHachToan <= denNgay &&
+                        (c.TaiKhoanNoId == tk33311.Id || c.TaiKhoanCoId == tk33311.Id))
+            .ToListAsync();
+
+        decimal duCo33311 = lines33311.Where(c => c.TaiKhoanCoId == tk33311.Id).Sum(c => c.SoTien)
+                          - lines33311.Where(c => c.TaiKhoanNoId == tk33311.Id).Sum(c => c.SoTien);
+
+        if (duNo1331 <= 0 || duCo33311 <= 0)
+        {
+            return (true, "Không có thuế GTGT cần khấu trừ trong kỳ (Dư Nợ 1331 hoặc Dư Có 33311 bằng 0).", 0, null);
+        }
+
+        // 4. Số tiền khấu trừ = Min(duNo1331, duCo33311)
+        decimal soTienKhauTru = Math.Min(duNo1331, duCo33311);
+
+        var butToan = new ButToan
+        {
+            SoChungTu = soChungTuThue,
+            NgayChungTu = denNgay.Date,
+            NgayHachToan = denNgay.Date,
+            SoChungTuGoc = soChungTuThue,
+            NgayChungTuGoc = denNgay.Date,
+            DienGiai = $"Khấu trừ thuế GTGT định kỳ {denNgay:MM/yyyy} (Nợ 33311 / Có 1331)",
+            TrangThai = TrangThaiButToan.DaGhiSo,
+            TongTien = soTienKhauTru,
+            TongNo = soTienKhauTru,
+            TongCo = soTienKhauTru,
+            ChiTietButToans = new List<ChiTietButToan>
+            {
+                new ChiTietButToan
+                {
+                    TaiKhoanNoId = tk33311.Id,
+                    TaiKhoanCoId = tk1331.Id,
+                    SoTien = soTienKhauTru,
+                    DienGiai = $"Khấu trừ thuế GTGT đầu vào vào đầu ra kỳ {denNgay:MM/yyyy}"
+                }
+            }
+        };
+
+        await _context.ButToans.AddAsync(butToan);
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Đã tạo chứng từ khấu trừ thuế GTGT {SoChungTu}: {SoTien:N0} VNĐ.", soChungTuThue, soTienKhauTru);
+        return (true, $"Đã thực hiện khấu trừ thuế GTGT thành công: {soTienKhauTru:N0} VNĐ.", soTienKhauTru, butToan.Id);
+    }
 }

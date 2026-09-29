@@ -830,5 +830,154 @@ public class InventoryService : IInventoryService
             SoDuSoCaiTkKho = glBalance
         };
     }
+
+    public async Task<(bool Success, string? Message, int SoDongCapNhat, decimal TongChenhLech)> RecalculatePeriodWeightedAverageCostAsync(
+        DateTime tuNgay, 
+        DateTime denNgay, 
+        long? khoId = null, 
+        long? branchId = null)
+    {
+        var startOfDay = tuNgay.Date;
+        var endOfDay = denNgay.Date.AddDays(1).AddTicks(-1);
+
+        // 1. Kiểm tra khóa sổ kế toán
+        var cauHinh = await _context.CauHinhKeToans.FirstOrDefaultAsync();
+        if (cauHinh != null && !cauHinh.ChoPhepGhiSo(endOfDay))
+        {
+            return (false, $"Kỳ kế toán đến ngày {denNgay:dd/MM/yyyy} đã bị khóa sổ. Không thể tính lại giá xuất kho.", 0, 0);
+        }
+
+        // 2. Lấy danh sách các dòng phiếu xuất kho ĐÃ GHI SỔ trong kỳ
+        var queryXuat = _context.ChiTietXuatKhos
+            .Include(c => c.PhieuXuatKho)
+            .Include(c => c.VatTuHangHoa)
+            .Where(c => c.PhieuXuatKho != null &&
+                        c.PhieuXuatKho.TrangThai == TrangThaiPhieuKho.DaGhiSo &&
+                        c.PhieuXuatKho.NgayHachToan >= startOfDay &&
+                        c.PhieuXuatKho.NgayHachToan <= endOfDay);
+
+        if (khoId.HasValue && khoId.Value > 0)
+        {
+            queryXuat = queryXuat.Where(c => c.PhieuXuatKho!.KhoId == khoId.Value);
+        }
+
+        if (branchId.HasValue && branchId.Value > 0)
+        {
+            queryXuat = queryXuat.Where(c => c.PhieuXuatKho!.ChiNhanhId == branchId.Value);
+        }
+
+        var listXuat = await queryXuat.ToListAsync();
+        if (listXuat.Count == 0)
+        {
+            return (true, "Không có phiếu xuất kho nào cần tính lại giá vốn trong khoảng thời gian này.", 0, 0);
+        }
+
+        // Nhóm các dòng xuất theo (KhoId, VatTuHangHoaId)
+        var groupedXuat = listXuat.GroupBy(c => new { c.PhieuXuatKho!.KhoId, c.VatTuHangHoaId });
+        int soDongCapNhat = 0;
+        decimal tongChenhLech = 0m;
+
+        foreach (var group in groupedXuat)
+        {
+            long currentKhoId = group.Key.KhoId;
+            long vatTuId = group.Key.VatTuHangHoaId;
+
+            // Tính tồn đầu kỳ
+            var nhapTruocKy = await _context.ChiTietNhapKhos
+                .Where(c => c.PhieuNhapKho != null &&
+                            c.PhieuNhapKho.KhoId == currentKhoId &&
+                            c.VatTuHangHoaId == vatTuId &&
+                            c.PhieuNhapKho.TrangThai == TrangThaiPhieuKho.DaGhiSo &&
+                            c.PhieuNhapKho.NgayHachToan < startOfDay)
+                .Select(c => new { c.SoLuong, ThanhTien = c.ThanhTien + c.ChiPhiMuaHangPhanBo })
+                .ToListAsync();
+
+            var xuatTruocKy = await _context.ChiTietXuatKhos
+                .Where(c => c.PhieuXuatKho != null &&
+                            c.PhieuXuatKho.KhoId == currentKhoId &&
+                            c.VatTuHangHoaId == vatTuId &&
+                            c.PhieuXuatKho.TrangThai == TrangThaiPhieuKho.DaGhiSo &&
+                            c.PhieuXuatKho.NgayHachToan < startOfDay)
+                .Select(c => new { c.SoLuong, c.TienGiaVon })
+                .ToListAsync();
+
+            decimal slDauKy = nhapTruocKy.Sum(n => n.SoLuong) - xuatTruocKy.Sum(x => x.SoLuong);
+            decimal tienDauKy = nhapTruocKy.Sum(n => n.ThanhTien) - xuatTruocKy.Sum(x => x.TienGiaVon);
+
+            if (slDauKy < 0) slDauKy = 0;
+            if (tienDauKy < 0) tienDauKy = 0;
+
+            // Tính nhập trong kỳ (kèm chi phí mua hàng phân bổ)
+            var nhapTrongKy = await _context.ChiTietNhapKhos
+                .Where(c => c.PhieuNhapKho != null &&
+                            c.PhieuNhapKho.KhoId == currentKhoId &&
+                            c.VatTuHangHoaId == vatTuId &&
+                            c.PhieuNhapKho.TrangThai == TrangThaiPhieuKho.DaGhiSo &&
+                            c.PhieuNhapKho.NgayHachToan >= startOfDay &&
+                            c.PhieuNhapKho.NgayHachToan <= endOfDay)
+                .Select(c => new { c.SoLuong, ThanhTien = c.ThanhTien + c.ChiPhiMuaHangPhanBo })
+                .ToListAsync();
+
+            decimal slNhapTrongKy = nhapTrongKy.Sum(n => n.SoLuong);
+            decimal tienNhapTrongKy = nhapTrongKy.Sum(n => n.ThanhTien);
+
+            decimal tongSlKhaDung = slDauKy + slNhapTrongKy;
+            decimal tongTienKhaDung = tienDauKy + tienNhapTrongKy;
+
+            decimal donGiaBq = 0m;
+            if (tongSlKhaDung > 0 && tongTienKhaDung > 0)
+            {
+                donGiaBq = Math.Round(tongTienKhaDung / tongSlKhaDung, 4);
+            }
+
+            // Áp đơn giá BQGQ cho toàn bộ dòng xuất của mặt hàng này tại kho
+            foreach (var dongXuat in group)
+            {
+                decimal donGiaMoi = donGiaBq > 0 ? donGiaBq : dongXuat.DonGiaVon;
+                decimal tienGiaVonMoi = Math.Round(dongXuat.SoLuong * donGiaMoi, 4);
+                decimal chenhLech = tienGiaVonMoi - dongXuat.TienGiaVon;
+
+                dongXuat.DonGiaVonCuoiKy = donGiaMoi;
+                dongXuat.ChenhLechGiaVon = chenhLech;
+                dongXuat.DonGiaVon = donGiaMoi;
+                dongXuat.TienGiaVon = tienGiaVonMoi;
+
+                tongChenhLech += chenhLech;
+                soDongCapNhat++;
+            }
+        }
+
+        // Cập nhật lại các bút toán xuất kho tương ứng (Nợ 632 / Có 1561)
+        var phieuXuatIds = listXuat.Select(x => x.PhieuXuatKhoId).Distinct().ToList();
+        var phieuXuats = await _context.PhieuXuatKhos
+            .Include(p => p.ChiTietXuatKhos)
+            .Include(p => p.ButToan)
+                .ThenInclude(b => b!.ChiTietButToans)
+            .Where(p => phieuXuatIds.Contains(p.Id))
+            .ToListAsync();
+
+        foreach (var px in phieuXuats)
+        {
+            px.TongTienGiaVon = px.ChiTietXuatKhos.Sum(c => c.TienGiaVon);
+
+            if (px.ButToan != null)
+            {
+                px.ButToan.TongTien = px.TongTienGiaVon;
+                px.ButToan.TongNo = px.TongTienGiaVon;
+                px.ButToan.TongCo = px.TongTienGiaVon;
+
+                var dong632 = px.ButToan.ChiTietButToans.FirstOrDefault();
+                if (dong632 != null)
+                {
+                    dong632.SoTien = px.TongTienGiaVon;
+                }
+            }
+        }
+
+        await _context.SaveChangesAsync();
+        _logger.LogInformation("Tính lại giá vốn BQGQ kỳ {Tu:dd/MM/yyyy} - {Den:dd/MM/yyyy} thành công. Cập nhật {SoDong} dòng, chênh lệch {ChenhLech:N0} VNĐ.", tuNgay, denNgay, soDongCapNhat, tongChenhLech);
+
+        return (true, $"Đã tính lại giá xuất kho thành công cho {soDongCapNhat} dòng xuất.", soDongCapNhat, tongChenhLech);
+    }
 }
 

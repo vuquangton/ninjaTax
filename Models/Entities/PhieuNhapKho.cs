@@ -97,4 +97,16 @@ public class ChiTietNhapKho
 
     [StringLength(255)]
     public string? GhiChu { get; set; }
+
+    /// <summary>
+    /// Tổng chi phí mua hàng được phân bổ vào dòng này (VAS 02)
+    /// </summary>
+    public decimal ChiPhiMuaHangPhanBo { get; set; } = 0m;
+
+    /// <summary>
+    /// Đơn giá sau phân bổ chi phí = (ThanhTien + ChiPhiMuaHangPhanBo) / SoLuong
+    /// </summary>
+    public decimal DonGiaSauPhanBo => SoLuong > 0 ? Math.Round((ThanhTien + ChiPhiMuaHangPhanBo) / SoLuong, 4) : DonGia;
+
+    public virtual ICollection<ChiPhiMuaHangPhanBo> ChiPhiPhanBos { get; set; } = new List<ChiPhiMuaHangPhanBo>();
 }

@@ -70,6 +70,10 @@ public class AppDbContext : DbContext
     public DbSet<PhieuXuatKho> PhieuXuatKhos => Set<PhieuXuatKho>();
     public DbSet<ChiTietXuatKho> ChiTietXuatKhos => Set<ChiTietXuatKho>();
 
+    // Phase 13: Chi Phí Mua Hàng & Phân Bổ Giá Vốn Nhập Kho (VAS 02)
+    public DbSet<ChungTuChiPhiMuaHang> ChungTuChiPhiMuaHangs => Set<ChungTuChiPhiMuaHang>();
+    public DbSet<ChiPhiMuaHangPhanBo> ChiPhiMuaHangPhanBos => Set<ChiPhiMuaHangPhanBo>();
+
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         base.ConfigureConventions(configurationBuilder);
@@ -1170,6 +1174,49 @@ public class AppDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.TaiKhoanCoId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // ========================================================
+        // 24. Cấu hình Chi Phí Mua Hàng & Phân Bổ (Phase 13 - VAS 02)
+        // ========================================================
+        modelBuilder.Entity<ChungTuChiPhiMuaHang>(entity =>
+        {
+            entity.ToTable("ChungTuChiPhiMuaHang");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.HasIndex(e => new { e.ChiNhanhId, e.SoChungTu }).IsUnique();
+
+            entity.HasOne(e => e.ChiNhanh)
+                .WithMany()
+                .HasForeignKey(e => e.ChiNhanhId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.NhaCungCapDichVu)
+                .WithMany()
+                .HasForeignKey(e => e.NhaCungCapDichVuId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.ButToan)
+                .WithMany()
+                .HasForeignKey(e => e.ButToanId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<ChiPhiMuaHangPhanBo>(entity =>
+        {
+            entity.ToTable("ChiPhiMuaHangPhanBo");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+
+            entity.HasOne(e => e.ChungTuChiPhiMuaHang)
+                .WithMany(c => c.ChiTietPhanBos)
+                .HasForeignKey(e => e.ChungTuChiPhiMuaHangId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.ChiTietNhapKho)
+                .WithMany(n => n.ChiPhiPhanBos)
+                .HasForeignKey(e => e.ChiTietNhapKhoId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
