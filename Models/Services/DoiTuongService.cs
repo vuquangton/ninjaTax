@@ -196,4 +196,49 @@ public class DoiTuongService : IDoiTuongService
 
         return false;
     }
+
+    public async Task<(decimal DuNo, decimal DuCo)> LaySoDuCongNoDoiTuongAsync(long id)
+    {
+        var lines = await _context.ChiTietButToans
+            .Include(c => c.TaiKhoanNo)
+            .Include(c => c.TaiKhoanCo)
+            .Include(c => c.ButToan)
+            .Where(c => c.DoiTuongId == id && c.ButToan != null && c.ButToan.TrangThai == TrangThaiButToan.DaGhiSo)
+            .AsNoTracking()
+            .ToListAsync();
+
+        var arAccounts = new[] { "131", "138", "141" };
+        var apAccounts = new[] { "331", "338" };
+
+        decimal debitMovements = 0m;
+        decimal creditMovements = 0m;
+
+        foreach (var l in lines)
+        {
+            var noTk = l.TaiKhoanNo?.MaTaiKhoan ?? string.Empty;
+            var coTk = l.TaiKhoanCo?.MaTaiKhoan ?? string.Empty;
+
+            if (arAccounts.Any(a => noTk.StartsWith(a)) || apAccounts.Any(a => noTk.StartsWith(a)))
+            {
+                debitMovements += l.SoTien;
+            }
+
+            if (arAccounts.Any(a => coTk.StartsWith(a)) || apAccounts.Any(a => coTk.StartsWith(a)))
+            {
+                creditMovements += l.SoTien;
+            }
+        }
+
+        var balance = debitMovements - creditMovements;
+        if (balance > 0)
+        {
+            return (balance, 0m);
+        }
+        else if (balance < 0)
+        {
+            return (0m, Math.Abs(balance));
+        }
+
+        return (0m, 0m);
+    }
 }

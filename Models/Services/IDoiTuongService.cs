@@ -12,4 +12,5 @@ public interface IDoiTuongService
     Task<(bool ThanhCong, string? ThongBao)> CapNhatAsync(long id, DoiTuongCreateEditViewModel model);
     Task<(bool ThanhCong, string? ThongBao)> XoaAsync(long id);
     Task<bool> KiemTraDaPhatSinhGiaoDichAsync(long id);
+    Task<(decimal DuNo, decimal DuCo)> LaySoDuCongNoDoiTuongAsync(long id);
 }

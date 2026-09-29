@@ -144,7 +144,7 @@ public class TaiKhoanNganHangService : ITaiKhoanNganHangService
 
     public async Task<bool> KiemTraDaPhatSinhGiaoDichAsync(long id)
     {
-        await Task.CompletedTask;
-        return false;
+        var coTrongThuChi = await _context.ChungTuThuChis.AnyAsync(c => c.TaiKhoanNganHangId == id);
+        return coTrongThuChi;
     }
 }

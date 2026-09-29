@@ -33,23 +33,21 @@ public class KhoController : Controller
         var branches = await _context.ChiNhanhs.AsNoTracking().OrderBy(b => b.MaChiNhanh).ToListAsync();
         var warehouses = await _inventoryService.GetAllWarehousesAsync(branchId);
 
-        var list = new List<KhoItemViewModel>();
-        foreach (var k in warehouses)
+        var activeNhapKhoIds = await _context.PhieuNhapKhos.Select(p => p.KhoId).Distinct().ToHashSetAsync();
+        var activeXuatKhoIds = await _context.PhieuXuatKhos.Select(p => p.KhoId).Distinct().ToHashSetAsync();
+
+        var list = warehouses.Select(k => new KhoItemViewModel
         {
-            var canDelete = await _inventoryService.CanDeleteWarehouseAsync(k.Id);
-            list.Add(new KhoItemViewModel
-            {
-                Id = k.Id,
-                MaKho = k.MaKho,
-                TenKho = k.TenKho,
-                DiaChi = k.DiaChi,
-                TenChiNhanh = k.ChiNhanh?.TenChiNhanh ?? "-",
-                TenThuKho = k.ThuKho?.HoTen,
-                TaiKhoanKhoMa = k.TaiKhoanKhoMacDinh?.MaTaiKhoan,
-                DangHoatDong = k.DangHoatDong,
-                DaPhatSinhPhieuKho = !canDelete
-            });
-        }
+            Id = k.Id,
+            MaKho = k.MaKho,
+            TenKho = k.TenKho,
+            DiaChi = k.DiaChi,
+            TenChiNhanh = k.ChiNhanh?.TenChiNhanh ?? "-",
+            TenThuKho = k.ThuKho?.HoTen,
+            TaiKhoanKhoMa = k.TaiKhoanKhoMacDinh?.MaTaiKhoan,
+            DangHoatDong = k.DangHoatDong,
+            DaPhatSinhPhieuKho = activeNhapKhoIds.Contains(k.Id) || activeXuatKhoIds.Contains(k.Id)
+        }).ToList();
 
         var vm = new KhoIndexViewModel
         {
