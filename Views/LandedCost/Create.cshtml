@@ -1,0 +1,78 @@
+@model ninjaTax.Models.ViewModels.LandedCostCreateViewModel
+@{
+    ViewData["Title"] = "Lập Chứng Từ Chi Phí Mua Hàng";
+}
+
+<div class="max-w-2xl mx-auto space-y-6">
+    <div class="border-b border-[var(--border)] pb-4">
+        <h1 class="text-xl font-bold text-[var(--foreground)]">Thêm Mới Chứng Từ Chi Phí Mua Hàng</h1>
+        <p class="text-xs text-[var(--muted-foreground)]">Ghi nhận hóa đơn cước vận chuyển, bốc xếp hoặc dịch vụ mua ngoài liên quan đến nhập kho.</p>
+    </div>
+
+    <form asp-action="Create" method="post" class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-6 shadow-sm space-y-4">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="text-xs text-rose-500"></div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label asp-for="SoChungTu" class="block text-xs font-medium text-[var(--foreground)] mb-1"></label>
+                <input asp-for="SoChungTu" class="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-xs text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] font-mono" />
+                <span asp-validation-for="SoChungTu" class="text-xs text-rose-500"></span>
+            </div>
+
+            <div>
+                <label asp-for="NgayHachToan" class="block text-xs font-medium text-[var(--foreground)] mb-1"></label>
+                <input asp-for="NgayHachToan" type="date" class="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-xs text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]" />
+                <span asp-validation-for="NgayHachToan" class="text-xs text-rose-500"></span>
+            </div>
+        </div>
+
+        <div>
+            <label asp-for="NhaCungCapDichVuId" class="block text-xs font-medium text-[var(--foreground)] mb-1"></label>
+            <select asp-for="NhaCungCapDichVuId" asp-items="ViewBag.NhaCungCapList" class="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-xs text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]">
+                <option value="">-- Chọn đơn vị cung cấp dịch vụ vận chuyển --</option>
+            </select>
+        </div>
+
+        <div>
+            <label asp-for="DienGiai" class="block text-xs font-medium text-[var(--foreground)] mb-1"></label>
+            <input asp-for="DienGiai" placeholder="VD: Cước vận chuyển lô hàng máy chủ từ Hải Phòng về kho Hà Nội" class="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-xs text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]" />
+            <span asp-validation-for="DienGiai" class="text-xs text-rose-500"></span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label asp-for="TongChiPhi" class="block text-xs font-medium text-[var(--foreground)] mb-1"></label>
+                <input asp-for="TongChiPhi" type="number" step="1000" class="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-xs text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] font-mono" />
+                <span asp-validation-for="TongChiPhi" class="text-xs text-rose-500"></span>
+            </div>
+
+            <div>
+                <label asp-for="ThueSuatVat" class="block text-xs font-medium text-[var(--foreground)] mb-1"></label>
+                <select asp-for="ThueSuatVat" class="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-xs text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]">
+                    <option value="0">0% (Không chịu thuế)</option>
+                    <option value="5">5%</option>
+                    <option value="8">8% (Nghị định giảm thuế)</option>
+                    <option value="10">10% (Thuế suất chuẩn)</option>
+                </select>
+            </div>
+        </div>
+
+        <div>
+            <label asp-for="PhuongThucPhanBo" class="block text-xs font-medium text-[var(--foreground)] mb-1"></label>
+            <select asp-for="PhuongThucPhanBo" class="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-xs text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]">
+                <option value="1">Theo Giá Trị (VAS 02 - Tỷ lệ theo thành tiền hàng hóa)</option>
+                <option value="2">Theo Số Lượng (Tỷ lệ theo số lượng thực nhập)</option>
+            </select>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-4 border-t border-[var(--border)]">
+            <a asp-action="Index" class="px-4 py-2 border border-[var(--border)] text-xs font-medium rounded-lg text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition">
+                Hủy bỏ
+            </a>
+            <button type="submit" class="px-5 py-2 bg-[var(--primary)] text-[var(--primary-foreground)] text-xs font-medium rounded-lg hover:opacity-90 transition">
+                Lưu &amp; Tiếp Tục Phân Bổ &rarr;
+            </button>
+        </div>
+    </form>
+</div>

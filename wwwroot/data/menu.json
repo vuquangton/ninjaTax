@@ -9,8 +9,20 @@
     {
       "title": "Mua Hàng",
       "icon": "bi bi-cart-check",
-      "controller": "MuaHang",
-      "action": "Index"
+      "children": [
+        {
+          "title": "Hóa đơn mua hàng",
+          "icon": "bi bi-receipt",
+          "controller": "MuaHang",
+          "action": "Index"
+        },
+        {
+          "title": "Chi phí mua hàng (Landed Cost)",
+          "icon": "bi bi-truck",
+          "controller": "LandedCost",
+          "action": "Index"
+        }
+      ]
     },
     {
       "title": "Bán Hàng",

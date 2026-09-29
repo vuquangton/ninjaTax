@@ -13,17 +13,20 @@ public class GeneralLedgerController : Controller
     private readonly IGeneralLedgerService _glService;
     private readonly IPeriodClosingService _periodClosingService;
     private readonly ISubledgerReconciliationService _reconciliationService;
+    private readonly IInventoryService _inventoryService;
     private readonly ILogger<GeneralLedgerController> _logger;
 
     public GeneralLedgerController(
         IGeneralLedgerService glService,
         IPeriodClosingService periodClosingService,
         ISubledgerReconciliationService reconciliationService,
+        IInventoryService inventoryService,
         ILogger<GeneralLedgerController> logger)
     {
         _glService = glService;
         _periodClosingService = periodClosingService;
         _reconciliationService = reconciliationService;
+        _inventoryService = inventoryService;
         _logger = logger;
     }
 
@@ -95,6 +98,70 @@ public class GeneralLedgerController : Controller
         else
         {
             TempData["ThongBaoThanhCong"] = result.ThongBao;
+        }
+
+        return RedirectToAction(nameof(KetChuyenCuoiKy), new { nam, thang });
+    }
+
+    /// <summary>
+    /// Tính lại giá vốn xuất kho bình quân gia quyền cuối kỳ (POST)
+    /// </summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> TinhLaiGiaXuatKho(int nam, int thang)
+    {
+        try
+        {
+            _logger.LogInformation("Tính lại giá xuất kho BQGQ cuối kỳ: Tháng={Thang}/{Nam}", thang, nam);
+            var tuNgay = new DateTime(nam, thang, 1);
+            var denNgay = tuNgay.AddMonths(1).AddDays(-1);
+            var result = await _inventoryService.RecalculatePeriodWeightedAverageCostAsync(tuNgay, denNgay);
+            if (!result.Success)
+            {
+                TempData["ThongBaoLoi"] = result.Message;
+            }
+            else
+            {
+                TempData["ThongBaoThanhCong"] = $"Đã tính toán và cập nhật giá vốn xuất kho BQGQ: {result.SoDongCapNhat} dòng phiếu xuất, tổng chênh lệch giá vốn: {result.TongChenhLech:N0} VNĐ";
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lỗi tính lại giá xuất kho BQGQ");
+            TempData["ThongBaoLoi"] = $"Lỗi tính lại giá vốn xuất kho: {ex.Message}";
+        }
+
+        return RedirectToAction(nameof(KetChuyenCuoiKy), new { nam, thang });
+    }
+
+    /// <summary>
+    /// Thực hiện khấu trừ thuế GTGT đầu vào - đầu ra cuối kỳ (POST)
+    /// </summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> KhauTruThueGtgt(int nam, int thang)
+    {
+        try
+        {
+            _logger.LogInformation("Khấu trừ thuế GTGT cuối kỳ: Tháng={Thang}/{Nam}", thang, nam);
+            var result = await _periodClosingService.KhauTruThueGtgtAsync(nam, thang);
+            if (!result.ThanhCong)
+            {
+                TempData["ThongBaoLoi"] = result.ThongBao;
+            }
+            else if (result.SoTienKhauTru <= 0)
+            {
+                TempData["ThongBaoThanhCong"] = $"Trong Tháng {thang}/{nam} không phát sinh thuế GTGT cần bù trừ khấu trừ (TK 1331 hoặc TK 33311 có số dư bằng 0).";
+            }
+            else
+            {
+                TempData["ThongBaoThanhCong"] = $"Đã tạo chứng từ khấu trừ thuế GTGT thành công với số tiền khấu trừ: {result.SoTienKhauTru:N0} VNĐ";
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lỗi khấu trừ thuế GTGT");
+            TempData["ThongBaoLoi"] = $"Lỗi khấu trừ thuế GTGT: {ex.Message}";
         }
 
         return RedirectToAction(nameof(KetChuyenCuoiKy), new { nam, thang });

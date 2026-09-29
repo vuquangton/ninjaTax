@@ -1,0 +1,119 @@
+@model ninjaTax.Models.ViewModels.LandedCostIndexViewModel
+@{
+    ViewData["Title"] = "Chi Phí Mua Hàng & Phân Bổ (Landed Cost)";
+}
+
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--border)] pb-5">
+        <div>
+            <div class="flex items-center gap-2 mb-1">
+                <span class="px-2 py-0.5 text-xs font-semibold rounded bg-[var(--primary)] text-[var(--primary-foreground)]">VAS 02</span>
+                <span class="text-xs text-[var(--muted-foreground)]">Kế toán Mua hàng &amp; Giá vốn</span>
+            </div>
+            <h1 class="text-2xl font-bold tracking-tight text-[var(--foreground)]">Chi Phí Mua Hàng &amp; Phân Bổ Giá Vốn</h1>
+            <p class="text-sm text-[var(--muted-foreground)]">Tập hợp chi phí vận chuyển, bốc xếp, bảo hiểm và phân bổ trực tiếp vào nguyên giá nhập kho.</p>
+        </div>
+        <div>
+            <a asp-action="Create" class="inline-flex items-center gap-2 px-4 py-2 bg-[var(--primary)] text-[var(--primary-foreground)] text-sm font-medium rounded-lg hover:opacity-90 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                Thêm Chứng Từ Chi Phí
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-sm">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <!-- Stat Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 shadow-sm">
+            <div class="text-xs text-[var(--muted-foreground)]">Tổng Chứng Từ Chi Phí</div>
+            <div class="text-2xl font-bold text-[var(--foreground)] mt-1">@Model.DanhSachChiPhi.Count</div>
+        </div>
+        <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 shadow-sm">
+            <div class="text-xs text-[var(--muted-foreground)]">Chi Phí Đã Phân Bổ (VAS 02)</div>
+            <div class="text-2xl font-bold text-emerald-500 mt-1">@Model.TongChiPhiDaPhanBo.ToString("N0") VNĐ</div>
+        </div>
+        <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 shadow-sm">
+            <div class="text-xs text-[var(--muted-foreground)]">Chi Phí Chưa Phân Bổ</div>
+            <div class="text-2xl font-bold text-amber-500 mt-1">@Model.TongChiPhiChuaPhanBo.ToString("N0") VNĐ</div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl overflow-hidden shadow-sm">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead class="bg-[var(--background)] text-xs text-[var(--muted-foreground)] uppercase border-b border-[var(--border)]">
+                    <tr>
+                        <th class="px-5 py-3 font-semibold">Số Chứng Từ</th>
+                        <th class="px-5 py-3 font-semibold">Ngày Hạch Toán</th>
+                        <th class="px-5 py-3 font-semibold">Nhà Cung Cấp Dịch Vụ</th>
+                        <th class="px-5 py-3 font-semibold">Diễn Giải</th>
+                        <th class="px-5 py-3 font-semibold text-right">Chi Phí (chưa VAT)</th>
+                        <th class="px-5 py-3 font-semibold text-center">Trạng Thái</th>
+                        <th class="px-5 py-3 font-semibold text-right">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[var(--border)]">
+                    @if (!Model.DanhSachChiPhi.Any())
+                    {
+                        <tr>
+                            <td colspan="7" class="px-5 py-8 text-center text-[var(--muted-foreground)]">
+                                Chưa có chứng từ chi phí mua hàng nào. Nhấn "Thêm Chứng Từ Chi Phí" để bắt đầu.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model.DanhSachChiPhi)
+                        {
+                            <tr class="hover:bg-[var(--background)]/50 transition-colors">
+                                <td class="px-5 py-3.5 font-medium font-mono text-[var(--primary)]">
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="hover:underline">@item.SoChungTu</a>
+                                </td>
+                                <td class="px-5 py-3.5 text-xs text-[var(--muted-foreground)]">@item.NgayHachToan.ToString("dd/MM/yyyy")</td>
+                                <td class="px-5 py-3.5 text-xs">@(item.NhaCungCapDichVu?.TenDoiTuong ?? "Chi tiền mặt/Khác")</td>
+                                <td class="px-5 py-3.5 text-xs max-w-xs truncate">@item.DienGiai</td>
+                                <td class="px-5 py-3.5 text-right font-medium text-xs">@item.TongChiPhi.ToString("N0") VNĐ</td>
+                                <td class="px-5 py-3.5 text-center">
+                                    @if (item.DaPhanBo)
+                                    {
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                                            Đã Phân Bổ
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                                            Chưa Phân Bổ
+                                        </span>
+                                    }
+                                </td>
+                                <td class="px-5 py-3.5 text-right text-xs">
+                                    @if (!item.DaPhanBo)
+                                    {
+                                        <a asp-action="Allocate" asp-route-id="@item.Id" class="px-2.5 py-1 bg-[var(--primary)] text-[var(--primary-foreground)] rounded font-medium hover:opacity-90">
+                                            Phân Bổ &rarr;
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="text-[var(--muted-foreground)] hover:text-[var(--foreground)] font-medium">
+                                            Chi tiết
+                                        </a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

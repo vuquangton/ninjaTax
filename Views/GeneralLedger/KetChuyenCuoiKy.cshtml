@@ -37,6 +37,43 @@
                 <h6 class="card-title mb-0 fw-bold"><i class="bi bi-sliders me-2 text-primary"></i>Thiết lập Kỳ Kết Chuyển</h6>
             </div>
             <div class="card-body">
+                <div class="mb-4 pb-3 border-bottom">
+                    <h6 class="fw-bold text-secondary mb-2"><span class="badge bg-secondary me-2">Bước 1</span>Tính Lại Giá Vốn Xuất Kho (BQGQ)</h6>
+                    <p class="text-muted small mb-2">Tính lại đơn giá bình quân gia quyền tháng đã bao gồm chi phí mua hàng phân bổ, cập nhật giá xuất kho và ghi nợ TK 632 / có TK 1561.</p>
+                    <form asp-action="TinhLaiGiaXuatKho" method="post" class="d-flex gap-2">
+                        @Html.AntiForgeryToken()
+                        <input type="number" name="nam" class="form-control form-control-sm" value="@nam" style="width: 100px;" required />
+                        <select name="thang" class="form-select form-select-sm" style="width: 130px;" required>
+                            @for (int m = 1; m <= 12; m++)
+                            {
+                                <option value="@m" selected="@(m == thang)">Tháng @m</option>
+                            }
+                        </select>
+                        <button type="submit" class="btn btn-outline-primary btn-sm flex-grow-1">
+                            <i class="bi bi-calculator me-1"></i>Tính Giá Xuất Kho
+                        </button>
+                    </form>
+                </div>
+
+                <div class="mb-4 pb-3 border-bottom">
+                    <h6 class="fw-bold text-secondary mb-2"><span class="badge bg-secondary me-2">Bước 2</span>Khấu Trừ Thuế GTGT Đầu Vào - Đầu Ra</h6>
+                    <p class="text-muted small mb-2">Tự động đối trừ Min(Dư Nợ 133, Dư Có 3331) sinh bút toán khấu trừ Nợ TK 3331 / Có TK 133 trước khi khóa sổ.</p>
+                    <form asp-action="KhauTruThueGtgt" method="post" class="d-flex gap-2">
+                        @Html.AntiForgeryToken()
+                        <input type="number" name="nam" class="form-control form-control-sm" value="@nam" style="width: 100px;" required />
+                        <select name="thang" class="form-select form-select-sm" style="width: 130px;" required>
+                            @for (int m = 1; m <= 12; m++)
+                            {
+                                <option value="@m" selected="@(m == thang)">Tháng @m</option>
+                            }
+                        </select>
+                        <button type="submit" class="btn btn-outline-info btn-sm flex-grow-1">
+                            <i class="bi bi-file-earmark-check me-1"></i>Khấu Trừ Thuế GTGT
+                        </button>
+                    </form>
+                </div>
+
+                <h6 class="fw-bold text-primary mb-2"><span class="badge bg-primary me-2">Bước 3</span>Kết Chuyển Kết Quả Kinh Doanh Qua TK 911</h6>
                 <form asp-action="ThucHienKetChuyen" method="post">
                     @Html.AntiForgeryToken()
                     <div class="mb-3">

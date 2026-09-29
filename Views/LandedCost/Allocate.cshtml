@@ -1,0 +1,109 @@
+@model ninjaTax.Models.ViewModels.LandedCostAllocateViewModel
+@{
+    ViewData["Title"] = "Phân Bổ Chi Phí Mua Hàng Vào Kho";
+}
+
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="border-b border-[var(--border)] pb-4 flex items-center justify-between">
+        <div>
+            <h1 class="text-xl font-bold text-[var(--foreground)]">Phân Bổ Chi Phí Mua Hàng Vào Các Dòng Nhập Kho</h1>
+            <p class="text-xs text-[var(--muted-foreground)]">Chứng từ chi phí: <span class="font-mono text-[var(--primary)] font-semibold">@Model.ChungTuChiPhi?.SoChungTu</span> • Tổng chi phí phân bổ: <span class="font-bold text-emerald-500">@Model.ChungTuChiPhi?.TongChiPhi.ToString("N0") VNĐ</span></p>
+        </div>
+        <a asp-action="Index" class="px-3 py-1.5 border border-[var(--border)] text-xs rounded-lg text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+            &larr; Quay lại danh sách
+        </a>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="p-4 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <form asp-action="Allocate" method="post" class="space-y-6">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="ChungTuChiPhiId" />
+
+        <!-- Configuration Bar -->
+        <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label asp-for="PhuongThucPhanBo" class="block text-xs font-medium text-[var(--foreground)] mb-1"></label>
+                <select asp-for="PhuongThucPhanBo" class="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-xs text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]">
+                    <option value="1">Theo Giá Trị (Thành tiền hàng)</option>
+                    <option value="2">Theo Số Lượng</option>
+                </select>
+            </div>
+
+            <div>
+                <label asp-for="TaiKhoanChiPhiId" class="block text-xs font-medium text-[var(--foreground)] mb-1"></label>
+                <select asp-for="TaiKhoanChiPhiId" asp-items="ViewBag.TaiKhoanChiPhiList" class="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-xs text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"></select>
+            </div>
+
+            <div>
+                <label asp-for="TaiKhoanDoiUngId" class="block text-xs font-medium text-[var(--foreground)] mb-1"></label>
+                <select asp-for="TaiKhoanDoiUngId" asp-items="ViewBag.TaiKhoanDoiUngList" class="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-xs text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"></select>
+            </div>
+        </div>
+
+        <!-- Selection Table -->
+        <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl overflow-hidden shadow-sm">
+            <div class="p-4 border-b border-[var(--border)] bg-[var(--background)]/50 flex items-center justify-between">
+                <span class="text-xs font-semibold text-[var(--foreground)]">Chọn các dòng nhập kho cần phân bổ chi phí này:</span>
+                <span class="text-xs text-[var(--muted-foreground)]">Hiển thị 50 dòng nhập kho gần nhất</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-[var(--background)] text-[var(--muted-foreground)] uppercase border-b border-[var(--border)]">
+                        <tr>
+                            <th class="p-3 text-center w-10">Chọn</th>
+                            <th class="p-3">Số Phiếu Nhập</th>
+                            <th class="p-3">Ngày Hạch Toán</th>
+                            <th class="p-3">Mặt Hàng</th>
+                            <th class="p-3 text-right">Số Lượng</th>
+                            <th class="p-3 text-right">Đơn Giá Nhập</th>
+                            <th class="p-3 text-right">Thành Tiền</th>
+                            <th class="p-3 text-right">Chi Phí Đã PB</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-[var(--border)]">
+                        @if (!Model.AvailableChiTietNhapKhos.Any())
+                        {
+                            <tr>
+                                <td colspan="8" class="p-6 text-center text-[var(--muted-foreground)]">
+                                    Không tìm thấy phiếu nhập kho nào đã ghi sổ. Vui lòng lập phiếu nhập kho trước.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @for (int i = 0; i < Model.AvailableChiTietNhapKhos.Count; i++)
+                            {
+                                var item = Model.AvailableChiTietNhapKhos[i];
+                                <tr class="hover:bg-[var(--background)]/50 transition-colors">
+                                    <td class="p-3 text-center">
+                                        <input type="checkbox" name="SelectedChiTietNhapKhoIds" value="@item.Id" class="rounded border-[var(--border)] text-[var(--primary)] focus:ring-0" />
+                                    </td>
+                                    <td class="p-3 font-mono font-medium text-[var(--primary)]">@item.PhieuNhapKho?.SoPhieu</td>
+                                    <td class="p-3 text-[var(--muted-foreground)]">@item.PhieuNhapKho?.NgayHachToan.ToString("dd/MM/yyyy")</td>
+                                    <td class="p-3 font-medium">@item.VatTuHangHoa?.TenVatTu <span class="text-[var(--muted-foreground)] font-mono text-[10px]">(@item.VatTuHangHoa?.MaVatTu)</span></td>
+                                    <td class="p-3 text-right">@item.SoLuong.ToString("N2") @item.VatTuHangHoa?.DonViTinh</td>
+                                    <td class="p-3 text-right">@item.DonGia.ToString("N0")</td>
+                                    <td class="p-3 text-right font-medium">@item.ThanhTien.ToString("N0") VNĐ</td>
+                                    <td class="p-3 text-right text-emerald-500">@item.ChiPhiMuaHangPhanBo.ToString("N0") VNĐ</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3">
+            <button type="submit" class="px-6 py-2.5 bg-[var(--primary)] text-[var(--primary-foreground)] text-xs font-semibold rounded-lg hover:opacity-90 transition shadow-sm">
+                Xác Nhận Phân Bổ Chi Phí Mua Hàng &rarr;
+            </button>
+        </div>
+    </form>
+</div>
