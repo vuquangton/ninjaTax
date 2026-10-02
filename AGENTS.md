@@ -32,6 +32,15 @@ Repository guidelines for autonomous agents working in `ninjaTax`.
 - **Cost Segmentation (Phase 7)**: Department `PhongBanId` attached to expense lines (TK 154, 6421, 6422) for segment P&L.
 - **Inventory S10-DN Reconciliation (Phase 8)**: Total closing stock value must reconcile against GL inventory accounts (152, 155, 1561).
 - **Master Quality Gates Reference**: Full statutory test definitions, risk assessment, and QA exit criteria are defined in [docs/test-strategy.md](docs/test-strategy.md).
+- **Foreign Exchange Revaluation (VAS 10 & Account 413)**:
+  - Account 4131 is an intermediate clearing account for unrealized foreign currency revaluation at period/year-end.
+  - Strict Closing Invariant: Account 4131 balance must always clear to zero (`DuNo == 0 && DuCo == 0`) into TK 515 (gain) or TK 635 (loss).
+- **Bad Debt Provisioning (Circular 48/2019/TT-BTC & Account 2293)**:
+  - Overdue aging brackets: 180 to <365 days: 30%; 365 to <730 days: 50%; 730 to <1095 days: 70%; >=1095 days: 100%.
+  - Net adjustment invariant: Calculated required provision is netted against existing credit balance of TK 2293 (additional booking: Nợ 6426 / Có 2293; reversal: Nợ 2293 / Có 6426).
+- **Windows PowerShell Command Execution**:
+  - Always separate shell commands with semicolon `;` or newline; avoid `&&` (invalid token in Windows PowerShell 5.1).
+  - If `ninjaTax.dll` is locked by `testhost.exe` (MSB3026), release it via `Stop-Process -Name testhost -Force -ErrorAction SilentlyContinue`.
 
 ## Architecture & Layout
 - `Controllers/`: ASP.NET Core MVC controllers. Keep controllers thin; delegate logic to service layer.
