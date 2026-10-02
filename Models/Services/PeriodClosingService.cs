@@ -98,12 +98,45 @@ public class PeriodClosingService : IPeriodClosingService
         decimal tongChiPhi = 0m;
         var nhatKy = new List<string>();
 
+        // CHẶNG 0: Kết chuyển các khoản giảm trừ doanh thu (TK 521, 5211, 5212) sang Nợ TK 511 (Nợ 511 / Có 521x)
+        var tk511 = await _context.TaiKhoans.FirstOrDefaultAsync(t => t.MaTaiKhoan == "5111")
+                    ?? await _context.TaiKhoans.FirstOrDefaultAsync(t => t.MaTaiKhoan == "511");
+        var dsTkGiamTru = danhSachTkKetChuyen.Where(t => !t.LaTaiKhoanSoCai && t.MaTaiKhoan.StartsWith("521")).ToList();
+
+        foreach (var tk in dsTkGiamTru)
+        {
+            var psNo = postedDetails.Where(c => c.TaiKhoanNoId == tk.Id).Sum(c => c.SoTien);
+            var psCo = postedDetails.Where(c => c.TaiKhoanCoId == tk.Id).Sum(c => c.SoTien);
+            var duGiamTru = psNo - psCo;
+
+            if (duGiamTru > 0 && tk511 != null)
+            {
+                chiTietMoi.Add(new ChiTietButToan
+                {
+                    DongSo = dongSo++,
+                    TaiKhoanNoId = tk511.Id,
+                    TaiKhoanCoId = tk.Id,
+                    SoTien = duGiamTru,
+                    DienGiai = $"Kết chuyển giảm trừ doanh thu {tk.MaTaiKhoan} sang TK 511"
+                });
+                nhatKy.Add($"Kết chuyển giảm trừ DT {tk.MaTaiKhoan} -> Nợ 511: {duGiamTru:N0} đ");
+            }
+        }
+
         // CHẶNG 1: Kết chuyển Doanh thu & Thu nhập khác sang Có TK 911 (Nợ 5xx, 7xx / Có 911)
-        foreach (var tk in danhSachTkKetChuyen.Where(t => !t.LaTaiKhoanSoCai && (t.MaTaiKhoan.StartsWith("5") || t.MaTaiKhoan.StartsWith("7"))))
+        // Lưu ý: Đối với TK 511, trừ đi khoản giảm trừ vừa kết chuyển sang Nợ nếu có
+        foreach (var tk in danhSachTkKetChuyen.Where(t => !t.LaTaiKhoanSoCai && !t.MaTaiKhoan.StartsWith("521") && (t.MaTaiKhoan.StartsWith("5") || t.MaTaiKhoan.StartsWith("7"))))
         {
             var psCo = postedDetails.Where(c => c.TaiKhoanCoId == tk.Id).Sum(c => c.SoTien);
             var psNo = postedDetails.Where(c => c.TaiKhoanNoId == tk.Id).Sum(c => c.SoTien);
             var duCo = psCo - psNo;
+
+            // Nếu đây là TK 511 nhận kết chuyển giảm trừ ở Bước 0 thì trừ bớt phần giảm trừ đó
+            if (tk.Id == tk511?.Id)
+            {
+                var tongGiamTru = chiTietMoi.Where(c => c.TaiKhoanNoId == tk511.Id && dsTkGiamTru.Any(g => g.Id == c.TaiKhoanCoId)).Sum(c => c.SoTien);
+                duCo -= tongGiamTru;
+            }
 
             if (duCo > 0)
             {

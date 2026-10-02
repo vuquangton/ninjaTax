@@ -7,7 +7,8 @@ public enum LoaiXuatKho
     BanHang = 1,         // Xuất kho bán lẻ / bán buôn (Nợ 632 / Có 1561)
     SanXuat = 2,         // Xuất kho nguyên vật liệu để gia công, sản xuất (Nợ 154 / Có 152)
     SuDungNoiBo = 3,     // Xuất tiêu dùng nội bộ văn phòng, bán hàng (Nợ 6421, 6422 / Có 152, 153, 156)
-    XuatKhac = 4         // Xuất kiểm kê thiếu, hao hụt (Nợ 1381 / Có 152, 156)
+    XuatKhac = 4,        // Xuất kiểm kê thiếu, hao hụt (Nợ 1381 / Có 152, 156)
+    TraHangNhaCungCap = 5 // Xuất kho trả lại hàng mua cho nhà cung cấp (Nợ 331 / Có 1561)
 }
 
 /// <summary>

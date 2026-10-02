@@ -94,7 +94,9 @@ public static class DbInitializer
             new() { MaTaiKhoan = "5112", TenTaiKhoan = "Doanh thu bán các thành phẩm", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.DoanhThu, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = false },
             new() { MaTaiKhoan = "5113", TenTaiKhoan = "Doanh thu cung cấp dịch vụ", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.DoanhThu, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = false },
             new() { MaTaiKhoan = "515", TenTaiKhoan = "Doanh thu hoạt động tài chính", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.DoanhThu, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = false },
-            new() { MaTaiKhoan = "521", TenTaiKhoan = "Các khoản giảm trừ doanh thu", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.DoanhThu, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = false },
+            new() { MaTaiKhoan = "521", TenTaiKhoan = "Các khoản giảm trừ doanh thu", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.DoanhThu, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = true },
+            new() { MaTaiKhoan = "5211", TenTaiKhoan = "Chiết khấu thương mại", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.DoanhThu, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = false },
+            new() { MaTaiKhoan = "5212", TenTaiKhoan = "Hàng bán bị trả lại", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.DoanhThu, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = false },
 
             // Nhóm 6: Chi phí sản xuất, kinh doanh
             new() { MaTaiKhoan = "632", TenTaiKhoan = "Giá vốn hàng bán", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.ChiPhi, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = false },
