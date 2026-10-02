@@ -29,9 +29,262 @@ public static class DbInitializer
         else
         {
             await context.Database.EnsureCreatedAsync();
+
+            // Tự động đồng bộ các bảng mới (Phase 13, 14, 15) nếu CSDL đã tồn tại trước đó
+            await EnsureSchemaSyncedAsync(context);
         }
 
         await SeedDataAsync(context);
+    }
+
+    private static async Task EnsureSchemaSyncedAsync(AppDbContext context)
+    {
+        var tables = new[]
+        {
+            @"CREATE TABLE IF NOT EXISTS `BangGiaBans` (
+                `Id` bigint NOT NULL AUTO_INCREMENT,
+                `MaBangGia` longtext NOT NULL,
+                `TenBangGia` longtext NOT NULL,
+                `EffectiveFrom` datetime(6) NOT NULL,
+                `EffectiveTo` datetime(6) NULL,
+                `IsActive` tinyint(1) NOT NULL,
+                PRIMARY KEY (`Id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
+
+            @"CREATE TABLE IF NOT EXISTS `ExchangeRateHistories` (
+                `Id` bigint NOT NULL AUTO_INCREMENT,
+                `FromCurrency` longtext NOT NULL,
+                `ToCurrency` longtext NOT NULL,
+                `Rate` decimal(19,4) NOT NULL,
+                `EffectiveFrom` datetime(6) NOT NULL,
+                `EffectiveTo` datetime(6) NULL,
+                PRIMARY KEY (`Id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
+
+            @"CREATE TABLE IF NOT EXISTS `ChungTuChiPhiMuaHang` (
+                `Id` bigint NOT NULL AUTO_INCREMENT,
+                `ChiNhanhId` bigint NOT NULL,
+                `SoChungTu` varchar(50) NOT NULL,
+                `NgayChungTu` datetime(6) NOT NULL,
+                `NgayHachToan` datetime(6) NOT NULL,
+                `NhaCungCapDichVuId` bigint NULL,
+                `DienGiai` varchar(500) NOT NULL,
+                `TongChiPhi` decimal(19,4) NOT NULL,
+                `ThueSuatVat` decimal(19,4) NOT NULL,
+                `TienThueVat` decimal(19,4) NOT NULL,
+                `TongThanhToan` decimal(19,4) NOT NULL,
+                `PhuongThucPhanBo` int NOT NULL,
+                `DaPhanBo` tinyint(1) NOT NULL,
+                `ButToanId` bigint NULL,
+                `NgayTao` datetime(6) NOT NULL,
+                `NgayCapNhat` datetime(6) NULL,
+                PRIMARY KEY (`Id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
+
+            @"CREATE TABLE IF NOT EXISTS `ChiPhiMuaHangPhanBo` (
+                `Id` bigint NOT NULL AUTO_INCREMENT,
+                `ChungTuChiPhiMuaHangId` bigint NOT NULL,
+                `ChiTietNhapKhoId` bigint NOT NULL,
+                `SoTienPhanBo` decimal(19,4) NOT NULL,
+                `GhiChu` varchar(255) NULL,
+                PRIMARY KEY (`Id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
+
+            @"CREATE TABLE IF NOT EXISTS `DonViTinhQuyDoi` (
+                `Id` bigint NOT NULL AUTO_INCREMENT,
+                `VatTuHangHoaId` bigint NOT NULL,
+                `TenDonViTinh` longtext NOT NULL,
+                `TyLeQuyDoi` decimal(19,4) NOT NULL,
+                `PhepTinh` int NOT NULL,
+                `DonGiaBanQuyDoi` decimal(19,4) NOT NULL,
+                `LaDonViBanMacDinh` tinyint(1) NOT NULL,
+                `LaDonViMuaMacDinh` tinyint(1) NOT NULL,
+                `DangHoatDong` tinyint(1) NOT NULL,
+                PRIMARY KEY (`Id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
+
+            @"CREATE TABLE IF NOT EXISTS `PhieuDieuChuyenKho` (
+                `Id` bigint NOT NULL AUTO_INCREMENT,
+                `ChiNhanhId` bigint NOT NULL,
+                `SoPhieu` longtext NOT NULL,
+                `NgayDieuChuyen` datetime(6) NOT NULL,
+                `NgayHachToan` datetime(6) NOT NULL,
+                `KhoXuatId` bigint NOT NULL,
+                `KhoNhapId` bigint NOT NULL,
+                `NguoiVanChuyen` longtext NULL,
+                `PhuongTienVanChuyen` longtext NULL,
+                `LenhDieuDongSo` longtext NULL,
+                `LyDoDieuChuyen` longtext NULL,
+                `TongSoLuong` decimal(19,4) NOT NULL,
+                `TongGiaTri` decimal(19,4) NOT NULL,
+                `TrangThai` int NOT NULL,
+                `ButToanId` bigint NULL,
+                PRIMARY KEY (`Id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
+
+            @"CREATE TABLE IF NOT EXISTS `ChiTietDieuChuyenKho` (
+                `Id` bigint NOT NULL AUTO_INCREMENT,
+                `PhieuDieuChuyenKhoId` bigint NOT NULL,
+                `VatTuHangHoaId` bigint NOT NULL,
+                `DonViTinh` longtext NOT NULL,
+                `SoLuong` decimal(19,4) NOT NULL,
+                `DonGiaVon` decimal(19,4) NOT NULL,
+                `ThanhTien` decimal(19,4) NOT NULL,
+                `TaiKhoanXuatId` bigint NULL,
+                `TaiKhoanNhapId` bigint NULL,
+                PRIMARY KEY (`Id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
+
+            @"CREATE TABLE IF NOT EXISTS `ChungTuDieuChinhThuongMai` (
+                `Id` bigint NOT NULL AUTO_INCREMENT,
+                `ChiNhanhId` bigint NOT NULL,
+                `LoaiDieuChinh` int NOT NULL,
+                `SoChungTu` longtext NOT NULL,
+                `NgayChungTu` datetime(6) NOT NULL,
+                `NgayHachToan` datetime(6) NOT NULL,
+                `DoiTuongId` bigint NOT NULL,
+                `HoaDonBanHangGocId` bigint NULL,
+                `HoaDonMuaHangGocId` bigint NULL,
+                `KhoId` bigint NULL,
+                `LyDo` longtext NULL,
+                `HinhThucXuLy` int NOT NULL,
+                `TrangThai` int NOT NULL,
+                `TongTienHang` decimal(19,4) NOT NULL,
+                `TongTienThueVat` decimal(19,4) NOT NULL,
+                `TongThanhToan` decimal(19,4) NOT NULL,
+                `TongGiaTriNhapLaiKho` decimal(19,4) NOT NULL,
+                `ButToanDoanhThuCongNoId` bigint NULL,
+                `ButToanGiaVonKhoId` bigint NULL,
+                PRIMARY KEY (`Id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
+
+            @"CREATE TABLE IF NOT EXISTS `ChiTietDieuChinhThuongMai` (
+                `Id` bigint NOT NULL AUTO_INCREMENT,
+                `ChungTuDieuChinhThuongMaiId` bigint NOT NULL,
+                `DongSo` int NOT NULL,
+                `VatTuHangHoaId` bigint NULL,
+                `DonViTinh` longtext NOT NULL,
+                `SoLuong` decimal(19,4) NOT NULL,
+                `DonGia` decimal(19,4) NOT NULL,
+                `ThanhTien` decimal(19,4) NOT NULL,
+                `ThueSuatVat` decimal(19,4) NOT NULL,
+                `TienThueVat` decimal(19,4) NOT NULL,
+                `DonGiaVonNhapLai` decimal(19,4) NOT NULL,
+                `TienGiaVonNhapLai` decimal(19,4) NOT NULL,
+                `TaiKhoanNoId` bigint NULL,
+                `TaiKhoanCoId` bigint NULL,
+                PRIMARY KEY (`Id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
+
+            @"CREATE TABLE IF NOT EXISTS `BangTrichLapDuPhongNoPhaiThu` (
+                `Id` bigint NOT NULL AUTO_INCREMENT,
+                `ChiNhanhId` bigint NOT NULL,
+                `SoChungTu` longtext NOT NULL,
+                `NgayLap` datetime(6) NOT NULL,
+                `NgayHachToan` datetime(6) NOT NULL,
+                `TongNoQuaHan` decimal(19,4) NOT NULL,
+                `TongSoDuPhongPhaiTrich` decimal(19,4) NOT NULL,
+                `SoDuDuPhongHienTai2293` decimal(19,4) NOT NULL,
+                `SoTienTrichThem` decimal(19,4) NOT NULL,
+                `SoTienHoanNhap` decimal(19,4) NOT NULL,
+                `TrangThai` int NOT NULL,
+                `ButToanId` bigint NULL,
+                `GhiChu` longtext NULL,
+                PRIMARY KEY (`Id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
+
+            @"CREATE TABLE IF NOT EXISTS `ChiTietTrichLapDuPhong` (
+                `Id` bigint NOT NULL AUTO_INCREMENT,
+                `BangTrichLapDuPhongNoPhaiThuId` bigint NOT NULL,
+                `KhachHangId` bigint NOT NULL,
+                `HoaDonBanHangId` bigint NULL,
+                `SoHoaDon` longtext NOT NULL,
+                `NgayHoaDon` datetime(6) NOT NULL,
+                `HanThanhToan` datetime(6) NOT NULL,
+                `SoTienConNo` decimal(19,4) NOT NULL,
+                `SoNgayQuaHan` int NOT NULL,
+                `TyLeTrichLap` decimal(19,4) NOT NULL,
+                `SoTienDuPhong` decimal(19,4) NOT NULL,
+                `LyDoDacBiet` longtext NULL,
+                PRIMARY KEY (`Id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
+
+            @"CREATE TABLE IF NOT EXISTS `DanhGiaLaiNgoaiTe` (
+                `Id` bigint NOT NULL AUTO_INCREMENT,
+                `ChiNhanhId` bigint NOT NULL,
+                `SoChungTu` longtext NOT NULL,
+                `NgayChungTu` datetime(6) NOT NULL,
+                `NgayHachToan` datetime(6) NOT NULL,
+                `LoaiTien` longtext NOT NULL,
+                `TyGiaMua` decimal(19,4) NOT NULL,
+                `TyGiaBan` decimal(19,4) NOT NULL,
+                `TongLaiTyGia` decimal(19,4) NOT NULL,
+                `TongLoTyGia` decimal(19,4) NOT NULL,
+                `ButToanDanhGiaLaiId` bigint NULL,
+                `ButToanKetChuyen413Id` bigint NULL,
+                PRIMARY KEY (`Id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
+
+            @"CREATE TABLE IF NOT EXISTS `ChiTietDanhGiaLaiNgoaiTe` (
+                `Id` bigint NOT NULL AUTO_INCREMENT,
+                `DanhGiaLaiNgoaiTeId` bigint NOT NULL,
+                `TaiKhoanId` bigint NOT NULL,
+                `DoiTuongId` bigint NULL,
+                `SoDuNgoaiTe` decimal(19,4) NOT NULL,
+                `TyGiaGhiSo` decimal(19,4) NOT NULL,
+                `GiaTriGhiSoVnd` decimal(19,4) NOT NULL,
+                `TyGiaDanhGiaLai` decimal(19,4) NOT NULL,
+                `GiaTriDanhGiaLaiVnd` decimal(19,4) NOT NULL,
+                `ChenhLechVnd` decimal(19,4) NOT NULL,
+                PRIMARY KEY (`Id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
+
+            @"CREATE TABLE IF NOT EXISTS `ChiTietBangGias` (
+                `Id` bigint NOT NULL AUTO_INCREMENT,
+                `BangGiaBanId` bigint NOT NULL,
+                `VatTuHangHoaId` bigint NOT NULL,
+                `DonGia` decimal(19,4) NOT NULL,
+                PRIMARY KEY (`Id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"
+        };
+
+        foreach (var sql in tables)
+        {
+            try
+            {
+                await context.Database.ExecuteSqlRawAsync(sql);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[EnsureSchemaSyncedAsync Table Error]: {ex.Message}");
+            }
+        }
+
+        var columns = new[]
+        {
+            "ALTER TABLE `ChungTuChiPhiMuaHang` ADD COLUMN `DaPhanBo` tinyint(1) NOT NULL DEFAULT 0;",
+            "ALTER TABLE `ChungTuChiPhiMuaHang` ADD COLUMN `TongChiPhi` decimal(19,4) NOT NULL DEFAULT 0.0000;",
+            "ALTER TABLE `ChungTuChiPhiMuaHang` ADD COLUMN `ThueSuatVat` decimal(19,4) NOT NULL DEFAULT 10.0000;",
+            "ALTER TABLE `ChungTuChiPhiMuaHang` ADD COLUMN `TienThueVat` decimal(19,4) NOT NULL DEFAULT 0.0000;",
+            "ALTER TABLE `ChiPhiMuaHangPhanBo` ADD COLUMN `SoTienPhanBo` decimal(19,4) NOT NULL DEFAULT 0.0000;",
+            "ALTER TABLE `PhieuNhapKho` ADD COLUMN `ChiPhiMuaHang` decimal(19,4) NOT NULL DEFAULT 0.0000;",
+            "ALTER TABLE `ChiTietNhapKho` ADD COLUMN `ChiPhiMuaHangPhanBo` decimal(19,4) NOT NULL DEFAULT 0.0000;",
+            "ALTER TABLE `PhieuXuatKho` ADD COLUMN `LaDieuChinhGiaVonCuoiKy` tinyint(1) NOT NULL DEFAULT 0;",
+            "ALTER TABLE `ChiTietXuatKho` ADD COLUMN `ChenhLechGiaVon` decimal(19,4) NULL;",
+            "ALTER TABLE `ChiTietXuatKho` ADD COLUMN `DonGiaVonCuoiKy` decimal(19,4) NULL;"
+        };
+
+        foreach (var sql in columns)
+        {
+            try
+            {
+                await context.Database.ExecuteSqlRawAsync(sql);
+            }
+            catch
+            {
+                // Bỏ qua nếu cột đã tồn tại
+            }
+        }
     }
 
     public static void Initialize(AppDbContext context)
