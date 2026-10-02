@@ -16,6 +16,9 @@ Repository guidelines for autonomous agents working in `ninjaTax`.
 
 ## Database Guidelines
 - **MariaDB (Default)**: Connection string in `appsettings.json` / `appsettings.Development.json`. Auto-initializes schema via `EnsureCreatedAsync()`.
+- **MariaDB Schema Synchronization**:
+  - `EnsureCreatedAsync()` is a no-op if the database already exists and will NOT create newly added tables or columns from later phases.
+  - Whenever new entity types or columns are introduced to `AppDbContext`, add matching idempotent `CREATE TABLE IF NOT EXISTS` and `ALTER TABLE ... ADD COLUMN` guards in `DbInitializer.EnsureSchemaSyncedAsync` to ensure existing MariaDB instances upgrade automatically on startup.
 - **SQLite**: Dedicated migrations stored in `Migrations/Sqlite/`. Used for local dev fallback and in-memory unit tests.
 - **Provider Switching**: Set `"DatabaseProvider": "MariaDb" | "Sqlite" | "PostgreSql" | "SqlServer"` in config.
 
