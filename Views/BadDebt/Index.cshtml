@@ -1,0 +1,111 @@
+@model List<ninjaTax.Models.Entities.BangTrichLapDuPhongNoPhaiThu>
+@{
+    ViewData["Title"] = "Dự Phòng Nợ Phải Thu Khó Đòi (TT 48/2019/TT-BTC)";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0 text-primary"><i class="bi bi-shield-exclamation me-2"></i>Bảng Trích Lập Dự Phòng Nợ Phải Thu Khó Đòi</h3>
+            <small class="text-muted">Quản trị trích lập bổ sung hoặc hoàn nhập dự phòng tổn thất nợ phải thu (TK 2293) theo Thông tư 48/2019/TT-BTC</small>
+        </div>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i>Lập Bảng Dự Phòng Mới
+        </a>
+    </div>
+
+    @if (TempData["ThongBaoThanhCong"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["ThongBaoThanhCong"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ThongBaoLoi"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ThongBaoLoi"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light small">
+                    <tr>
+                        <th class="ps-3">Số chứng từ</th>
+                        <th>Ngày hạch toán</th>
+                        <th class="text-end">Tổng nợ quá hạn</th>
+                        <th class="text-end">Dự phòng cần trích</th>
+                        <th class="text-end">Số dư 2293 trước trích</th>
+                        <th class="text-end text-danger">Trích thêm (6426)</th>
+                        <th class="text-end text-success">Hoàn nhập (6426)</th>
+                        <th>Trạng thái</th>
+                        <th>Bút toán</th>
+                        <th class="text-center pe-3">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="10" class="text-center py-4 text-muted">Chưa có bảng trích lập dự phòng nào trong hệ thống.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-3 font-monospace fw-bold">@item.SoChungTu</td>
+                                <td>@item.NgayHachToan.ToString("dd/MM/yyyy")</td>
+                                <td class="text-end font-monospace">@item.TongNoQuaHan.ToString("N0") đ</td>
+                                <td class="text-end font-monospace fw-bold text-primary">@item.TongSoDuPhongPhaiTrich.ToString("N0") đ</td>
+                                <td class="text-end font-monospace">@item.SoDuDuPhongHienTai2293.ToString("N0") đ</td>
+                                <td class="text-end font-monospace text-danger fw-bold">@(item.SoTienTrichThem > 0 ? "+" + item.SoTienTrichThem.ToString("N0") : "-")</td>
+                                <td class="text-end font-monospace text-success fw-bold">@(item.SoTienHoanNhap > 0 ? "-" + item.SoTienHoanNhap.ToString("N0") : "-")</td>
+                                <td>
+                                    @if (item.TrangThai == ninjaTax.Models.Entities.TrangThaiBangTrichLap.DaGhiSo)
+                                    {
+                                        <span class="badge bg-success">Đã ghi sổ</span>
+                                    }
+                                    else if (item.TrangThai == ninjaTax.Models.Entities.TrangThaiBangTrichLap.DaHuy)
+                                    {
+                                        <span class="badge bg-secondary">Đã hủy</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark">Tạm tính</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.ButToan != null)
+                                    {
+                                        <span class="font-monospace small text-primary">@item.ButToan.SoChungTu</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">-</span>
+                                    }
+                                </td>
+                                <td class="text-center pe-3">
+                                    @if (item.TrangThai != ninjaTax.Models.Entities.TrangThaiBangTrichLap.DaHuy)
+                                    {
+                                        <form asp-action="Huy" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn hủy bảng trích lập dự phòng này?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-trash"></i> Hủy
+                                            </button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

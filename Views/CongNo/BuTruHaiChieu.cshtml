@@ -1,0 +1,61 @@
+@model ninjaTax.Models.ViewModels.BuTruHaiChieuCreateViewModel
+@{
+    ViewData["Title"] = "Bù Trừ Công Nợ Hai Chiều (AR/AP Offset)";
+}
+
+<div class="container py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0 text-primary"><i class="bi bi-arrow-repeat me-2"></i>Bù Trừ Công Nợ Hai Chiều (Nợ 331 / Có 131)</h3>
+            <small class="text-muted">Cấn trừ công nợ giữa Phải thu (131) và Phải trả (331) cùng một đối tác thương mại</small>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Quay lại báo cáo
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <form asp-action="BuTruHaiChieu" method="post">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="DoiTuongId" class="form-label fw-semibold">Đối tác bù trừ</label>
+                        <select asp-for="DoiTuongId" class="form-select" asp-items="Model.DanhSachDoiTuong">
+                            <option value="">-- Chọn đối tượng (vừa là khách hàng vừa là NCC) --</option>
+                        </select>
+                        <span asp-validation-for="DoiTuongId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="NgayHachToan" class="form-label fw-semibold">Ngày hạch toán</label>
+                        <input asp-for="NgayHachToan" class="form-control" type="date" />
+                        <span asp-validation-for="NgayHachToan" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="SoTien" class="form-label fw-semibold">Số tiền bù trừ (VNĐ)</label>
+                        <div class="input-group">
+                            <input asp-for="SoTien" class="form-control text-end fs-5 fw-bold" type="number" step="1000" />
+                            <span class="input-group-text">VNĐ</span>
+                        </div>
+                        <span asp-validation-for="SoTien" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="GhiChu" class="form-label fw-semibold">Diễn giải</label>
+                        <input asp-for="GhiChu" class="form-control" placeholder="VD: Biên bản bù trừ công nợ số BB-01/2026..." />
+                    </div>
+
+                    <div class="col-12 mt-4 text-end">
+                        <a asp-action="Index" class="btn btn-light me-2">Hủy bỏ</a>
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-check-lg me-1"></i>Thực Hiện Bù Trừ Hai Chiều
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,108 @@
+@model List<ninjaTax.Models.Entities.DanhGiaLaiNgoaiTe>
+@{
+    ViewData["Title"] = "Đánh Giá Lại Ngoại Tệ Cuối Kỳ (VAS 10 & TK 413)";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0 text-primary"><i class="bi bi-currency-exchange me-2"></i>Đánh Giá Lại Ngoại Tệ Cuối Kỳ</h3>
+            <small class="text-muted">Đánh giá lại số dư tài khoản có gốc ngoại tệ (1112, 1122, 131, 331) qua TK 4131 và kết chuyển kết quả về TK 515 / 635</small>
+        </div>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i>Đánh Giá Lại Mới
+        </a>
+    </div>
+
+    @if (TempData["ThongBaoThanhCong"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["ThongBaoThanhCong"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ThongBaoLoi"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ThongBaoLoi"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light small">
+                    <tr>
+                        <th class="ps-3">Số chứng từ</th>
+                        <th>Ngày hạch toán</th>
+                        <th>Ngoại tệ</th>
+                        <th class="text-end">Tỷ giá mua</th>
+                        <th class="text-end">Tỷ giá bán</th>
+                        <th class="text-end text-success">Lãi tỷ giá (Có 413)</th>
+                        <th class="text-end text-danger">Lỗ tỷ giá (Nợ 413)</th>
+                        <th class="text-end fw-bold">Chênh lệch thuần</th>
+                        <th>Bút toán ĐGL</th>
+                        <th>Bút toán KC 413</th>
+                        <th class="text-center pe-3">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="11" class="text-center py-4 text-muted">Chưa có chứng từ đánh giá lại ngoại tệ nào.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-3 font-monospace fw-bold">@item.SoChungTu</td>
+                                <td>@item.NgayHachToan.ToString("dd/MM/yyyy")</td>
+                                <td><span class="badge bg-secondary font-monospace">@item.LoaiTien</span></td>
+                                <td class="text-end font-monospace">@item.TyGiaMua.ToString("N0")</td>
+                                <td class="text-end font-monospace">@item.TyGiaBan.ToString("N0")</td>
+                                <td class="text-end font-monospace text-success fw-bold">@item.TongLaiTyGia.ToString("N0") đ</td>
+                                <td class="text-end font-monospace text-danger fw-bold">@item.TongLoTyGia.ToString("N0") đ</td>
+                                <td class="text-end font-monospace fw-bold @(item.ChenhLechThuan >= 0 ? "text-success" : "text-danger")">
+                                    @(item.ChenhLechThuan >= 0 ? "+" : "")@item.ChenhLechThuan.ToString("N0") đ
+                                </td>
+                                <td>
+                                    @if (item.ButToanDanhGiaLai != null)
+                                    {
+                                        <span class="font-monospace small text-primary">@item.ButToanDanhGiaLai.SoChungTu</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.ButToanKetChuyen413 != null)
+                                    {
+                                        <span class="font-monospace small text-success">@item.ButToanKetChuyen413.SoChungTu</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">-</span>
+                                    }
+                                </td>
+                                <td class="text-center pe-3">
+                                    <form asp-action="Huy" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn hủy chứng từ đánh giá lại tỷ giá này?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash"></i> Hủy
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

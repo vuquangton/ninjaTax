@@ -14,8 +14,13 @@ public class AgingReportItem
     public decimal Tu1Den30Ngay { get; set; }
     public decimal Tu31Den60Ngay { get; set; }
     public decimal Tu61Den90Ngay { get; set; }
-    public decimal Tren90Ngay { get; set; }
-    public decimal TongNo => TrongHan + Tu1Den30Ngay + Tu31Den60Ngay + Tu61Den90Ngay + Tren90Ngay;
+    public decimal Tu91Den180Ngay { get; set; }
+    public decimal Tu181Den360Ngay { get; set; }
+    public decimal Tu1Den2Nam { get; set; }
+    public decimal Tu2Den3Nam { get; set; }
+    public decimal Tren3Nam { get; set; }
+    public decimal Tren90Ngay => Tu91Den180Ngay + Tu181Den360Ngay + Tu1Den2Nam + Tu2Den3Nam + Tren3Nam;
+    public decimal TongNo => TrongHan + Tu1Den30Ngay + Tu31Den60Ngay + Tu61Den90Ngay + Tu91Den180Ngay + Tu181Den360Ngay + Tu1Den2Nam + Tu2Den3Nam + Tren3Nam;
 }
 
 /// <summary>
@@ -28,4 +33,5 @@ public interface ICongNoService
     Task<(bool ThanhCong, string? ThongBao, decimal DaDoiTru)> DoiTruFifoKhachHangAsync(long khachHangId, decimal tongTienThu, long? butToanId = null);
     Task<List<AgingReportItem>> BaoCaoTuoiNoPhaiThuAsync(DateTime? mocThoiGian = null);
     Task<List<AgingReportItem>> BaoCaoTuoiNoPhaiTraAsync(DateTime? mocThoiGian = null);
+    Task<(bool ThanhCong, string? ThongBao, ButToan? ButToan)> BuTruCongNoHaiChieuAsync(long doiTuongId, decimal soTien, DateTime ngayHachToan, string? ghiChu = null);
 }

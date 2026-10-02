@@ -45,8 +45,32 @@
     {
       "title": "Công Nợ",
       "icon": "bi bi-wallet2",
-      "controller": "CongNo",
-      "action": "Index"
+      "children": [
+        {
+          "title": "Quản trị công nợ & Tuổi nợ",
+          "icon": "bi bi-wallet2",
+          "controller": "CongNo",
+          "action": "Index"
+        },
+        {
+          "title": "Đối trừ thanh toán (FIFO)",
+          "icon": "bi bi-arrow-left-right",
+          "controller": "CongNo",
+          "action": "DoiTru"
+        },
+        {
+          "title": "Bù trừ công nợ 2 chiều",
+          "icon": "bi bi-arrow-repeat",
+          "controller": "CongNo",
+          "action": "BuTruHaiChieu"
+        },
+        {
+          "title": "Dự phòng khó đòi (TT48)",
+          "icon": "bi bi-shield-exclamation",
+          "controller": "BadDebt",
+          "action": "Index"
+        }
+      ]
     },
     {
       "title": "Thu Tiền",
@@ -135,6 +159,12 @@
           "icon": "bi bi-patch-check",
           "controller": "GeneralLedger",
           "action": "DoiSoat"
+        },
+        {
+          "title": "Đánh giá lại ngoại tệ (TK 413)",
+          "icon": "bi bi-currency-exchange",
+          "controller": "FxRevaluation",
+          "action": "Index"
         }
       ]
     },

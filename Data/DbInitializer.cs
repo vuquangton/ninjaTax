@@ -49,8 +49,10 @@ public static class DbInitializer
             // Nhóm 1: Tài sản ngắn hạn
             new() { MaTaiKhoan = "111", TenTaiKhoan = "Tiền mặt", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuNo, LaTaiKhoanSoCai = true },
             new() { MaTaiKhoan = "1111", TenTaiKhoan = "Tiền Việt Nam", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuNo, LaTaiKhoanSoCai = false },
+            new() { MaTaiKhoan = "1112", TenTaiKhoan = "Ngoại tệ", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuNo, LaTaiKhoanSoCai = false },
             new() { MaTaiKhoan = "112", TenTaiKhoan = "Tiền gửi ngân hàng", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuNo, LaTaiKhoanSoCai = true },
             new() { MaTaiKhoan = "1121", TenTaiKhoan = "Tiền Việt Nam gửi ngân hàng", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuNo, LaTaiKhoanSoCai = false },
+            new() { MaTaiKhoan = "1122", TenTaiKhoan = "Ngoại tệ gửi ngân hàng", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuNo, LaTaiKhoanSoCai = false },
             new() { MaTaiKhoan = "131", TenTaiKhoan = "Phải thu của khách hàng", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.LuongTinh, LaTaiKhoanSoCai = false },
             new() { MaTaiKhoan = "133", TenTaiKhoan = "Thuế GTGT được khấu trừ", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuNo, LaTaiKhoanSoCai = true },
             new() { MaTaiKhoan = "1331", TenTaiKhoan = "Thuế GTGT được khấu trừ của hàng hóa, dịch vụ", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuNo, LaTaiKhoanSoCai = false },
@@ -60,10 +62,12 @@ public static class DbInitializer
             new() { MaTaiKhoan = "1561", TenTaiKhoan = "Giá mua hàng hóa", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuNo, LaTaiKhoanSoCai = false },
             new() { MaTaiKhoan = "154", TenTaiKhoan = "Chi phí sản xuất, kinh doanh dở dang", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuNo, LaTaiKhoanSoCai = false },
 
-            // Nhóm 2: Tài sản dài hạn
+            // Nhóm 2: Tài sản dài hạn & Dự phòng tổn thất tài sản
             new() { MaTaiKhoan = "211", TenTaiKhoan = "Tài sản cố định hữu hình", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuNo, LaTaiKhoanSoCai = false },
             new() { MaTaiKhoan = "214", TenTaiKhoan = "Hao mòn tài sản cố định", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuCo, LaTaiKhoanSoCai = true },
             new() { MaTaiKhoan = "2141", TenTaiKhoan = "Hao mòn tài sản cố định hữu hình", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuCo, LaTaiKhoanSoCai = false },
+            new() { MaTaiKhoan = "229", TenTaiKhoan = "Dự phòng tổn thất tài sản", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuCo, LaTaiKhoanSoCai = true },
+            new() { MaTaiKhoan = "2293", TenTaiKhoan = "Dự phòng phải thu khó đòi", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuCo, LaTaiKhoanSoCai = false },
             new() { MaTaiKhoan = "242", TenTaiKhoan = "Chi phí trả trước", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.TaiSan, TinhChat = TinhChatTaiKhoan.DuNo, LaTaiKhoanSoCai = false },
 
             // Nhóm 3: Nợ phải trả
@@ -81,9 +85,11 @@ public static class DbInitializer
             new() { MaTaiKhoan = "3386", TenTaiKhoan = "Bảo hiểm thất nghiệp", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.NoPhaiTra, TinhChat = TinhChatTaiKhoan.DuCo, LaTaiKhoanSoCai = false },
             new() { MaTaiKhoan = "341", TenTaiKhoan = "Vay và nợ thuê tài chính", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.NoPhaiTra, TinhChat = TinhChatTaiKhoan.DuCo, LaTaiKhoanSoCai = false },
 
-            // Nhóm 4: Vốn chủ sở hữu (Đặc thù TT99: 421 nhận kết chuyển doanh thu, chi phí trực tiếp)
+            // Nhóm 4: Vốn chủ sở hữu & Chênh lệch tỷ giá (TK 413)
             new() { MaTaiKhoan = "411", TenTaiKhoan = "Vốn đầu tư của chủ sở hữu", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.VonChuSoHuu, TinhChat = TinhChatTaiKhoan.DuCo, LaTaiKhoanSoCai = true },
             new() { MaTaiKhoan = "4111", TenTaiKhoan = "Vốn góp của chủ sở hữu", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.VonChuSoHuu, TinhChat = TinhChatTaiKhoan.DuCo, LaTaiKhoanSoCai = false },
+            new() { MaTaiKhoan = "413", TenTaiKhoan = "Chênh lệch tỷ giá hối đoái", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.VonChuSoHuu, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = true },
+            new() { MaTaiKhoan = "4131", TenTaiKhoan = "Chênh lệch tỷ giá đánh giá lại cuối kỳ", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.VonChuSoHuu, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = false },
             new() { MaTaiKhoan = "421", TenTaiKhoan = "Lợi nhuận sau thuế chưa phân phối", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.VonChuSoHuu, TinhChat = TinhChatTaiKhoan.LuongTinh, LaTaiKhoanSoCai = true },
             new() { MaTaiKhoan = "4211", TenTaiKhoan = "Lợi nhuận sau thuế chưa phân phối năm trước", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.VonChuSoHuu, TinhChat = TinhChatTaiKhoan.LuongTinh, LaTaiKhoanSoCai = false },
             new() { MaTaiKhoan = "4212", TenTaiKhoan = "Lợi nhuận sau thuế chưa phân phối năm nay", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.VonChuSoHuu, TinhChat = TinhChatTaiKhoan.LuongTinh, LaTaiKhoanSoCai = false },
@@ -105,6 +111,7 @@ public static class DbInitializer
             new() { MaTaiKhoan = "642", TenTaiKhoan = "Chi phí quản lý doanh nghiệp", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.ChiPhi, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = true },
             new() { MaTaiKhoan = "6421", TenTaiKhoan = "Chi phí bán hàng", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.ChiPhi, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = false },
             new() { MaTaiKhoan = "6422", TenTaiKhoan = "Chi phí quản lý doanh nghiệp", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.ChiPhi, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = false },
+            new() { MaTaiKhoan = "6426", TenTaiKhoan = "Chi phí dự phòng nợ phải thu khó đòi", BacTaiKhoan = 2, LoaiTaiKhoan = LoaiTaiKhoan.ChiPhi, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = false },
 
             // Nhóm 7 & 8: Thu nhập khác và Chi phí khác
             new() { MaTaiKhoan = "711", TenTaiKhoan = "Thu nhập khác", BacTaiKhoan = 1, LoaiTaiKhoan = LoaiTaiKhoan.ThuNhapKhac, TinhChat = TinhChatTaiKhoan.KhongCoSoDu, LaTaiKhoanSoCai = false },

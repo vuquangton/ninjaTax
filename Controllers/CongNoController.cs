@@ -114,6 +114,41 @@ public class CongNoController : Controller
     }
 
     [HttpGet]
+    public async Task<IActionResult> BuTruHaiChieu()
+    {
+        var model = new BuTruHaiChieuCreateViewModel();
+        await NapDoiTuongBuTruHaiChieuAsync(model);
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> BuTruHaiChieu(BuTruHaiChieuCreateViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            await NapDoiTuongBuTruHaiChieuAsync(model);
+            return View(model);
+        }
+
+        var (ok, msg, butToan) = await _congNoService.BuTruCongNoHaiChieuAsync(
+            model.DoiTuongId,
+            model.SoTien,
+            model.NgayHachToan,
+            model.GhiChu);
+
+        if (!ok)
+        {
+            ModelState.AddModelError(string.Empty, msg ?? "Lỗi khi thực hiện bù trừ hai chiều.");
+            await NapDoiTuongBuTruHaiChieuAsync(model);
+            return View(model);
+        }
+
+        TempData["ThongBaoThanhCong"] = $"Đã bù trừ công nợ hai chiều thành công! Bút toán: {butToan?.SoChungTu} (Nợ 331 / Có 131: {model.SoTien:N0} đ)";
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
     public async Task<IActionResult> GetHoaDonChuaThanhToan(LoaiCongNo loai, long doiTuongId)
     {
         if (loai == LoaiCongNo.PhaiThuKhachHang)
@@ -157,6 +192,15 @@ public class CongNoController : Controller
         var loaiDoiTuong = model.Loai == LoaiCongNo.PhaiThuKhachHang ? LoaiDoiTuong.KhachHang : LoaiDoiTuong.NhaCungCap;
         model.DanhSachDoiTuong = await _context.DoiTuongs
             .Where(d => d.DangHoatDong && (d.Loai == loaiDoiTuong || d.Loai == LoaiDoiTuong.Khac))
+            .OrderBy(d => d.MaDoiTuong)
+            .Select(d => new SelectListItem { Value = d.Id.ToString(), Text = $"{d.MaDoiTuong} - {d.TenDoiTuong}" })
+            .ToListAsync();
+    }
+
+    private async Task NapDoiTuongBuTruHaiChieuAsync(BuTruHaiChieuCreateViewModel model)
+    {
+        model.DanhSachDoiTuong = await _context.DoiTuongs
+            .Where(d => d.DangHoatDong)
             .OrderBy(d => d.MaDoiTuong)
             .Select(d => new SelectListItem { Value = d.Id.ToString(), Text = $"{d.MaDoiTuong} - {d.TenDoiTuong}" })
             .ToListAsync();

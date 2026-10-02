@@ -191,7 +191,74 @@ public class ArApSettlementTests : IDisposable
         Assert.Equal(7000000m, item.Tu1Den30Ngay);
         Assert.Equal(0m, item.Tu31Den60Ngay);
         Assert.Equal(0m, item.Tu61Den90Ngay);
-        Assert.Equal(12000000m, item.Tren90Ngay);
+        Assert.Equal(12000000m, item.Tu91Den180Ngay); // 100 days falls in 91-180 days bucket
         Assert.Equal(24000000m, item.TongNo);
+    }
+
+    [Fact]
+    public async Task BuTruCongNoHaiChieu_Succeeds_PostsJournalEntry331To131()
+    {
+        using var context = new AppDbContext(_dbOptions);
+        var service = new CongNoService(context, NullLogger<CongNoService>.Instance);
+
+        // Tạo đối tượng vừa là khách hàng vừa là nhà cung cấp
+        var doiTuong = new DoiTuong
+        {
+            MaDoiTuong = "DT-DUAL-01",
+            TenDoiTuong = "Công ty TNHH Song Hành",
+            Loai = LoaiDoiTuong.KhachHang,
+            MaSoThue = "0301234567"
+        };
+        context.DoiTuongs.Add(doiTuong);
+        await context.SaveChangesAsync();
+
+        // 1. Tạo HĐ bán hàng (Phải thu 131: 15.000.000)
+        var hdBan = new HoaDonBanHang
+        {
+            SoChungTu = "BH-OFFSET-01",
+            KhachHangId = doiTuong.Id,
+            NgayHoaDon = DateTime.Today.AddDays(-10),
+            HanThanhToan = DateTime.Today,
+            TongThanhToan = 15000000m,
+            DaThuTien = 0m,
+            TrangThai = TrangThaiHddt.CoQuanThueCapMa
+        };
+        // 2. Tạo HĐ mua hàng (Phải trả 331: 20.000.000)
+        var hdMua = new HoaDonMuaHang
+        {
+            SoChungTu = "MH-OFFSET-01",
+            NhaCungCapId = doiTuong.Id,
+            NgayHoaDon = DateTime.Today.AddDays(-10),
+            HanThanhToan = DateTime.Today,
+            TongThanhToan = 20000000m,
+            DaThanhToan = 0m
+        };
+
+        context.HoaDonBanHangs.Add(hdBan);
+        context.HoaDonMuaHangs.Add(hdMua);
+        await context.SaveChangesAsync();
+
+        // Bù trừ 10.000.000 đ
+        var (ok, msg, butToan) = await service.BuTruCongNoHaiChieuAsync(doiTuong.Id, 10000000m, DateTime.Today, "Bù trừ đối tác");
+
+        Assert.True(ok, msg);
+        Assert.NotNull(butToan);
+        Assert.Equal(10000000m, butToan.TongTien);
+        Assert.Single(butToan.ChiTietButToans);
+
+        var ct = butToan.ChiTietButToans.First();
+        var tk331 = await context.TaiKhoans.FirstAsync(t => t.MaTaiKhoan == "331");
+        var tk131 = await context.TaiKhoans.FirstAsync(t => t.MaTaiKhoan == "131");
+        Assert.Equal(tk331.Id, ct.TaiKhoanNoId);
+        Assert.Equal(tk131.Id, ct.TaiKhoanCoId);
+        Assert.Equal(10000000m, ct.SoTien);
+
+        // Kiểm tra số dư công nợ sau bù trừ
+        var hdBanReload = await context.HoaDonBanHangs.FindAsync(hdBan.Id);
+        var hdMuaReload = await context.HoaDonMuaHangs.FindAsync(hdMua.Id);
+        Assert.NotNull(hdBanReload);
+        Assert.NotNull(hdMuaReload);
+        Assert.Equal(5000000m, hdBanReload.ConPhaiThu); // 15tr - 10tr = 5tr
+        Assert.Equal(10000000m, hdMuaReload.ConPhaiTra); // 20tr - 10tr = 10tr
     }
 }

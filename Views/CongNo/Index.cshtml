@@ -18,6 +18,9 @@
             <a asp-action="DoiTru" class="btn btn-primary text-nowrap">
                 <i class="bi bi-arrow-left-right me-1"></i>Đối Trừ & Thanh Toán
             </a>
+            <a asp-action="BuTruHaiChieu" class="btn btn-outline-primary text-nowrap">
+                <i class="bi bi-arrow-repeat me-1"></i>Bù Trừ 2 Chiều
+            </a>
         </div>
     </div>
 
@@ -60,13 +63,17 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light small">
                     <tr>
-                        <th class="ps-3">Mã đối tượng</th>
-                        <th>Tên khách hàng</th>
+                        <th class="ps-3">Mã ĐT</th>
+                        <th>Khách hàng</th>
                         <th class="text-end">Trong hạn</th>
-                        <th class="text-end">1 - 30 ngày</th>
-                        <th class="text-end">31 - 60 ngày</th>
-                        <th class="text-end">61 - 90 ngày</th>
-                        <th class="text-end text-danger">Trên 90 ngày</th>
+                        <th class="text-end">1 - 30 ng</th>
+                        <th class="text-end">31 - 60 ng</th>
+                        <th class="text-end">61 - 90 ng</th>
+                        <th class="text-end">91 - 180 ng</th>
+                        <th class="text-end">181 - 360 ng (30%)</th>
+                        <th class="text-end">1 - 2 năm (50%)</th>
+                        <th class="text-end">2 - 3 năm (70%)</th>
+                        <th class="text-end text-danger">&gt; 3 năm (100%)</th>
                         <th class="text-end pe-3 fw-bold">Tổng Nợ (VNĐ)</th>
                     </tr>
                 </thead>
@@ -74,7 +81,7 @@
                     @if (!Model.BaoCaoTuoiNoPhaiThu.Any())
                     {
                         <tr>
-                            <td colspan="8" class="text-center py-3 text-muted">Không có dư nợ phải thu của khách hàng nào.</td>
+                            <td colspan="12" class="text-center py-3 text-muted">Không có dư nợ phải thu của khách hàng nào.</td>
                         </tr>
                     }
                     else
@@ -88,7 +95,11 @@
                                 <td class="text-end font-monospace text-warning">@row.Tu1Den30Ngay.ToString("N0")</td>
                                 <td class="text-end font-monospace text-warning-emphasis">@row.Tu31Den60Ngay.ToString("N0")</td>
                                 <td class="text-end font-monospace text-danger">@row.Tu61Den90Ngay.ToString("N0")</td>
-                                <td class="text-end font-monospace text-danger fw-bold">@row.Tren90Ngay.ToString("N0")</td>
+                                <td class="text-end font-monospace">@row.Tu91Den180Ngay.ToString("N0")</td>
+                                <td class="text-end font-monospace text-info">@row.Tu181Den360Ngay.ToString("N0")</td>
+                                <td class="text-end font-monospace text-primary">@row.Tu1Den2Nam.ToString("N0")</td>
+                                <td class="text-end font-monospace text-warning">@row.Tu2Den3Nam.ToString("N0")</td>
+                                <td class="text-end font-monospace text-danger fw-bold">@row.Tren3Nam.ToString("N0")</td>
                                 <td class="text-end pe-3 font-monospace fw-bold text-primary">@row.TongNo.ToString("N0") đ</td>
                             </tr>
                         }
@@ -107,13 +118,17 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light small">
                     <tr>
-                        <th class="ps-3">Mã đối tượng</th>
-                        <th>Tên nhà cung cấp</th>
+                        <th class="ps-3">Mã ĐT</th>
+                        <th>Nhà cung cấp</th>
                         <th class="text-end">Trong hạn</th>
-                        <th class="text-end">1 - 30 ngày</th>
-                        <th class="text-end">31 - 60 ngày</th>
-                        <th class="text-end">61 - 90 ngày</th>
-                        <th class="text-end text-danger">Trên 90 ngày</th>
+                        <th class="text-end">1 - 30 ng</th>
+                        <th class="text-end">31 - 60 ng</th>
+                        <th class="text-end">61 - 90 ng</th>
+                        <th class="text-end">91 - 180 ng</th>
+                        <th class="text-end">181 - 360 ng</th>
+                        <th class="text-end">1 - 2 năm</th>
+                        <th class="text-end">2 - 3 năm</th>
+                        <th class="text-end text-danger">&gt; 3 năm</th>
                         <th class="text-end pe-3 fw-bold">Tổng Nợ (VNĐ)</th>
                     </tr>
                 </thead>
@@ -121,7 +136,7 @@
                     @if (!Model.BaoCaoTuoiNoPhaiTra.Any())
                     {
                         <tr>
-                            <td colspan="8" class="text-center py-3 text-muted">Không có dư nợ phải trả cho nhà cung cấp nào.</td>
+                            <td colspan="12" class="text-center py-3 text-muted">Không có dư nợ phải trả cho nhà cung cấp nào.</td>
                         </tr>
                     }
                     else
@@ -134,8 +149,12 @@
                                 <td class="text-end font-monospace">@row.TrongHan.ToString("N0")</td>
                                 <td class="text-end font-monospace">@row.Tu1Den30Ngay.ToString("N0")</td>
                                 <td class="text-end font-monospace">@row.Tu31Den60Ngay.ToString("N0")</td>
-                                <td class="text-end font-monospace text-danger">@row.Tu61Den90Ngay.ToString("N0")</td>
-                                <td class="text-end font-monospace text-danger fw-bold">@row.Tren90Ngay.ToString("N0")</td>
+                                <td class="text-end font-monospace">@row.Tu61Den90Ngay.ToString("N0")</td>
+                                <td class="text-end font-monospace">@row.Tu91Den180Ngay.ToString("N0")</td>
+                                <td class="text-end font-monospace">@row.Tu181Den360Ngay.ToString("N0")</td>
+                                <td class="text-end font-monospace">@row.Tu1Den2Nam.ToString("N0")</td>
+                                <td class="text-end font-monospace">@row.Tu2Den3Nam.ToString("N0")</td>
+                                <td class="text-end font-monospace text-danger fw-bold">@row.Tren3Nam.ToString("N0")</td>
                                 <td class="text-end pe-3 font-monospace fw-bold text-danger">@row.TongNo.ToString("N0") đ</td>
                             </tr>
                         }

@@ -81,6 +81,12 @@ public class AppDbContext : DbContext
     public DbSet<ChungTuDieuChinhThuongMai> ChungTuDieuChinhThuongMais => Set<ChungTuDieuChinhThuongMai>();
     public DbSet<ChiTietDieuChinhThuongMai> ChiTietDieuChinhThuongMais => Set<ChiTietDieuChinhThuongMai>();
 
+    // Phase 15: Dự phòng nợ phải thu khó đòi (TT 48) & Đánh giá lại ngoại tệ (VAS 10 / TK 413)
+    public DbSet<BangTrichLapDuPhongNoPhaiThu> BangTrichLapDuPhongNoPhaiThus => Set<BangTrichLapDuPhongNoPhaiThu>();
+    public DbSet<ChiTietTrichLapDuPhong> ChiTietTrichLapDuPhongs => Set<ChiTietTrichLapDuPhong>();
+    public DbSet<DanhGiaLaiNgoaiTe> DanhGiaLaiNgoaiTes => Set<DanhGiaLaiNgoaiTe>();
+    public DbSet<ChiTietDanhGiaLaiNgoaiTe> ChiTietDanhGiaLaiNgoaiTes => Set<ChiTietDanhGiaLaiNgoaiTe>();
+
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         base.ConfigureConventions(configurationBuilder);
@@ -1328,6 +1334,89 @@ public class AppDbContext : DbContext
             entity.HasOne(e => e.VatTuHangHoa)
                 .WithMany()
                 .HasForeignKey(e => e.VatTuHangHoaId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<BangTrichLapDuPhongNoPhaiThu>(entity =>
+        {
+            entity.ToTable("BangTrichLapDuPhongNoPhaiThu");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+
+            entity.HasOne(e => e.ChiNhanh)
+                .WithMany()
+                .HasForeignKey(e => e.ChiNhanhId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.ButToan)
+                .WithMany()
+                .HasForeignKey(e => e.ButToanId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<ChiTietTrichLapDuPhong>(entity =>
+        {
+            entity.ToTable("ChiTietTrichLapDuPhong");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+
+            entity.HasOne(e => e.BangTrichLapDuPhong)
+                .WithMany(p => p.ChiTietTrichLaps)
+                .HasForeignKey(e => e.BangTrichLapDuPhongNoPhaiThuId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.KhachHang)
+                .WithMany()
+                .HasForeignKey(e => e.KhachHangId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.HoaDonBanHang)
+                .WithMany()
+                .HasForeignKey(e => e.HoaDonBanHangId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<DanhGiaLaiNgoaiTe>(entity =>
+        {
+            entity.ToTable("DanhGiaLaiNgoaiTe");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+
+            entity.HasOne(e => e.ChiNhanh)
+                .WithMany()
+                .HasForeignKey(e => e.ChiNhanhId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.ButToanDanhGiaLai)
+                .WithMany()
+                .HasForeignKey(e => e.ButToanDanhGiaLaiId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.ButToanKetChuyen413)
+                .WithMany()
+                .HasForeignKey(e => e.ButToanKetChuyen413Id)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<ChiTietDanhGiaLaiNgoaiTe>(entity =>
+        {
+            entity.ToTable("ChiTietDanhGiaLaiNgoaiTe");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+
+            entity.HasOne(e => e.DanhGiaLaiNgoaiTe)
+                .WithMany(p => p.ChiTietDanhGiaLais)
+                .HasForeignKey(e => e.DanhGiaLaiNgoaiTeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.TaiKhoan)
+                .WithMany()
+                .HasForeignKey(e => e.TaiKhoanId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.DoiTuong)
+                .WithMany()
+                .HasForeignKey(e => e.DoiTuongId)
                 .OnDelete(DeleteBehavior.SetNull);
         });
     }

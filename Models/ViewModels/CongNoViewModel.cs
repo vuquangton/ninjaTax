@@ -37,3 +37,25 @@ public class DoiTruCongNoCreateViewModel
     public List<SelectListItem> DanhSachDoiTuong { get; set; } = new();
     public List<SelectListItem> DanhSachHoaDon { get; set; } = new();
 }
+
+public class BuTruHaiChieuCreateViewModel
+{
+    [Required(ErrorMessage = "Vui lòng chọn Đối tượng bù trừ")]
+    [Display(Name = "Đối tượng")]
+    public long DoiTuongId { get; set; }
+
+    [Required]
+    [Display(Name = "Ngày hạch toán")]
+    public DateTime NgayHachToan { get; set; } = DateTime.Today;
+
+    [Required(ErrorMessage = "Vui lòng nhập Số tiền bù trừ")]
+    [Range(0.0001, double.MaxValue, ErrorMessage = "Số tiền bù trừ phải lớn hơn 0")]
+    [Display(Name = "Số tiền bù trừ (VNĐ)")]
+    public decimal SoTien { get; set; }
+
+    [Display(Name = "Diễn giải")]
+    public string? GhiChu { get; set; }
+
+    public List<SelectListItem> DanhSachDoiTuong { get; set; } = new();
+}
+

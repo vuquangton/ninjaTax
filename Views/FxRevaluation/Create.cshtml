@@ -1,0 +1,134 @@
+@model ninjaTax.Models.Services.FxRevaluationPreviewModel
+@{
+    ViewData["Title"] = "Thực Hiện Đánh Giá Lại Ngoại Tệ Cuối Kỳ";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0 text-primary"><i class="bi bi-calculator-fill me-2"></i>Đánh Giá Lại Chênh Lệch Tỷ Giá Ngoại Tệ (VAS 10 & TK 413)</h3>
+            <small class="text-muted">Tính toán chênh lệch tỷ giá hối đoái cho các khoản mục tiền tệ có gốc ngoại tệ tại thời điểm khóa sổ</small>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Quay lại danh sách
+        </a>
+    </div>
+
+    <!-- Parameter selection form -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end mb-3">
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Ngày đánh giá lại:</label>
+                    <input type="date" name="ngayDanhGia" value="@Model.NgayDanhGia.ToString("yyyy-MM-dd")" class="form-control" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Loại ngoại tệ:</label>
+                    <input type="text" name="loaiTien" value="@Model.LoaiTien" class="form-control text-uppercase" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Tỷ giá mua (Tài sản):</label>
+                    <input type="number" step="1" name="tyGiaMua" value="@Model.TyGiaMua" class="form-control text-end" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Tỷ giá bán (Nợ phải trả):</label>
+                    <input type="number" step="1" name="tyGiaBan" value="@Model.TyGiaBan" class="form-control text-end" />
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Tính toán chênh lệch
+                    </button>
+                </div>
+            </form>
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded">
+                        <div class="text-success small fw-bold">Tổng lãi tỷ giá (Có 4131)</div>
+                        <div class="fs-4 fw-bold text-success">+@Model.TongLaiTyGia.ToString("N0") đ</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded">
+                        <div class="text-danger small fw-bold">Tổng lỗ tỷ giá (Nợ 4131)</div>
+                        <div class="fs-4 fw-bold text-danger">-@Model.TongLoTyGia.ToString("N0") đ</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded">
+                        <div class="small fw-bold @(Model.ChenhLechThuan >= 0 ? "text-success" : "text-danger")">
+                            Kết chuyển sạch TK 4131 sang @(Model.ChenhLechThuan >= 0 ? "TK 515 (Doanh thu TC)" : "TK 635 (Chi phí TC)")
+                        </div>
+                        <div class="fs-4 fw-bold @(Model.ChenhLechThuan >= 0 ? "text-success" : "text-danger")">
+                            @(Model.ChenhLechThuan >= 0 ? "+" : "")@Model.ChenhLechThuan.ToString("N0") đ
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Table -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-light">
+            <span class="fw-bold"><i class="bi bi-table me-2"></i>Bảng Chi Tiết Đánh Giá Lại Từng Tài Khoản Ngoại Tệ</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light small">
+                    <tr>
+                        <th class="ps-3">Số TK</th>
+                        <th>Tên tài khoản</th>
+                        <th>Đối tượng / Ngân hàng</th>
+                        <th class="text-end">Số dư ngoại tệ</th>
+                        <th class="text-end">Tỷ giá ghi sổ</th>
+                        <th class="text-end">Giá trị ghi sổ (VND)</th>
+                        <th class="text-end">Tỷ giá ĐGL</th>
+                        <th class="text-end">Giá trị ĐGL (VND)</th>
+                        <th class="text-end pe-3 fw-bold">Chênh lệch (VND)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.ChiTiets.Any())
+                    {
+                        <tr>
+                            <td colspan="9" class="text-center py-4 text-muted">Không có số dư ngoại tệ nào trên các tài khoản 1112, 1122, 131, 331 tại ngày đánh giá.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var c in Model.ChiTiets)
+                        {
+                            <tr>
+                                <td class="ps-3 font-monospace fw-bold">@c.MaTaiKhoan</td>
+                                <td>@c.TenTaiKhoan</td>
+                                <td>@(c.TenDoiTuong ?? "-")</td>
+                                <td class="text-end font-monospace">@c.SoDuNgoaiTe.ToString("N2") @Model.LoaiTien</td>
+                                <td class="text-end font-monospace">@c.TyGiaGhiSo.ToString("N0")</td>
+                                <td class="text-end font-monospace">@c.GiaTriGhiSoVnd.ToString("N0") đ</td>
+                                <td class="text-end font-monospace">@c.TyGiaDanhGiaLai.ToString("N0")</td>
+                                <td class="text-end font-monospace">@c.GiaTriDanhGiaLaiVnd.ToString("N0") đ</td>
+                                <td class="text-end pe-3 font-monospace fw-bold @(c.LaLai ? "text-success" : "text-danger")">
+                                    @(c.LaLai ? "+" : "")@c.ChenhLechVnd.ToString("N0") đ
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer bg-white text-end py-3">
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="ngayDanhGia" value="@Model.NgayDanhGia.ToString("yyyy-MM-dd")" />
+                <input type="hidden" name="loaiTien" value="@Model.LoaiTien" />
+                <input type="hidden" name="tyGiaMua" value="@Model.TyGiaMua" />
+                <input type="hidden" name="tyGiaBan" value="@Model.TyGiaBan" />
+                <input type="hidden" name="ghiChu" value="Đánh giá lại chênh lệch tỷ giá ngoại tệ @Model.LoaiTien ngày @Model.NgayDanhGia.ToString("dd/MM/yyyy")" />
+                <button type="submit" class="btn btn-success px-4" @(Model.ChiTiets.Count == 0 ? "disabled" : "")>
+                    <i class="bi bi-check2-circle me-1"></i>Thực Hiện Đánh Giá Lại & Kết Chuyển Sổ Cái (TK 413)
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

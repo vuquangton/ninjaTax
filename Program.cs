@@ -40,6 +40,8 @@ builder.Services.AddScoped<ITaiKhoanNganHangService, TaiKhoanNganHangService>();
 builder.Services.AddScoped<ILandedCostService, LandedCostService>();
 builder.Services.AddScoped<IUnitConversionService, UnitConversionService>();
 builder.Services.AddScoped<ICommercialAdjustmentService, CommercialAdjustmentService>();
+builder.Services.AddScoped<IBadDebtProvisionService, BadDebtProvisionService>();
+builder.Services.AddScoped<IFxRevaluationService, FxRevaluationService>();
 
 var app = builder.Build();
 

@@ -196,9 +196,25 @@ public class CongNoService : ICongNoService
                 {
                     item.Tu61Den90Ngay += conNo;
                 }
+                else if (soNgayQuaHan <= 180)
+                {
+                    item.Tu91Den180Ngay += conNo;
+                }
+                else if (soNgayQuaHan <= 360)
+                {
+                    item.Tu181Den360Ngay += conNo;
+                }
+                else if (soNgayQuaHan <= 720)
+                {
+                    item.Tu1Den2Nam += conNo;
+                }
+                else if (soNgayQuaHan <= 1080)
+                {
+                    item.Tu2Den3Nam += conNo;
+                }
                 else
                 {
-                    item.Tren90Ngay += conNo;
+                    item.Tren3Nam += conNo;
                 }
             }
 
@@ -251,9 +267,25 @@ public class CongNoService : ICongNoService
                 {
                     item.Tu61Den90Ngay += conNo;
                 }
+                else if (soNgayQuaHan <= 180)
+                {
+                    item.Tu91Den180Ngay += conNo;
+                }
+                else if (soNgayQuaHan <= 360)
+                {
+                    item.Tu181Den360Ngay += conNo;
+                }
+                else if (soNgayQuaHan <= 720)
+                {
+                    item.Tu1Den2Nam += conNo;
+                }
+                else if (soNgayQuaHan <= 1080)
+                {
+                    item.Tu2Den3Nam += conNo;
+                }
                 else
                 {
-                    item.Tren90Ngay += conNo;
+                    item.Tren3Nam += conNo;
                 }
             }
 
@@ -261,5 +293,115 @@ public class CongNoService : ICongNoService
         }
 
         return ketQua.OrderByDescending(k => k.TongNo).ToList();
+    }
+
+    public async Task<(bool ThanhCong, string? ThongBao, ButToan? ButToan)> BuTruCongNoHaiChieuAsync(
+        long doiTuongId,
+        decimal soTien,
+        DateTime ngayHachToan,
+        string? ghiChu = null)
+    {
+        if (soTien <= 0)
+        {
+            return (false, "Số tiền bù trừ công nợ phải lớn hơn 0.", null);
+        }
+
+        var doiTuong = await _context.DoiTuongs.FindAsync(doiTuongId);
+        if (doiTuong == null)
+        {
+            return (false, "Không tìm thấy đối tượng công nợ.", null);
+        }
+
+        // Kiểm tra khóa sổ kế toán
+        var cauHinh = await _context.CauHinhKeToans.FirstOrDefaultAsync();
+        if (cauHinh?.NgayKhoaSo.HasValue == true && ngayHachToan.Date <= cauHinh.NgayKhoaSo.Value.Date)
+        {
+            return (false, $"Kỳ kế toán đã khóa sổ đến ngày {cauHinh.NgayKhoaSo:dd/MM/yyyy}. Không thể bù trừ.", null);
+        }
+
+        // Lấy tài khoản 331 (Nợ) và 131 (Có)
+        var tk331 = await _context.TaiKhoans.FirstOrDefaultAsync(t => t.MaTaiKhoan == "331");
+        var tk131 = await _context.TaiKhoans.FirstOrDefaultAsync(t => t.MaTaiKhoan == "131");
+        if (tk331 == null || tk131 == null)
+        {
+            return (false, "Hệ thống thiếu tài khoản 331 hoặc 131 trong danh mục.", null);
+        }
+
+        var chiNhanh = await _context.ChiNhanhs.FirstOrDefaultAsync(c => c.LoaiChiNhanh == LoaiChiNhanh.TruSoChinh) 
+                       ?? await _context.ChiNhanhs.FirstOrDefaultAsync();
+        if (chiNhanh == null)
+        {
+            return (false, "Hệ thống chưa thiết lập chi nhánh mặc định.", null);
+        }
+
+        // Bù trừ FIFO Hóa đơn bán (131)
+        var (okBan, msgBan, daDoiTruBan) = await DoiTruFifoKhachHangAsync(doiTuongId, soTien);
+        if (!okBan || daDoiTruBan < soTien)
+        {
+            return (false, msgBan ?? $"Công nợ phải thu của {doiTuong.TenDoiTuong} không đủ {soTien:N0} để bù trừ.", null);
+        }
+
+        // Bù trừ FIFO Hóa đơn mua (331)
+        var hoaDonMuas = await _context.HoaDonMuaHangs
+            .Where(h => h.NhaCungCapId == doiTuongId && (h.TongThanhToan - h.DaThanhToan) > 0)
+            .OrderBy(h => h.NgayHoaDon)
+            .ThenBy(h => h.Id)
+            .ToListAsync();
+
+        decimal conLaiMua = soTien;
+        foreach (var hdm in hoaDonMuas)
+        {
+            if (conLaiMua <= 0) break;
+            decimal tru = Math.Min(conLaiMua, hdm.ConPhaiTra);
+            hdm.DaThanhToan += tru;
+            conLaiMua -= tru;
+
+            _context.DoiTruCongNos.Add(new DoiTruCongNo
+            {
+                Loai = LoaiCongNo.PhaiTraNhaCungCap,
+                DoiTuongId = doiTuongId,
+                NgayDoiTru = ngayHachToan.Date,
+                HoaDonMuaHangId = hdm.Id,
+                SoTienDoiTru = tru,
+                GhiChu = ghiChu ?? $"Bù trừ hai chiều AR/AP đối tượng {doiTuong.MaDoiTuong}"
+            });
+        }
+
+        if (conLaiMua > 0)
+        {
+            return (false, $"Công nợ phải trả của {doiTuong.TenDoiTuong} không đủ {soTien:N0} để bù trừ.", null);
+        }
+
+        // Tạo bút toán hạch toán bù trừ Nợ 331 / Có 131
+        var soChungTu = $"BTCN-{ngayHachToan:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..4].ToUpper()}";
+        var butToan = new ButToan
+        {
+            SoChungTu = soChungTu,
+            NgayHachToan = ngayHachToan.Date,
+            NgayChungTu = ngayHachToan.Date,
+            SoChungTuGoc = soChungTu,
+            NgayChungTuGoc = ngayHachToan.Date,
+            DienGiai = ghiChu ?? $"Bù trừ công nợ hai chiều Nợ 331 / Có 131 đối tượng {doiTuong.MaDoiTuong} - {doiTuong.TenDoiTuong}",
+            TongTien = soTien,
+            TrangThai = TrangThaiButToan.DaGhiSo,
+            ChiTietButToans = new List<ChiTietButToan>
+            {
+                new()
+                {
+                    DongSo = 1,
+                    TaiKhoanNoId = tk331.Id,
+                    TaiKhoanCoId = tk131.Id,
+                    SoTien = soTien,
+                    DienGiai = $"Bù trừ công nợ hai chiều đối tượng {doiTuong.MaDoiTuong}",
+                    DoiTuongId = doiTuongId
+                }
+            }
+        };
+
+        await _context.ButToans.AddAsync(butToan);
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Đã bù trừ công nợ hai chiều Nợ 331 / Có 131 đối tượng {DoiTuong}: {SoTien:N0} VNĐ", doiTuong.MaDoiTuong, soTien);
+        return (true, null, butToan);
     }
 }
