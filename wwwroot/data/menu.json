@@ -27,8 +27,20 @@
     {
       "title": "Bán Hàng",
       "icon": "bi bi-receipt-cutoff",
-      "controller": "BanHang",
-      "action": "Index"
+      "children": [
+        {
+          "title": "Hóa đơn bán hàng",
+          "icon": "bi bi-receipt",
+          "controller": "BanHang",
+          "action": "Index"
+        },
+        {
+          "title": "Điều chỉnh thương mại (Trả lại/CK)",
+          "icon": "bi bi-arrow-return-left",
+          "controller": "CommercialAdjustment",
+          "action": "Index"
+        }
+      ]
     },
     {
       "title": "Công Nợ",
@@ -147,6 +159,12 @@
           "icon": "bi bi-box-arrow-up-right",
           "controller": "Inventory",
           "action": "CreateOutward"
+        },
+        {
+          "title": "Điều chuyển kho nội bộ",
+          "icon": "bi bi-arrow-left-right",
+          "controller": "StockTransfer",
+          "action": "Index"
         },
         {
           "title": "Báo cáo NXT (S10‑DN)",

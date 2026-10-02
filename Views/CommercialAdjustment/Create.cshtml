@@ -1,0 +1,201 @@
+@model ninjaTax.Models.Entities.ChungTuDieuChinhThuongMai
+@{
+    var title = Model.LoaiDieuChinh switch
+    {
+        ninjaTax.Models.Entities.LoaiDieuChinhThuongMai.HangBanTraLai => "Lập chứng từ hàng bán bị trả lại",
+        ninjaTax.Models.Entities.LoaiDieuChinhThuongMai.HangMuaTraLai => "Lập chứng từ hàng mua trả lại",
+        ninjaTax.Models.Entities.LoaiDieuChinhThuongMai.ChietKhauThuongMaiBan => "Lập chứng từ chiết khấu thương mại",
+        _ => "Lập chứng từ giảm giá hàng mua"
+    };
+    ViewData["Title"] = title;
+    var isSalesReturn = Model.LoaiDieuChinh == ninjaTax.Models.Entities.LoaiDieuChinhThuongMai.HangBanTraLai;
+    var isPurchase = Model.LoaiDieuChinh == ninjaTax.Models.Entities.LoaiDieuChinhThuongMai.HangMuaTraLai || Model.LoaiDieuChinh == ninjaTax.Models.Entities.LoaiDieuChinhThuongMai.GiamGiaHangMua;
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1 text-gray-800"><i class="bi bi-plus-circle me-2 text-primary"></i>@title</h1>
+            <p class="text-muted small mb-0">Tự động hạch toán giảm trừ doanh thu / giá vốn / công nợ theo chuẩn TT99</p>
+        </div>
+        <div>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Quay lại danh sách
+            </a>
+        </div>
+    </div>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger" role="alert">
+            <h6 class="alert-heading fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>Có lỗi xảy ra:</h6>
+            <div asp-validation-summary="All" class="text-danger"></div>
+        </div>
+    }
+
+    <form asp-action="Create" method="post" id="adjForm">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="ChiNhanhId" />
+        <input type="hidden" asp-for="LoaiDieuChinh" />
+
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 bg-white">
+                <h6 class="m-0 font-weight-bold text-primary">Thông tin chung chứng từ</h6>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label asp-for="SoChungTu" class="form-label fw-semibold">Số chứng từ <span class="text-danger">*</span></label>
+                        <input asp-for="SoChungTu" class="form-control" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="NgayHachToan" class="form-label fw-semibold">Ngày hạch toán <span class="text-danger">*</span></label>
+                        <input asp-for="NgayHachToan" type="date" class="form-control" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="DoiTuongId" class="form-label fw-semibold">@(isPurchase ? "Nhà cung cấp" : "Khách hàng") <span class="text-danger">*</span></label>
+                        <select asp-for="DoiTuongId" asp-items="ViewBag.DoiTuongs" class="form-select" required>
+                            <option value="">-- Chọn đối tượng --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="HinhThucXuLy" class="form-label fw-semibold">Hình thức xử lý <span class="text-danger">*</span></label>
+                        <select asp-for="HinhThucXuLy" class="form-select">
+                            <option value="1">Giảm trừ công nợ (131/331)</option>
+                            <option value="2">Tiền mặt (1111)</option>
+                            <option value="3">Tiền gửi ngân hàng (1121)</option>
+                        </select>
+                    </div>
+
+                    @if (isSalesReturn || Model.LoaiDieuChinh == ninjaTax.Models.Entities.LoaiDieuChinhThuongMai.HangMuaTraLai)
+                    {
+                        <div class="col-md-4">
+                            <label asp-for="KhoId" class="form-label fw-semibold">Kho hàng <span class="text-danger">*</span></label>
+                            <select asp-for="KhoId" asp-items="ViewBag.Khos" class="form-select">
+                                <option value="">-- Chọn kho hàng --</option>
+                            </select>
+                        </div>
+                    }
+
+                    <div class="col-md-@(isSalesReturn || Model.LoaiDieuChinh == ninjaTax.Models.Entities.LoaiDieuChinhThuongMai.HangMuaTraLai ? "8" : "12")">
+                        <label asp-for="LyDo" class="form-label">Lý do điều chỉnh</label>
+                        <input asp-for="LyDo" class="form-control" placeholder="VD: Khách trả hàng do sai quy cách" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 bg-white d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Chi tiết mặt hàng điều chỉnh</h6>
+                <button type="button" class="btn btn-sm btn-outline-primary" id="btnAddRow">
+                    <i class="bi bi-plus-lg me-1"></i>Thêm dòng
+                </button>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle mb-0" id="itemsTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 30%;">Mặt hàng</th>
+                                <th style="width: 12%;" class="text-end">Số lượng</th>
+                                <th style="width: 18%;" class="text-end">Đơn giá bán/mua</th>
+                                <th style="width: 10%;" class="text-end">VAT (%)</th>
+                                @if (isSalesReturn)
+                                {
+                                    <th style="width: 20%;" class="text-end">Đơn giá vốn nhập lại</th>
+                                }
+                                <th style="width: 10%;" class="text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <select name="vatTuId" class="form-select item-select" required>
+                                        <option value="">-- Chọn mặt hàng --</option>
+                                        @if (ViewBag.VatTus != null)
+                                        {
+                                            @foreach (var vt in (List<ninjaTax.Models.Entities.VatTuHangHoa>)ViewBag.VatTus)
+                                            {
+                                                <option value="@vt.Id" data-price="@vt.DonGiaBanTieuChuan" data-cost="@vt.DonGiaMuaGanNhat">[@vt.MaVatTu] @vt.TenVatTu</option>
+                                            }
+                                        }
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="number" name="soLuong" class="form-control text-end item-qty" value="1" min="1" step="any" required />
+                                </td>
+                                <td>
+                                    <input type="number" name="donGia" class="form-control text-end item-price" value="0" min="0" step="any" required />
+                                </td>
+                                <td>
+                                    <input type="number" name="thueSuat" class="form-control text-end item-vat" value="10" min="0" max="100" step="any" />
+                                </td>
+                                @if (isSalesReturn)
+                                {
+                                    <td>
+                                        <input type="number" name="donGiaVon" class="form-control text-end item-cost" value="0" min="0" step="any" />
+                                    </td>
+                                }
+                                else
+                                {
+                                    <input type="hidden" name="donGiaVon" value="0" />
+                                }
+                                <td class="text-center">
+                                    <button type="button" class="btn btn-sm btn-outline-danger btn-remove-row">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer bg-white text-end py-3">
+                <button type="submit" class="btn btn-primary px-4">
+                    <i class="bi bi-check2-circle me-1"></i>Lưu & Ghi sổ chứng từ
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+<script>
+    document.getElementById('btnAddRow').addEventListener('click', function () {
+        const tbody = document.querySelector('#itemsTable tbody');
+        const firstRow = tbody.querySelector('tr');
+        const newRow = firstRow.cloneNode(true);
+        newRow.querySelector('.item-select').value = '';
+        newRow.querySelector('.item-qty').value = '1';
+        newRow.querySelector('.item-price').value = '0';
+        newRow.querySelector('.item-vat').value = '10';
+        const costInput = newRow.querySelector('.item-cost');
+        if (costInput) costInput.value = '0';
+        tbody.appendChild(newRow);
+        bindRowEvents(newRow);
+    });
+
+    function bindRowEvents(row) {
+        row.querySelector('.btn-remove-row').addEventListener('click', function () {
+            const rows = document.querySelectorAll('#itemsTable tbody tr');
+            if (rows.length > 1) {
+                row.remove();
+            } else {
+                alert('Chứng từ phải có ít nhất 1 dòng mặt hàng.');
+            }
+        });
+
+        row.querySelector('.item-select').addEventListener('change', function () {
+            const selectedOpt = this.options[this.selectedIndex];
+            const price = selectedOpt.getAttribute('data-price') || 0;
+            const cost = selectedOpt.getAttribute('data-cost') || 0;
+            row.querySelector('.item-price').value = price;
+            const costInput = row.querySelector('.item-cost');
+            if (costInput) costInput.value = cost;
+        });
+    }
+
+    document.querySelectorAll('#itemsTable tbody tr').forEach(bindRowEvents);
+</script>
+}

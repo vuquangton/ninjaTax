@@ -1,0 +1,112 @@
+@model List<ninjaTax.Models.Entities.PhieuDieuChuyenKho>
+@{
+    ViewData["Title"] = "Điều chuyển kho nội bộ";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1 text-gray-800"><i class="bi bi-arrow-left-right me-2 text-primary"></i>Điều chuyển kho nội bộ</h1>
+            <p class="text-muted small mb-0">Quản lý các lệnh điều chuyển hàng hóa giữa các kho nội bộ và hạch toán tự động</p>
+        </div>
+        <div>
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i>Lập phiếu điều chuyển
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-white">
+            <h6 class="m-0 font-weight-bold text-primary">Danh sách phiếu điều chuyển</h6>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Số phiếu</th>
+                            <th>Ngày điều chuyển</th>
+                            <th>Kho xuất</th>
+                            <th>Kho nhập</th>
+                            <th class="text-end">Tổng số lượng</th>
+                            <th class="text-end">Tổng giá trị</th>
+                            <th>Trạng thái</th>
+                            <th class="text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center py-4 text-muted">
+                                    <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                                    Chưa có phiếu điều chuyển kho nào.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="fw-bold">
+                                        <a asp-action="Details" asp-route-id="@item.Id">@item.SoPhieu</a>
+                                    </td>
+                                    <td>@item.NgayDieuChuyen.ToString("dd/MM/yyyy")</td>
+                                    <td><span class="badge bg-secondary">@item.KhoXuat?.TenKho</span></td>
+                                    <td><span class="badge bg-info text-dark">@item.KhoNhap?.TenKho</span></td>
+                                    <td class="text-end fw-semibold">@item.TongSoLuong.ToString("N0")</td>
+                                    <td class="text-end fw-bold text-primary">@item.TongGiaTri.ToString("N0") đ</td>
+                                    <td>
+                                        @if (item.TrangThai == ninjaTax.Models.Entities.TrangThaiDieuChuyenKho.DaHoanThanh)
+                                        {
+                                            <span class="badge bg-success">Đã hoàn thành</span>
+                                        }
+                                        else if (item.TrangThai == ninjaTax.Models.Entities.TrangThaiDieuChuyenKho.DaHuy)
+                                        {
+                                            <span class="badge bg-danger">Đã hủy</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark">Đang chuyển</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info me-1" title="Chi tiết">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        @if (item.TrangThai != ninjaTax.Models.Entities.TrangThaiDieuChuyenKho.DaHuy)
+                                        {
+                                            <form asp-action="Cancel" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn hủy phiếu điều chuyển này và hoàn trả tồn kho?');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Hủy phiếu">
+                                                    <i class="bi bi-x-circle"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

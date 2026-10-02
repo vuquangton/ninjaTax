@@ -1,0 +1,162 @@
+@model ninjaTax.Models.Entities.PhieuDieuChuyenKho
+@{
+    ViewData["Title"] = "Lập phiếu điều chuyển kho";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1 text-gray-800"><i class="bi bi-plus-circle me-2 text-primary"></i>Lập phiếu điều chuyển kho</h1>
+            <p class="text-muted small mb-0">Điều chuyển hàng hóa giữa các kho nội bộ (chống xuất âm và ghi nhận sổ kho S10-DN)</p>
+        </div>
+        <div>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Quay lại danh sách
+            </a>
+        </div>
+    </div>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger" role="alert">
+            <h6 class="alert-heading fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>Có lỗi xảy ra:</h6>
+            <div asp-validation-summary="All" class="text-danger"></div>
+        </div>
+    }
+
+    <form asp-action="Create" method="post" id="transferForm">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="ChiNhanhId" />
+
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 bg-white">
+                <h6 class="m-0 font-weight-bold text-primary">Thông tin phiếu điều chuyển</h6>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label asp-for="SoPhieu" class="form-label fw-semibold">Số phiếu <span class="text-danger">*</span></label>
+                        <input asp-for="SoPhieu" class="form-control" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="NgayDieuChuyen" class="form-label fw-semibold">Ngày điều chuyển <span class="text-danger">*</span></label>
+                        <input asp-for="NgayDieuChuyen" type="date" class="form-control" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="KhoXuatId" class="form-label fw-semibold">Kho xuất <span class="text-danger">*</span></label>
+                        <select asp-for="KhoXuatId" asp-items="ViewBag.Khos" class="form-select" required>
+                            <option value="">-- Chọn kho xuất --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="KhoNhapId" class="form-label fw-semibold">Kho nhập <span class="text-danger">*</span></label>
+                        <select asp-for="KhoNhapId" asp-items="ViewBag.Khos" class="form-select" required>
+                            <option value="">-- Chọn kho nhập --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="LyDoDieuChuyen" class="form-label">Lý do điều chuyển</label>
+                        <input asp-for="LyDoDieuChuyen" class="form-control" placeholder="VD: Bổ sung hàng cho chi nhánh Hải Phòng" />
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="NguoiVanChuyen" class="form-label">Người vận chuyển</label>
+                        <input asp-for="NguoiVanChuyen" class="form-control" placeholder="Tên tài xế / người giao nhận" />
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="PhuongTienVanChuyen" class="form-label">Phương tiện vận chuyển</label>
+                        <input asp-for="PhuongTienVanChuyen" class="form-control" placeholder="VD: Xe tải 29C-123.45" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 bg-white d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Chi tiết mặt hàng điều chuyển</h6>
+                <button type="button" class="btn btn-sm btn-outline-primary" id="btnAddRow">
+                    <i class="bi bi-plus-lg me-1"></i>Thêm dòng
+                </button>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle mb-0" id="itemsTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 40%;">Mặt hàng</th>
+                                <th style="width: 20%;" class="text-end">Số lượng</th>
+                                <th style="width: 25%;" class="text-end">Đơn giá vốn</th>
+                                <th style="width: 15%;" class="text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <select name="vatTuId" class="form-select item-select" required>
+                                        <option value="">-- Chọn vật tư, hàng hóa --</option>
+                                        @if (ViewBag.VatTus != null)
+                                        {
+                                            @foreach (var vt in (List<ninjaTax.Models.Entities.VatTuHangHoa>)ViewBag.VatTus)
+                                            {
+                                                <option value="@vt.Id" data-price="@vt.DonGiaMuaGanNhat">[@vt.MaVatTu] @vt.TenVatTu (@vt.DonViTinh)</option>
+                                            }
+                                        }
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="number" name="soLuong" class="form-control text-end item-qty" value="1" min="1" step="any" required />
+                                </td>
+                                <td>
+                                    <input type="number" name="donGia" class="form-control text-end item-price" value="0" min="0" step="any" required />
+                                </td>
+                                <td class="text-center">
+                                    <button type="button" class="btn btn-sm btn-outline-danger btn-remove-row">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer bg-white text-end py-3">
+                <button type="submit" class="btn btn-primary px-4">
+                    <i class="bi bi-check2-circle me-1"></i>Lưu & Ghi sổ điều chuyển
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+<script>
+    document.getElementById('btnAddRow').addEventListener('click', function () {
+        const tbody = document.querySelector('#itemsTable tbody');
+        const firstRow = tbody.querySelector('tr');
+        const newRow = firstRow.cloneNode(true);
+        newRow.querySelector('.item-select').value = '';
+        newRow.querySelector('.item-qty').value = '1';
+        newRow.querySelector('.item-price').value = '0';
+        tbody.appendChild(newRow);
+        bindRowEvents(newRow);
+    });
+
+    function bindRowEvents(row) {
+        row.querySelector('.btn-remove-row').addEventListener('click', function () {
+            const rows = document.querySelectorAll('#itemsTable tbody tr');
+            if (rows.length > 1) {
+                row.remove();
+            } else {
+                alert('Phiếu điều chuyển phải có ít nhất 1 dòng mặt hàng.');
+            }
+        });
+
+        row.querySelector('.item-select').addEventListener('change', function () {
+            const selectedOpt = this.options[this.selectedIndex];
+            const price = selectedOpt.getAttribute('data-price') || 0;
+            row.querySelector('.item-price').value = price;
+        });
+    }
+
+    document.querySelectorAll('#itemsTable tbody tr').forEach(bindRowEvents);
+</script>
+}

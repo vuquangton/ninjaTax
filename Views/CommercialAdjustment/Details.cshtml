@@ -1,0 +1,175 @@
+@model ninjaTax.Models.Entities.ChungTuDieuChinhThuongMai
+@{
+    ViewData["Title"] = "Chi tiết chứng từ " + Model.SoChungTu;
+    var isSalesReturn = Model.LoaiDieuChinh == ninjaTax.Models.Entities.LoaiDieuChinhThuongMai.HangBanTraLai;
+    var isPurchase = Model.LoaiDieuChinh == ninjaTax.Models.Entities.LoaiDieuChinhThuongMai.HangMuaTraLai || Model.LoaiDieuChinh == ninjaTax.Models.Entities.LoaiDieuChinhThuongMai.GiamGiaHangMua;
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1 text-gray-800"><i class="bi bi-file-earmark-check me-2 text-primary"></i>Chứng từ điều chỉnh: @Model.SoChungTu</h1>
+            <p class="text-muted small mb-0">Chi tiết chứng từ điều chỉnh thương mại và định khoản hạch toán tự động</p>
+        </div>
+        <div>
+            <a asp-action="Index" class="btn btn-outline-secondary me-2">
+                <i class="bi bi-arrow-left me-1"></i>Quay lại danh sách
+            </a>
+            @if (Model.TrangThai != ninjaTax.Models.Entities.TrangThaiDieuChinhThuongMai.DaHuy)
+            {
+                <form asp-action="Cancel" asp-route-id="@Model.Id" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn hủy chứng từ này?');">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-x-circle me-1"></i>Hủy chứng từ
+                    </button>
+                </form>
+            }
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card shadow h-100">
+                <div class="card-header py-3 bg-white">
+                    <h6 class="m-0 font-weight-bold text-primary">Thông tin chung</h6>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4 text-muted">Số chứng từ:</dt>
+                        <dd class="col-sm-8 fw-bold">@Model.SoChungTu</dd>
+
+                        <dt class="col-sm-4 text-muted">Loại nghiệp vụ:</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.LoaiDieuChinh == ninjaTax.Models.Entities.LoaiDieuChinhThuongMai.HangBanTraLai)
+                            {
+                                <span class="badge bg-danger">Hàng bán trả lại</span>
+                            }
+                            else if (Model.LoaiDieuChinh == ninjaTax.Models.Entities.LoaiDieuChinhThuongMai.HangMuaTraLai)
+                            {
+                                <span class="badge bg-warning text-dark">Hàng mua trả lại</span>
+                            }
+                            else if (Model.LoaiDieuChinh == ninjaTax.Models.Entities.LoaiDieuChinhThuongMai.ChietKhauThuongMaiBan)
+                            {
+                                <span class="badge bg-info text-dark">Chiết khấu thương mại</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Giảm giá hàng mua</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-4 text-muted">Ngày hạch toán:</dt>
+                        <dd class="col-sm-8">@Model.NgayHachToan.ToString("dd/MM/yyyy")</dd>
+
+                        <dt class="col-sm-4 text-muted">Đối tượng:</dt>
+                        <dd class="col-sm-8 fw-semibold">@Model.DoiTuong?.TenDoiTuong</dd>
+
+                        <dt class="col-sm-4 text-muted">Trạng thái:</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.TrangThai == ninjaTax.Models.Entities.TrangThaiDieuChinhThuongMai.DaGhiSo)
+                            {
+                                <span class="badge bg-success">Đã ghi sổ</span>
+                            }
+                            else if (Model.TrangThai == ninjaTax.Models.Entities.TrangThaiDieuChinhThuongMai.DaHuy)
+                            {
+                                <span class="badge bg-danger">Đã hủy</span>
+                            }
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow h-100">
+                <div class="card-header py-3 bg-white">
+                    <h6 class="m-0 font-weight-bold text-primary">Định khoản hạch toán</h6>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5 text-muted">Bút toán Doanh thu/Công nợ:</dt>
+                        <dd class="col-sm-7">
+                            @if (Model.ButToanDoanhThuCongNoId.HasValue)
+                            {
+                                <span class="badge bg-primary">PKT-@Model.SoChungTu</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">Chưa ghi sổ</span>
+                            }
+                        </dd>
+
+                        @if (isSalesReturn)
+                        {
+                            <dt class="col-sm-5 text-muted">Bút toán Giá vốn/Kho:</dt>
+                            <dd class="col-sm-7">
+                                @if (Model.ButToanGiaVonKhoId.HasValue)
+                                {
+                                    <span class="badge bg-success">PKT-@Model.SoChungTu-GV</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">Không phát sinh</span>
+                                }
+                            </dd>
+                        }
+
+                        <dt class="col-sm-5 text-muted">Tổng tiền hàng:</dt>
+                        <dd class="col-sm-7 fw-bold">@Model.TongTienHang.ToString("N0") đ</dd>
+
+                        <dt class="col-sm-5 text-muted">Thuế GTGT:</dt>
+                        <dd class="col-sm-7 text-muted">@Model.TongTienThueVat.ToString("N0") đ</dd>
+
+                        <dt class="col-sm-5 text-muted">Tổng thanh toán:</dt>
+                        <dd class="col-sm-7 fw-bold text-primary fs-5">@Model.TongThanhToan.ToString("N0") đ</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-white">
+            <h6 class="m-0 font-weight-bold text-primary">Chi tiết các mặt hàng</h6>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Mã hàng</th>
+                            <th>Tên mặt hàng</th>
+                            <th>ĐVT</th>
+                            <th class="text-end">Số lượng</th>
+                            <th class="text-end">Đơn giá</th>
+                            <th class="text-end">Thành tiền</th>
+                            <th class="text-end">Thuế VAT</th>
+                            @if (isSalesReturn)
+                            {
+                                <th class="text-end">Giá vốn nhập lại</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.ChiTietDieuChinhs)
+                        {
+                            <tr>
+                                <td class="fw-semibold">@item.VatTuHangHoa?.MaVatTu</td>
+                                <td>@item.VatTuHangHoa?.TenVatTu</td>
+                                <td>@item.DonViTinh</td>
+                                <td class="text-end fw-semibold">@item.SoLuong.ToString("N0")</td>
+                                <td class="text-end">@item.DonGia.ToString("N0") đ</td>
+                                <td class="text-end fw-bold text-primary">@item.ThanhTien.ToString("N0") đ</td>
+                                <td class="text-end text-muted">@item.TienThueVat.ToString("N0") đ (@item.ThueSuatVat%)</td>
+                                @if (isSalesReturn)
+                                {
+                                    <td class="text-end text-success fw-semibold">@item.TienGiaVonNhapLai.ToString("N0") đ</td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
