@@ -53,6 +53,10 @@ Repository guidelines for autonomous agents working in `ninjaTax`.
 - `Views/`: Razor views (`.cshtml`) and layout templates.
 - `Data/`: `AppDbContext`, `DatabaseServiceExtensions`, `DbInitializer`.
 - `ninjaTax.Tests/`: Unit and integration test suites.
+- **Navigation Information Architecture**:
+  - Maximum 7-8 top-level domains in horizontal top-nav to prevent wrapping/overflow on standard enterprise viewports (1280px-1440px).
+  - Use `navbar-expand-xl` for responsive collapse threshold.
+  - Sub-items categorized by business workflow with dedicated iconography and minimum 38-44px touch targets.
 
 ## Agent Workflow & Quality Gates
 - **Testing Strategy Adherence**: All code modifications must comply with [docs/test-strategy.md](docs/test-strategy.md) Section 7.2 Exit Criteria.
