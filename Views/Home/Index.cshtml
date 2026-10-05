@@ -2,68 +2,254 @@
     ViewData["Title"] = "Bảng Điều Khiển Quản Trị & Kế Toán";
 }
 
-<div class="nt-page-header">
+<!-- Hero & Enterprise Status Bar -->
+<div class="nt-dashboard-hero d-flex flex-wrap justify-content-between align-items-center gap-3">
     <div>
-        <h4 class="nt-page-header__title"><i class="bi bi-speedometer2 me-2"></i>Bảng Điều Khiển Quản Trị</h4>
-        <p class="nt-page-header__breadcrumb">Tổng quan sức khỏe tài chính &amp; dòng tiền doanh nghiệp</p>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <h4 class="fw-bold mb-0 text-white"><i class="bi bi-speedometer2 me-2 text-primary-light"></i>Bảng Điều Khiển Quản Trị</h4>
+            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50">
+                <i class="bi bi-shield-check me-1"></i>TT99/2025/TT-BTC
+            </span>
+        </div>
+        <p class="text-light text-opacity-75 mb-0 small">
+            Hệ thống quản trị tài chính, thuế &amp; dòng tiền chuẩn mực VAS &amp; Thông tư TT99
+        </p>
     </div>
-    <div class="nt-page-header__actions">
-        <a asp-controller="BaoCaoTaiChinh" asp-action="Index" class="btn btn-outline-primary btn-sm">
-            <i class="bi bi-file-earmark-bar-graph me-1"></i>Báo Cáo Tài Chính TT99
+    <div class="d-flex flex-wrap gap-2">
+        <a asp-controller="TaxAuditShield" asp-action="Index" class="btn btn-sm btn-outline-light d-inline-flex align-items-center">
+            <i class="bi bi-shield-lock me-1 text-warning"></i>Lá Chắn Rủi Ro Thuế
+        </a>
+        <a asp-controller="BaoCaoTaiChinh" asp-action="Index" class="btn btn-sm btn-primary d-inline-flex align-items-center shadow-sm">
+            <i class="bi bi-file-earmark-bar-graph me-1"></i>BCTC TT99
         </a>
     </div>
 </div>
 
-<!-- Row 1: KPI Cards -->
+<!-- Row 1: KPI Cards with Visual Hierarchy & 44px Touch Targets -->
 <div class="row g-3 mb-4">
-    <div class="col-sm-6 col-lg-3">
-        <a asp-controller="BanHang" asp-action="Index" class="nt-kpi-card border-primary">
-            <div class="nt-kpi-card__label text-primary"><i class="bi bi-graph-up-arrow me-1"></i>Doanh Thu</div>
-            <div class="nt-kpi-card__value text-primary" id="kpiDoanhThu">0 đ</div>
-            <div class="nt-kpi-card__trend text-muted"><small>Xem sổ bán hàng &rarr;</small></div>
+    <!-- Doanh Thu (TK 511/711) -->
+    <div class="col-sm-6 col-xl-3">
+        <a asp-controller="BanHang" asp-action="Index" class="nt-kpi-card nt-kpi-card--primary text-decoration-none">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="nt-kpi-card__label mb-0 text-primary fw-semibold">
+                    <i class="bi bi-graph-up-arrow me-1"></i>Doanh Thu
+                </div>
+                <div class="nt-kpi-card__icon-wrap">
+                    <i class="bi bi-currency-dollar"></i>
+                </div>
+            </div>
+            <div class="nt-kpi-card__value" id="kpiDoanhThu">
+                <span class="nt-skeleton" style="width: 140px; height: 32px;"></span>
+            </div>
+            <div class="nt-kpi-card__trend text-muted d-flex align-items-center justify-content-between mt-2 pt-2 border-top">
+                <small>Sổ bán hàng (TK 511)</small>
+                <small class="text-primary fw-medium">Chi tiết &rarr;</small>
+            </div>
         </a>
     </div>
-    <div class="col-sm-6 col-lg-3">
-        <a asp-controller="ChiTien" asp-action="Index" class="nt-kpi-card border-danger">
-            <div class="nt-kpi-card__label text-danger"><i class="bi bi-graph-down-arrow me-1"></i>Chi Phí</div>
-            <div class="nt-kpi-card__value text-danger" id="kpiChiPhi">0 đ</div>
-            <div class="nt-kpi-card__trend text-muted"><small>Xem sổ chi phí &rarr;</small></div>
+
+    <!-- Chi Phí (TK 632/642/811) -->
+    <div class="col-sm-6 col-xl-3">
+        <a asp-controller="ChiTien" asp-action="Index" class="nt-kpi-card nt-kpi-card--danger text-decoration-none">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="nt-kpi-card__label mb-0 text-danger fw-semibold">
+                    <i class="bi bi-graph-down-arrow me-1"></i>Chi Phí HĐ
+                </div>
+                <div class="nt-kpi-card__icon-wrap">
+                    <i class="bi bi-credit-card-2-front"></i>
+                </div>
+            </div>
+            <div class="nt-kpi-card__value text-danger" id="kpiChiPhi">
+                <span class="nt-skeleton" style="width: 140px; height: 32px;"></span>
+            </div>
+            <div class="nt-kpi-card__trend text-muted d-flex align-items-center justify-content-between mt-2 pt-2 border-top">
+                <small>Giá vốn &amp; Chi phí (TK 6xx)</small>
+                <small class="text-danger fw-medium">Chi tiết &rarr;</small>
+            </div>
         </a>
     </div>
-    <div class="col-sm-6 col-lg-3">
-        <a asp-controller="CongNo" asp-action="Index" asp-route-taikhoan="131" class="nt-kpi-card border-info">
-            <div class="nt-kpi-card__label text-info"><i class="bi bi-wallet2 me-1"></i>Phải Thu (TK 131)</div>
-            <div class="nt-kpi-card__value text-info" id="kpiPhaiThu">0 đ</div>
-            <div class="nt-kpi-card__trend text-muted"><small>Chi tiết công nợ KH &rarr;</small></div>
+
+    <!-- Phải Thu Khách Hàng (TK 131) -->
+    <div class="col-sm-6 col-xl-3">
+        <a asp-controller="CongNo" asp-action="Index" asp-route-taikhoan="131" class="nt-kpi-card nt-kpi-card--info text-decoration-none">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="nt-kpi-card__label mb-0 text-info fw-semibold">
+                    <i class="bi bi-wallet2 me-1"></i>Phải Thu (TK 131)
+                </div>
+                <div class="nt-kpi-card__icon-wrap">
+                    <i class="bi bi-box-arrow-in-down-right"></i>
+                </div>
+            </div>
+            <div class="nt-kpi-card__value text-dark" id="kpiPhaiThu">
+                <span class="nt-skeleton" style="width: 140px; height: 32px;"></span>
+            </div>
+            <div class="nt-kpi-card__trend text-muted d-flex align-items-center justify-content-between mt-2 pt-2 border-top">
+                <small>Công nợ khách hàng</small>
+                <small class="text-info fw-medium">Chi tiết &rarr;</small>
+            </div>
         </a>
     </div>
-    <div class="col-sm-6 col-lg-3">
-        <a asp-controller="CongNo" asp-action="Index" asp-route-taikhoan="331" class="nt-kpi-card border-warning">
-            <div class="nt-kpi-card__label text-warning"><i class="bi bi-credit-card me-1"></i>Phải Trả (TK 331)</div>
-            <div class="nt-kpi-card__value text-warning" id="kpiPhaiTra">0 đ</div>
-            <div class="nt-kpi-card__trend text-muted"><small>Chi tiết công nợ NCC &rarr;</small></div>
+
+    <!-- Phải Trả NCC (TK 331) -->
+    <div class="col-sm-6 col-xl-3">
+        <a asp-controller="CongNo" asp-action="Index" asp-route-taikhoan="331" class="nt-kpi-card nt-kpi-card--warning text-decoration-none">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="nt-kpi-card__label mb-0 text-warning fw-semibold">
+                    <i class="bi bi-building-down me-1"></i>Phải Trả (TK 331)
+                </div>
+                <div class="nt-kpi-card__icon-wrap">
+                    <i class="bi bi-box-arrow-up-right"></i>
+                </div>
+            </div>
+            <div class="nt-kpi-card__value text-dark" id="kpiPhaiTra">
+                <span class="nt-skeleton" style="width: 140px; height: 32px;"></span>
+            </div>
+            <div class="nt-kpi-card__trend text-muted d-flex align-items-center justify-content-between mt-2 pt-2 border-top">
+                <small>Công nợ nhà cung cấp</small>
+                <small class="text-warning fw-medium">Chi tiết &rarr;</small>
+            </div>
         </a>
     </div>
 </div>
 
-<!-- Row 2: Charts -->
-<div class="row g-4">
-    <div class="col-lg-7">
-        <div class="nt-card">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-water me-2 text-primary"></i>Biến Động Dòng Tiền (12 Tháng)</h6>
-                <small class="text-muted">Thu (Nợ 111/112) vs Chi (Có 111/112)</small>
-            </div>
-            <div id="chartCashFlow" style="min-height: 320px;"></div>
+<!-- Row 2: Quick Workflow Action Launchers -->
+<div class="nt-card mb-4 p-3">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+        <span class="text-uppercase fw-semibold small text-muted">
+            <i class="bi bi-lightning-charge-fill text-warning me-1"></i>Nghiệp Vụ Nhanh (Fast Actions)
+        </span>
+        <small class="text-muted">Nhấn <kbd>?</kbd> xem phím tắt thao tác nhanh</small>
+    </div>
+    <div class="row g-2">
+        <div class="col-6 col-md-4 col-lg-2">
+            <a asp-controller="BanHang" asp-action="Create" class="nt-quick-action">
+                <i class="bi bi-file-earmark-plus text-primary"></i>
+                <span>Lập Hóa Đơn Bán</span>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <a asp-controller="MuaHang" asp-action="Create" class="nt-quick-action">
+                <i class="bi bi-cart-plus text-info"></i>
+                <span>Nhập Mua Hàng</span>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <a asp-controller="ThuTien" asp-action="Create" class="nt-quick-action">
+                <i class="bi bi-cash-stack text-success"></i>
+                <span>Phiếu Thu Tiền</span>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <a asp-controller="ChiTien" asp-action="Create" class="nt-quick-action">
+                <i class="bi bi-credit-card text-danger"></i>
+                <span>Phiếu Chi Tiền</span>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <a asp-controller="StockTransfer" asp-action="Create" class="nt-quick-action">
+                <i class="bi bi-arrow-left-right text-secondary"></i>
+                <span>Điều Chuyển Kho</span>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <a asp-controller="GeneralLedger" asp-action="KetChuyenCuoiKy" class="nt-quick-action">
+                <i class="bi bi-check2-circle text-primary"></i>
+                <span>Đóng Sổ &amp; TK 911</span>
+            </a>
         </div>
     </div>
-    <div class="col-lg-5">
-        <div class="nt-card">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-people-fill me-2 text-primary"></i>Top Khách Hàng Nợ (TK 131)</h6>
-                <small class="text-muted">Bấm vào cột để Drill-down</small>
+</div>
+
+<!-- Row 3: Financial Analytics Charts -->
+<div class="row g-4 mb-4">
+    <!-- Cashflow Area Chart -->
+    <div class="col-lg-7">
+        <div class="nt-card h-100">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                <div>
+                    <h6 class="fw-bold mb-0 text-dark">
+                        <i class="bi bi-water me-2 text-primary"></i>Dòng Tiền Thu - Chi Thực Tế (12 Tháng)
+                    </h6>
+                    <small class="text-muted">Biến động quỹ tiền mặt (TK 111) &amp; Tiền gửi ngân hàng (TK 112)</small>
+                </div>
+                <div class="d-flex align-items-center gap-2 mt-2 mt-sm-0">
+                    <span class="badge bg-success-subtle text-success border border-success-subtle">
+                        <i class="bi bi-arrow-up-right me-1"></i>Thu
+                    </span>
+                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
+                        <i class="bi bi-arrow-down-right me-1"></i>Chi
+                    </span>
+                </div>
             </div>
-            <div id="chartTopDebtors" style="min-height: 320px;"></div>
+            <div id="chartCashFlow" style="min-height: 330px;">
+                <div class="d-flex align-items-center justify-content-center h-100 py-5 text-muted">
+                    <div class="spinner-border spinner-border-sm me-2 text-primary" role="status"></div>
+                    <span>Đang tổng hợp dữ liệu dòng tiền...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Debtors Bar Chart -->
+    <div class="col-lg-5">
+        <div class="nt-card h-100">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                <div>
+                    <h6 class="fw-bold mb-0 text-dark">
+                        <i class="bi bi-people-fill me-2 text-primary"></i>Top Công Nợ Khách Hàng (TK 131)
+                    </h6>
+                    <small class="text-muted">Dư nợ lớn nhất cần theo dõi &amp; thu hồi</small>
+                </div>
+                <a asp-controller="CongNo" asp-action="Index" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-funnel me-1"></i>Tuổi Nợ
+                </a>
+            </div>
+            <div id="chartTopDebtors" style="min-height: 330px;">
+                <div class="d-flex align-items-center justify-content-center h-100 py-5 text-muted">
+                    <div class="spinner-border spinner-border-sm me-2 text-primary" role="status"></div>
+                    <span>Đang tải danh sách công nợ...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Row 4: Statutory Compliance & Invariant Checklist (Circular TT99) -->
+<div class="row g-3">
+    <div class="col-md-6 col-xl-3">
+        <div class="nt-compliance-banner d-flex align-items-start gap-2">
+            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+            <div>
+                <strong class="d-block text-dark small">Tài Khoản 911</strong>
+                <small class="text-muted">Tài khoản kết chuyển không có số dư cuối kỳ theo TT99/2025.</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="nt-compliance-banner d-flex align-items-start gap-2" style="border-left-color: #10B981;">
+            <i class="bi bi-arrow-left-right text-success fs-5"></i>
+            <div>
+                <strong class="d-block text-dark small">Cân Đối Nợ - Có</strong>
+                <small class="text-muted">Bảo vệ định khoản kép tuyệt đối: Tổng Nợ = Tổng Có trên mọi bút toán.</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="nt-compliance-banner d-flex align-items-start gap-2" style="border-left-color: #F59E0B;">
+            <i class="bi bi-shield-shaded text-warning fs-5"></i>
+            <div>
+                <strong class="d-block text-dark small">Lá Chắn Thuế</strong>
+                <small class="text-muted">Cảnh báo tức thời hóa đơn &gt; 20 triệu thanh toán tiền mặt &amp; chi phí B4.</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="nt-compliance-banner d-flex align-items-start gap-2" style="border-left-color: #6366F1;">
+            <i class="bi bi-boxes text-indigo fs-5"></i>
+            <div>
+                <strong class="d-block text-dark small">Kiểm Soát Tồn Kho</strong>
+                <small class="text-muted">Chống xuất âm kho VAS 02 &amp; quy đổi đơn vị tính linh hoạt.</small>
+            </div>
         </div>
     </div>
 </div>
@@ -79,3 +265,4 @@
         });
     </script>
 }
+
