@@ -1,36 +1,79 @@
 @model IEnumerable<ninjaTax.ViewComponents.MenuItem>
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container-fluid">
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
+<nav class="navbar navbar-expand-xl nt-navbar" aria-label="Main Navigation">
+    <div class="container-fluid px-3 px-xl-4">
+        <!-- Brand / Logo -->
+        <a class="navbar-brand nt-navbar__brand me-3 me-xl-4" asp-controller="Home" asp-action="Index">
+            <span class="nt-navbar__brand-badge">
+                <i class="bi bi-shield-check"></i>
+            </span>
+            <span class="nt-navbar__brand-text">
+                <span class="nt-navbar__brand-name">ninjaTax</span>
+                <span class="nt-navbar__brand-sub">TT99 &bull; VAS ERP</span>
+            </span>
+        </a>
+
+        <!-- Mobile / Tablet Toggler -->
+        <button class="navbar-toggler nt-navbar__toggler border-0 shadow-none px-2" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-list fs-4"></i>
         </button>
+
         <div class="collapse navbar-collapse" id="mainNavbar">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <!-- Nav Items -->
+            <ul class="navbar-nav me-auto mb-2 mb-xl-0 nt-navbar__nav">
                 @foreach (var item in Model)
                 {
-                    if (item.Children != null && item.Children.Any())
+                    var hasChildren = item.Children != null && item.Children.Any();
+                    var dropdownId = "navDrop_" + Math.Abs((item.Title ?? "").GetHashCode()).ToString();
+
+                    if (hasChildren)
                     {
-                        <li class="nav-item dropdown @(item.IsActive ? "active" : "")">
-                            <a class="nav-link dropdown-toggle" href="#" id="@item.Title.Replace(" ", "_")" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="@item.Icon"></i> @item.Title
+                        <li class="nav-item dropdown nt-nav-item @(item.IsActive ? "is-active" : "")">
+                            <a class="nav-link dropdown-toggle nt-nav-link" href="#" id="@dropdownId" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="@item.Icon nt-nav-icon"></i>
+                                <span class="nt-nav-label">@item.Title</span>
                             </a>
-                            <ul class="dropdown-menu" aria-labelledby="@item.Title.Replace(" ", "_")">
-                                @foreach (var child in item.Children)
+                            <ul class="dropdown-menu nt-dropdown-menu shadow-lg border-0" aria-labelledby="@dropdownId">
+                                @foreach (var child in item.Children!)
                                 {
-                                    <li><a class="dropdown-item @(child.IsActive ? "active" : "")" href="@Url.Action(child.Action, child.Controller)"><i class="@child.Icon"></i> @child.Title</a></li>
+                                    <li>
+                                        <a class="dropdown-item nt-dropdown-item @(child.IsActive ? "active" : "")" href="@Url.Action(child.Action, child.Controller)">
+                                            <span class="nt-dropdown-item__icon-wrap">
+                                                <i class="@child.Icon"></i>
+                                            </span>
+                                            <span class="nt-dropdown-item__text">@child.Title</span>
+                                        </a>
+                                    </li>
                                 }
                             </ul>
                         </li>
                     }
                     else
                     {
-                        <li class="nav-item @(item.IsActive ? "active" : "")">
-                            <a class="nav-link" href="@Url.Action(item.Action, item.Controller)"><i class="@item.Icon"></i> @item.Title</a>
+                        <li class="nav-item nt-nav-item @(item.IsActive ? "is-active" : "")">
+                            <a class="nav-link nt-nav-link" href="@Url.Action(item.Action, item.Controller)">
+                                <i class="@item.Icon nt-nav-icon"></i>
+                                <span class="nt-nav-label">@item.Title</span>
+                            </a>
                         </li>
                     }
                 }
             </ul>
+
+            <!-- Quick utilities / Search / Shortcut trigger -->
+            <div class="d-flex align-items-center gap-2 mt-2 mt-xl-0 nt-navbar__actions">
+                <button type="button" class="btn btn-sm btn-outline-secondary nt-action-btn d-none d-md-inline-flex align-items-center gap-1" onclick="document.getElementById('nt-shortcut-help').classList.toggle('is-visible')" title="Bảng phím tắt (?)">
+                    <i class="bi bi-keyboard"></i>
+                    <kbd class="nt-kbd-hint">?</kbd>
+                </button>
+                <div class="nt-user-badge d-flex align-items-center gap-2 ps-2 border-start">
+                    <div class="nt-avatar-placeholder">KT</div>
+                    <div class="d-none d-xxl-block text-start lh-1">
+                        <div class="small fw-semibold text-dark">Kế Toán Trưởng</div>
+                        <small class="text-muted" style="font-size: 0.72rem;">Chi nhánh Chính</small>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </nav>

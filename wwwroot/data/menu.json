@@ -1,17 +1,17 @@
 {
   "menu": [
     {
-      "title": "Dashboard",
+      "title": "Tổng Quan",
       "icon": "bi bi-speedometer2",
       "controller": "Home",
       "action": "Index"
     },
     {
-      "title": "Mua Hàng",
+      "title": "Mua Hàng & Phải Trả",
       "icon": "bi bi-cart-check",
       "children": [
         {
-          "title": "Hóa đơn mua hàng",
+          "title": "Hóa đơn mua hàng (AP)",
           "icon": "bi bi-receipt",
           "controller": "MuaHang",
           "action": "Index"
@@ -21,15 +21,21 @@
           "icon": "bi bi-truck",
           "controller": "LandedCost",
           "action": "Index"
+        },
+        {
+          "title": "Công nợ phải trả (TK 331)",
+          "icon": "bi bi-building-down",
+          "controller": "CongNo",
+          "action": "Index"
         }
       ]
     },
     {
-      "title": "Bán Hàng",
+      "title": "Bán Hàng & Phải Thu",
       "icon": "bi bi-receipt-cutoff",
       "children": [
         {
-          "title": "Hóa đơn bán hàng",
+          "title": "Hóa đơn bán hàng (AR)",
           "icon": "bi bi-receipt",
           "controller": "BanHang",
           "action": "Index"
@@ -39,15 +45,9 @@
           "icon": "bi bi-arrow-return-left",
           "controller": "CommercialAdjustment",
           "action": "Index"
-        }
-      ]
-    },
-    {
-      "title": "Công Nợ",
-      "icon": "bi bi-wallet2",
-      "children": [
+        },
         {
-          "title": "Quản trị công nợ & Tuổi nợ",
+          "title": "Quản trị công nợ & Tuổi nợ (TK 131)",
           "icon": "bi bi-wallet2",
           "controller": "CongNo",
           "action": "Index"
@@ -59,13 +59,13 @@
           "action": "DoiTru"
         },
         {
-          "title": "Bù trừ công nợ 2 chiều",
+          "title": "Bù trừ công nợ hai chiều",
           "icon": "bi bi-arrow-repeat",
           "controller": "CongNo",
           "action": "BuTruHaiChieu"
         },
         {
-          "title": "Dự phòng khó đòi (TT48)",
+          "title": "Dự phòng nợ khó đòi (TT 48)",
           "icon": "bi bi-shield-exclamation",
           "controller": "BadDebt",
           "action": "Index"
@@ -73,103 +73,7 @@
       ]
     },
     {
-      "title": "Thu Tiền",
-      "icon": "bi bi-cash",
-      "controller": "ThuTien",
-      "action": "Index"
-    },
-    {
-      "title": "Chi Tiền",
-      "icon": "bi bi-credit-card",
-      "controller": "ChiTien",
-      "action": "Index"
-    },
-    {
-      "title": "TSCĐ & CCDC",
-      "icon": "bi bi-box",
-      "controller": "TaiSan",
-      "action": "Index"
-    },
-    {
-      "title": "Tiền Lương",
-      "icon": "bi bi-cash-coin",
-      "controller": "TienLuong",
-      "action": "Index"
-    },
-    {
-      "title": "Sổ Quỹ",
-      "icon": "bi bi-book",
-      "controller": "ThuTien",
-      "action": "SoQuy"
-    },
-    {
-      "title": "Báo cáo",
-      "icon": "bi bi-file-earmark-bar-graph",
-      "children": [
-        {
-          "title": "Báo cáo tài chính",
-          "icon": "bi bi-file-earmark-spreadsheet",
-          "controller": "BaoCaoTaiChinh",
-          "action": "Index"
-        },
-        {
-          "title": "Quyết toán thuế",
-          "icon": "bi bi-calculator",
-          "controller": "QuyetToanThue",
-          "action": "Index"
-        },
-        {
-          "title": "Lá chắn rủi ro thuế",
-          "icon": "bi bi-shield-shaded",
-          "controller": "TaxAuditShield",
-          "action": "Index"
-        }
-      ]
-    },
-    {
-      "title": "Sổ Cái & Tổng Hợp",
-      "icon": "bi bi-journal-bookmark",
-      "children": [
-        {
-          "title": "Sổ Nhật ký chung (S03a)",
-          "icon": "bi bi-journal-text",
-          "controller": "GeneralLedger",
-          "action": "Index"
-        },
-        {
-          "title": "Sổ Cái tài khoản (S03b)",
-          "icon": "bi bi-book",
-          "controller": "GeneralLedger",
-          "action": "SoCai"
-        },
-        {
-          "title": "Bảng Cân đối tài khoản",
-          "icon": "bi bi-layout-three-columns",
-          "controller": "GeneralLedger",
-          "action": "BangCanDoi"
-        },
-        {
-          "title": "Kết chuyển cuối kỳ (TT99)",
-          "icon": "bi bi-arrow-repeat",
-          "controller": "GeneralLedger",
-          "action": "KetChuyenCuoiKy"
-        },
-        {
-          "title": "Đối soát Sổ phụ vs Sổ cái",
-          "icon": "bi bi-patch-check",
-          "controller": "GeneralLedger",
-          "action": "DoiSoat"
-        },
-        {
-          "title": "Đánh giá lại ngoại tệ (TK 413)",
-          "icon": "bi bi-currency-exchange",
-          "controller": "FxRevaluation",
-          "action": "Index"
-        }
-      ]
-    },
-    {
-      "title": "Kho & Hàng Hóa",
+      "title": "Kho Hàng (VAS 02)",
       "icon": "bi bi-boxes",
       "children": [
         {
@@ -197,7 +101,7 @@
           "action": "Index"
         },
         {
-          "title": "Báo cáo NXT (S10‑DN)",
+          "title": "Báo cáo NXT (S10-DN)",
           "icon": "bi bi-file-earmark-spreadsheet",
           "controller": "Inventory",
           "action": "BaoCaoNhapXuatTon"
@@ -217,11 +121,119 @@
       ]
     },
     {
+      "title": "Tiền & Tiền Lương",
+      "icon": "bi bi-cash-stack",
+      "children": [
+        {
+          "title": "Phiếu thu tiền mặt/ngân hàng",
+          "icon": "bi bi-cash",
+          "controller": "ThuTien",
+          "action": "Index"
+        },
+        {
+          "title": "Phiếu chi tiền mặt/ngân hàng",
+          "icon": "bi bi-credit-card",
+          "controller": "ChiTien",
+          "action": "Index"
+        },
+        {
+          "title": "Sổ quỹ tiền mặt & Ngân hàng",
+          "icon": "bi bi-book",
+          "controller": "ThuTien",
+          "action": "SoQuy"
+        },
+        {
+          "title": "Tính lương & Bảo hiểm nhân viên",
+          "icon": "bi bi-cash-coin",
+          "controller": "TienLuong",
+          "action": "Index"
+        },
+        {
+          "title": "Bảng chấm công hàng tháng",
+          "icon": "bi bi-calendar-check",
+          "controller": "ChamCong",
+          "action": "Index"
+        },
+        {
+          "title": "Tài sản cố định (TSCĐ & CCDC)",
+          "icon": "bi bi-box",
+          "controller": "TaiSan",
+          "action": "Index"
+        }
+      ]
+    },
+    {
+      "title": "Sổ Cái & Đóng Sổ",
+      "icon": "bi bi-journal-bookmark",
+      "children": [
+        {
+          "title": "Sổ Nhật ký chung (S03a)",
+          "icon": "bi bi-journal-text",
+          "controller": "GeneralLedger",
+          "action": "Index"
+        },
+        {
+          "title": "Sổ Cái tài khoản (S03b)",
+          "icon": "bi bi-book",
+          "controller": "GeneralLedger",
+          "action": "SoCai"
+        },
+        {
+          "title": "Bảng Cân đối tài khoản 8 cột",
+          "icon": "bi bi-layout-three-columns",
+          "controller": "GeneralLedger",
+          "action": "BangCanDoi"
+        },
+        {
+          "title": "Kết chuyển cuối kỳ qua TK 911",
+          "icon": "bi bi-arrow-repeat",
+          "controller": "GeneralLedger",
+          "action": "KetChuyenCuoiKy"
+        },
+        {
+          "title": "Đánh giá lại ngoại tệ (TK 413)",
+          "icon": "bi bi-currency-exchange",
+          "controller": "FxRevaluation",
+          "action": "Index"
+        },
+        {
+          "title": "Đối soát Sổ phụ vs Sổ cái",
+          "icon": "bi bi-patch-check",
+          "controller": "GeneralLedger",
+          "action": "DoiSoat"
+        }
+      ]
+    },
+    {
+      "title": "Báo Cáo & Thuế",
+      "icon": "bi bi-file-earmark-bar-graph",
+      "children": [
+        {
+          "title": "Báo cáo tài chính TT99 (B01, B02, B03)",
+          "icon": "bi bi-file-earmark-spreadsheet",
+          "controller": "BaoCaoTaiChinh",
+          "action": "Index"
+        },
+        {
+          "title": "Quyết toán thuế TNDN & TNCN",
+          "icon": "bi bi-calculator",
+          "controller": "QuyetToanThue",
+          "action": "Index"
+        },
+        {
+          "title": "Lá chắn rủi ro thanh tra thuế",
+          "icon": "bi bi-shield-shaded",
+          "controller": "TaxAuditShield",
+          "action": "Index"
+        }
+      ]
+    },
+    {
       "title": "Hệ Thống",
       "icon": "bi bi-gear",
       "children": [
         {
-          "title": "Hồ sơ doanh nghiệp",
+          "title": "Hồ sơ doanh nghiệp & Chi nhánh",
           "icon": "bi bi-building",
           "controller": "Company",
           "action": "Index"
@@ -233,7 +245,7 @@
           "action": "Branches"
         },
         {
-          "title": "Phòng ban & Bộ phận",
+          "title": "Phòng ban & Bộ phận (Cost Center)",
           "icon": "bi bi-diagram-3-fill",
           "controller": "Department",
           "action": "Index"
@@ -245,19 +257,19 @@
           "action": "AccountingConfig"
         },
         {
-          "title": "Hệ thống tài khoản (COA)",
+          "title": "Hệ thống tài khoản TT99 (COA)",
           "icon": "bi bi-diagram-3",
           "controller": "TaiKhoan",
           "action": "Index"
         },
         {
-          "title": "Khách hàng & Nhà cung cấp",
+          "title": "Danh mục Khách hàng & NCC",
           "icon": "bi bi-people",
           "controller": "DoiTuong",
           "action": "Index"
         },
         {
-          "title": "Tài khoản ngân hàng",
+          "title": "Danh mục Tài khoản ngân hàng",
           "icon": "bi bi-bank",
           "controller": "TaiKhoanNganHang",
           "action": "Index"
