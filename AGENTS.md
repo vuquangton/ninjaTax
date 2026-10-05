@@ -43,7 +43,7 @@ Repository guidelines for autonomous agents working in `ninjaTax`.
   - Net adjustment invariant: Calculated required provision is netted against existing credit balance of TK 2293 (additional booking: Nợ 6426 / Có 2293; reversal: Nợ 2293 / Có 6426).
 - **Windows PowerShell Command Execution**:
   - Always separate shell commands with semicolon `;` or newline; avoid `&&` (invalid token in Windows PowerShell 5.1).
-  - If `ninjaTax.dll` is locked by `testhost.exe` (MSB3026), release it via `Stop-Process -Name testhost -Force -ErrorAction SilentlyContinue`.
+  - If `ninjaTax.dll` or `ninjaTax.exe` is locked (MSB3026/MSB3027), release it via `Stop-Process -Name testhost, ninjaTax -Force -ErrorAction SilentlyContinue`.
 
 ## Architecture & Layout
 - `Controllers/`: ASP.NET Core MVC controllers. Keep controllers thin; delegate logic to service layer.
@@ -86,6 +86,7 @@ Repository guidelines for autonomous agents working in `ninjaTax`.
 |---|---|---|---|---|---|
 | **TDD Developer** | `tdd` / `test-driven-development` | Implementing new features, calculations, or bugfixes | `ninjaTax.Tests/`, `Models/` | Guarantee invariants (TongNo == TongCo, Anti-Negative Stock) | Write failing test &rarr; make pass &rarr; refactor cleanly |
 | **Prototyper** | `prototype` | Testing complex tax formulas or UI layouts | `scratch/`, test views | Quick sanity check before full implementation | Build throwaway spike script or Razor mock |
+| **UI/UX Designer** | `ui-ux-pro-max` | Designing, building, reviewing, or fixing interfaces, pages, or components | `Views/`, `wwwroot/css/` | Enforce enterprise design tokens, 44px+ touch targets, 8dp rhythm, WCAG 4.5:1 contrast, and zero layout shift | Apply 10 priority rule categories, design system tokens, and pre-delivery checklist |
 | **UI Developer** | `generative_ui` | Visualizing T-accounts, ledger balances, reports | Inline chat, standalone HTML | Clear visual inspection of financial flow | Render interactive debit/credit diagrams and ledger charts |
 
 ### 4. Debugging & Conflict Resolution
